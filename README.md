@@ -122,6 +122,10 @@ It's 2014, so yes, you can chain method calls.
 
     zcl_logger=>new( object = 'foo' )->e( 'Bad things happened: See details' )->e( error ).
 
+## Installation
+
+Either copy-paste the source code and unit tests into your system, or use SAPLink to import the slinky file.
+
 ## Contributing
 
 This tool has a lot of room for improvement, so if you have an idea, let me know.  Better yet, submit a pull request, and I'll merge it as long as it has good tests and makes sense.
