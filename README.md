@@ -1,61 +1,127 @@
-ABAP-Logger
-===========
-ABAP Logging as painless as any other language
+# ZCL_LOGGER
 
-## Functionality
-The class `ZCL_LOGGER` is designed to make logging in ABAP more like in other languages.  To create a log and add messages in Android Java, Ruby, and Javascript, at most two lines of code are required: one to create the log and one to add the message.  In addition, different types of objects can be logged by passing them to the same method.  `ZCL_LOGGER` also has these strengths.
+SAP Logging as painless as any other language
 
-An instance of this class can be passed a number of objects by different methods.  Method `ADD` accepts a string, bapiret2, bdcmsgcoll, exception object, or a table of any of those data types.  Methods A, E, W, I and S accept exactly the same but they add the type of message corresponding to their names.
+## One of these things is not like the others
 
-## Examples
+One of the most effective ways of debugging and inspecting a program's operations is by writing to a log.  Logging is so powerful, just about every language has some way of doing it.  For example, if you want to write to a log in javascript, you just need to write the following line of code:
 
-### Creating a Log in SLG1
-    DATA: log TYPE REF TO zcl_logger.
-    * If you create a log without any parameters, it will only be in memory
-    log = zcl_logger=>new( ).
+    console.log("Leapin' lizards, something went wrong!");
+
+Or how about in Ruby? Ruby has the added benefit of different levels of messages.
+
+    require 'logger'
+    log = Logger.new('logfile.log')
+    log.warn("You're on thin ice, bud.")
+    log.info("Things are normal again.")
+
+Writing an Android app? You're in luck - you can log and optionally tag messages, all in one line of Java.
+
+    Log.e('MAPS_INTERFACE', 'The system is down!!!');
+
+So, how does ABAP logging stack up to the other languages? What code is required to log a string to be viewed later?
+
+    DATA: header TYPE bal_s_log,
+          handle TYPE balloghndl,
+          handles_to_save TYPE bal_t_logh.
     
-    * If you supply an object and subobject, the log will be created on the
-    * database the first time a message is stored, so you can view it later
-    * in SLG1.
-    log = zcl_logger=>new(  object = 'WF'
-                            subobject = 'NOTIFICATIONS'
-                            desc = |Notifications on { sy-datum }| ). 
-### Logging Strings
-    DATA: log TYPE REF TO zcl_logger.
-    log = zcl_logger=>new( ).
-    log->s( 'This is a success message' ).
-    log->w( 'This is a warning message' ). 
-
-### Logging Errors
-    DATA: log TYPE REF TO zcl_logger,
-          l_err TYPE REF TO zcx_operation_failed.
-    log = zcl_logger=>new( object = 'WF' subobject = 'NOTIFICATIONS' ).
-    TRY.
-        my_class=>do_some_operation( ).
-      CATCH zcx_operation_failed INTO l_err.
-        log->e( l_err ).
-    ENDTRY. 
-
-### Logging BAPI Messages
-    DATA: rtn_msgs TYPE TABLE OF bapiret2.
-    CALL FUNCTION 'BAPI_ACC_DOCUMENT_POST'
+    header-object = 'ZINTERFACES'.
+    header-subobject = 'ACCOUNTING'.
+    header-extnumber = 'Stuff imported from legacy systems'.
+    
+    CALL FUNCTION 'BAL_LOG_CREATE'
       EXPORTING
-        parameter1 = foo
-        parameter2 = bar
-      TABLES
-        return = rtn_msgs.
-    IF rtn_msgs IS NOT INITIAL.
-      log = zcl_logger=>new( object = 'ACCOUNTING' subobject = 'INTERFACES' ).
-      log->add( rtn_msgs ).
-    ENDIF. 
+        i_s_log      = header
+      IMPORTING
+        e_log_handle = handle.
+    
+    CALL FUNCTION 'BAL_LOG_MSG_ADD_FREE_TEXT'
+      EXPORTING
+        i_log_handle = handle
+        i_msgty = 'E'
+        i_text = 'You see, what had happened was...'.
 
-### Displaying a log
-To display a log immediately to a user, just call `log->popup( ).` or `log->fullscreen( ).`
+    CALL FUNCTION 'BAL_DB_SAVE'
+      EXPORTING
+        i_t_log_handle = handles_to_save.
 
-### Notes
-Calls to the log can be chained, like:
+If you're not asleep after writing all that, then you've at least forgot what you were programming before you had to write to a log.  If anything, logging should be QUICK so you can get on with the real programming!
 
-    log->e( 'An error occurred. See following:' )->e( l_err ).
+## Get out of my way
 
-### Contributing
-Any change is welcome as long as you add some corresponding unit tests.  You can run them and they will test the class in a number of different scenarios.  You can set breakpoints before running unit tests to see the behavior in action.
+A better log would barely interrupt my code, so I can output messages in one line, and you don't lose the big picture as you are reading it. What do you wish the ABAP example above looked like?  How about this:
+
+    DATA: log TYPE REF TO zcl_logger.
+    log = zcl_logger=>new( object = 'ZINTERFACES'
+                           subobject = 'ACCOUNTING'
+                           desc = 'Stuff imported from legacy systems' ).
+    log->e( 'You see, what had happened was...' ).
+
+All the information, none of the boilerplate. This is the power of ZCL_LOGGER.
+
+## Log anything
+
+Making use of SAP's run-time type services, we can pass almost anything we might want to log to an instance of ZCL_LOGGER, and it will do the heavy lifting.
+
+Log a string!
+
+    log->s( 'Document 4800095710 created successfully' ).
+
+Log a bapi return message!
+
+    DATA: rtn TYPE bapiret2.
+    log->add( rtn ).
+
+Log a...gasp...TABLE of bapi return messages!
+
+    DATA: msgs TYPE TABLE OF bapiret2.
+    log->add( msgs ).
+
+Log an exception? Yep!
+
+    TRY.
+        rubber_band_powered_spaceship=>fly_to( the_moon ).
+      CATCH zcx_not_enough_power INTO err.
+        log->e( err ).
+    ENDTRY.
+
+Log the current system message.
+
+    MESSAGE e001(oo) WITH foo bar baz INTO dummy.
+    log->add( ). "you don't even need to pass anything in, bro.
+
+Log the return of a BDC call.
+
+    CALL TRANSACTION 'CO07' USING bdc_tab MESSAGES INTO bdc_messages.
+    log->add( bdc_messages ).
+
+And that's every scenario I've been able to think of, so far.
+
+## Don't Ignore SAP's Strengths
+
+As frustrating as it can sometimes be, the SAP environment has a lot of power, and it would be good not to ignore it.  Transaction code SLG1 views and filters logs with ease, and it allows for added context variables and parameters. A new logger class should not reinvent the wheel, the wheelbarrow, or the mechanisms for saving and displaying logs.
+
+If you have an instance of a log object, you can add context variables and a problem class, two of a few things that SLG1 handles well.
+
+    log->w( obj_to_log = 'Document created with errors' "<-- Which document? Needs context.
+            context = new_document ). "<-- Here's the context
+
+Since this log is designed to be simple, it has compromised a lot of the more exotic function modules in the SBAL family. If your log needs to use one of these function modules, the log header, handle and database id are all read-only members of the class, so you can pass them right along to the function module.
+
+    log->i( 'Results of system analysis' ).
+
+    CALL FUNCTION 'BAL_LOG_MSG_CUMULATE'
+      EXPORTING
+        i_log_handle = log->handle
+        i_s_msg = l_msg
+        i_compare_attributes = abap_true.
+
+## Chainable
+
+It's 2014, so yes, you can chain method calls.
+
+    zcl_logger=>new( object = 'foo' )->e( 'Bad things happened: See details' )->e( error ).
+
+## Contributing
+
+This tool has a lot of room for improvement, so if you have an idea, let me know.  Better yet, submit a pull request, and I'll merge it as long as it has good tests and makes sense.
