@@ -1,12 +1,12 @@
-<?xml version="1.0" encoding="utf-8"?>
-<CLAS CLSNAME="ZCL_LOGGER" VERSION="1" LANGU="E" DESCRIPT="Interface to Application Log" UUID="005056945E9B1EE48CDAF5EF425E8D81" CATEGORY="00" EXPOSURE="0" STATE="1" RELEASE="0" CLSCCINCL="X" FIXPT="X" UNICODE="X" CLSBCCAT="00" WITH_UNIT_TESTS="X" DURATION_TYPE="0 " RISK_LEVEL="0 ">
+<?xml version="1.0" encoding="utf-16"?>
+<CLAS CLSNAME="ZCL_LOGGER" VERSION="1" LANGU="E" DESCRIPT="Interface to Application Log" UUID="542A0DD555591540E10080000A01314B" CATEGORY="00" EXPOSURE="0" STATE="1" RELEASE="0" AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" CHGDANYON="00000000" CLSCCINCL="X" FIXPT="X" UNICODE="X" R3RELEASE="700" CLSBCCAT="00" WITH_UNIT_TESTS="X" DURATION_TYPE="0 " RISK_LEVEL="0 ">
  <publicSection>class ZCL_LOGGER definition
   public
   create private .
 
-public section.
 *&quot;* public components of class ZCL_LOGGER
 *&quot;* do not include other source files here!!!
+public section.
 
   data HEADER type BAL_S_LOG read-only .
   data HANDLE type BALLOGHNDL read-only .
@@ -97,15 +97,17 @@ public section.
     returning
       value(SELF) type ref to ZCL_LOGGER .
   methods POPUP .
-  methods FULLSCREEN .</publicSection>
+  methods FULLSCREEN .
+  methods EXPORT_TO_TABLE
+    returning
+      value(RT_BAPIRET) type BAPIRETTAB .</publicSection>
  <protectedSection>protected section.
 *&quot;* protected components of class ZCL_LOGGER
 *&quot;* do not include other source files here!!!</protectedSection>
- <privateSection>private section.
-*&quot;* private components of class ZCL_LOGGER
+ <privateSection>*&quot;* private components of class ZCL_LOGGER
 *&quot;* do not include other source files here!!!
+private section.
 
-  type-pools ABAP .
   data AUTO_SAVE type ABAP_BOOL .</privateSection>
  <localImplementation>*&quot;* use this source file for the definition and implementation of
 *&quot;* local helper classes, interface definitions and type
@@ -115,26 +117,15 @@ public section.
 *&quot;* components in the private section</localTypes>
  <localMacros>*&quot;* use this source file for any macro definitions you need
 *&quot;* in the implementation part of the class</localMacros>
- <localTestClasses>CLASS lcl_test DEFINITION FOR TESTING
-  DURATION SHORT
-  RISK LEVEL HARMLESS.
-*?#&lt;asx:abap xmlns:asx=&quot;http://www.sap.com/abapxml&quot; version=&quot;1.0&quot;&gt;
-*?&lt;asx:values&gt;
-*?&lt;TESTCLASS_OPTIONS&gt;
-*?&lt;TEST_CLASS&gt;lcl_Test
-*?&lt;/TEST_CLASS&gt;
-*?&lt;TEST_MEMBER&gt;f_Cut
-*?&lt;/TEST_MEMBER&gt;
-*?&lt;OBJECT_UNDER_TEST&gt;ZCL_LOGGER
-*?&lt;/OBJECT_UNDER_TEST&gt;
-*?&lt;OBJECT_IS_LOCAL/&gt;
-*?&lt;GENERATE_FIXTURE/&gt;
-*?&lt;GENERATE_CLASS_FIXTURE/&gt;
-*?&lt;GENERATE_INVOCATION/&gt;
-*?&lt;GENERATE_ASSERT_EQUAL/&gt;
-*?&lt;/TESTCLASS_OPTIONS&gt;
-*?&lt;/asx:values&gt;
-*?&lt;/asx:abap&gt;
+ <localTestClasses>*----------------------------------------------------------------------*
+*       CLASS lcl_test DEFINITION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS lcl_test DEFINITION FOR TESTING
+  &quot;#AU Duration Medium
+  &quot;#AU Risk_Level Harmless
+  INHERITING FROM cl_aunit_assert.
   PRIVATE SECTION.
 
     DATA:
@@ -176,6 +167,7 @@ public section.
       can_log_char   FOR TESTING,
       can_log_bapiret2 FOR TESTING,
       can_log_bapirettab FOR TESTING,
+      can_export_bapirettab FOR TESTING,
       can_log_err FOR TESTING,
       can_log_batch_msgs FOR TESTING,
 
@@ -189,14 +181,22 @@ public section.
 
 ENDCLASS.       &quot;lcl_Test
 
+*----------------------------------------------------------------------*
+*       CLASS lcl_test IMPLEMENTATION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
 CLASS lcl_test IMPLEMENTATION.
 
   METHOD class_setup.
-    zcl_logger=&gt;new(
-      object = &apos;ABAPUNIT&apos;
-      subobject = &apos;LOGGER&apos;
-      desc = &apos;Log saved in database&apos; )-&gt;add( &apos;This message is in the database&apos; ).
-  ENDMETHOD.
+    DATA: lo_logger TYPE REF TO zcl_logger.
+    lo_logger = zcl_logger=&gt;new(
+                  object = &apos;ABAPUNIT&apos;
+                  subobject = &apos;LOGGER&apos;
+                  desc = &apos;Log saved in database&apos; ).
+
+    lo_logger-&gt;add( &apos;This message is in the database&apos; ).
+  ENDMETHOD.                    &quot;class_setup
 
   METHOD setup.
     anon_log = zcl_logger=&gt;new( ).
@@ -206,35 +206,36 @@ CLASS lcl_test IMPLEMENTATION.
     reopened_log = zcl_logger=&gt;open( object = &apos;ABAPUNIT&apos;
                                      subobject = &apos;LOGGER&apos;
                                      desc = &apos;Log saved in database&apos; ).
-  ENDMETHOD.
+  ENDMETHOD.                    &quot;setup
 
   METHOD can_create_anon_log.
     cl_aunit_assert=&gt;assert_bound(
       act = anon_log
       msg = &apos;Cannot Instantiate Anonymous Log&apos; ).
-  ENDMETHOD.
+  ENDMETHOD.                    &quot;can_create_anon_log
 
   METHOD can_create_named_log.
     cl_aunit_assert=&gt;assert_bound(
       act = named_log
       msg = &apos;Cannot Instantiate Named Log&apos; ).
-  ENDMETHOD.
+  ENDMETHOD.                    &quot;can_create_named_log
 
   METHOD can_reopen_log.
     cl_aunit_assert=&gt;assert_bound(
       act = reopened_log
       msg = &apos;Cannot Reopen Log from DB&apos; ).
-  ENDMETHOD.
+  ENDMETHOD.                    &quot;can_reopen_log
 
   METHOD can_open_or_create.
-    DATA: created_log TYPE REF TO zcl_logger,
-          handles TYPE bal_t_logh.
+    DATA: handles TYPE bal_t_logh,
+          lv_lines TYPE i.
+
     CALL FUNCTION &apos;BAL_GLB_MEMORY_REFRESH&apos;. &quot;Close Logs
     reopened_log = zcl_logger=&gt;open( object = &apos;ABAPUNIT&apos;
                                      subobject = &apos;LOGGER&apos;
                                      desc = &apos;Log saved in database&apos;
                                      create_if_does_not_exist = abap_true ).
-    created_log = zcl_logger=&gt;open( object = &apos;ABAPUNIT&apos;
+    zcl_logger=&gt;open( object = &apos;ABAPUNIT&apos;
                                     subobject = &apos;LOGGER&apos;
                                     desc = &apos;Log not in database&apos;
                                     create_if_does_not_exist = abap_true ).
@@ -242,15 +243,17 @@ CLASS lcl_test IMPLEMENTATION.
       IMPORTING
         e_t_log_handle = handles.
 
+    lv_lines = LINES( handles ).
+
     cl_aunit_assert=&gt;assert_equals(
       exp = 2
-      act = lines( handles )
+      act = lv_lines
       msg = &apos;Did not create nonexistent log from OPEN&apos; ).
 
-  ENDMETHOD.
+  ENDMETHOD.                    &quot;can_open_or_create
 
   METHOD can_add_log_context.
-    DATA: log TYPE REF TO zcl_logger,
+    DATA: lo_log TYPE REF TO zcl_logger,
           random_currency_data TYPE t001a,
           act_header TYPE bal_s_log.
     random_currency_data-mandt = sy-mandt.
@@ -259,11 +262,11 @@ CLASS lcl_test IMPLEMENTATION.
     random_currency_data-kurst = &apos;CDEF&apos;.
     random_currency_data-cursr = &apos;G&apos;.
 
-    log = zcl_logger=&gt;new( context = random_currency_data ).
+    lo_log = zcl_logger=&gt;new( context = random_currency_data ).
 
     CALL FUNCTION &apos;BAL_LOG_HDR_READ&apos;
       EXPORTING
-        i_log_handle = log-&gt;handle
+        i_log_handle = lo_log-&gt;handle
       IMPORTING
         e_s_log      = act_header.
 
@@ -277,489 +280,590 @@ CLASS lcl_test IMPLEMENTATION.
       act = act_header-context-value
       msg = &apos;Did not add context to log&apos; ).
 
-  endmethod.
+  ENDMETHOD.                    &quot;can_add_log_context
 
-    METHOD can_add_to_log.
-      DATA: dummy TYPE c.
+  METHOD can_add_to_log.
+    DATA: dummy TYPE c,                                     &quot;#EC NEEDED
+          lv_msg TYPE msg.
 
-      MESSAGE s001(00) WITH &apos;I&apos; &apos;test&apos; &apos;the&apos; &apos;logger.&apos; INTO dummy.
-      anon_log-&gt;add( ).
+    MESSAGE s001(00) WITH &apos;I&apos; &apos;test&apos; &apos;the&apos; &apos;logger.&apos; INTO dummy.
+    anon_log-&gt;add( ).
 
-      cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;Itestthelogger.&apos;
-        act = get_first_message( anon_log-&gt;handle )
-        msg = &apos;Did not log system message properly&apos; ).
+    lv_msg = get_first_message( anon_log-&gt;handle ).
 
-    ENDMETHOD.
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;Itestthelogger.&apos;
+      act = lv_msg
+      msg = &apos;Did not log system message properly&apos; ).
 
-    METHOD can_add_to_named_log.
-      DATA: dummy TYPE c.
+  ENDMETHOD.                    &quot;can_add_to_log
 
-      MESSAGE s001(00) WITH &apos;Testing&apos; &apos;a&apos; &apos;named&apos; &apos;logger.&apos; INTO dummy.
-      named_log-&gt;add( ).
+  METHOD can_add_to_named_log.
+    DATA: dummy TYPE c,                                     &quot;#EC NEEDED
+          lv_msg TYPE char255.
 
-      cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;Testinganamedlogger.&apos;
-        act = get_first_message( named_log-&gt;handle )
-        msg = &apos;Did not write to named log&apos; ).
-    ENDMETHOD.
+    MESSAGE s001(00) WITH &apos;Testing&apos; &apos;a&apos; &apos;named&apos; &apos;logger.&apos; INTO dummy.
+    named_log-&gt;add( ).
 
-    METHOD auto_saves_named_log.
-      DATA: dummy TYPE c,
-            log_numbers TYPE bal_t_logn.
+    lv_msg = get_first_message( named_log-&gt;handle ).
 
-      MESSAGE s004(rcc_test) WITH &apos;Testing&apos; &apos;logger&apos; &apos;that&apos; &apos;saves.&apos; INTO dummy.
-      named_log-&gt;add( ).
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;Testinganamedlogger.&apos;
+      act = lv_msg
+      msg = &apos;Did not write to named log&apos; ).
+  ENDMETHOD.                    &quot;can_add_to_named_log
 
-      CALL FUNCTION &apos;BAL_GLB_MEMORY_REFRESH&apos;.
+  METHOD auto_saves_named_log.
+    DATA: dummy TYPE c,                                     &quot;#EC NEEDED
+          log_numbers TYPE bal_t_logn,
+          lv_msg TYPE char255.
 
-      APPEND named_log-&gt;db_number TO log_numbers.
-      CALL FUNCTION &apos;BAL_DB_LOAD&apos;
-        EXPORTING
-          i_t_lognumber = log_numbers.
+    MESSAGE s004(zrcc_test) WITH &apos;Testing&apos; &apos;logger&apos; &apos;that&apos; &apos;saves.&apos; INTO dummy.
+    named_log-&gt;add( ).
 
-      cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;Message: Testing logger that saves.&apos;
-        act = get_first_message( named_log-&gt;handle )
-        msg = &apos;Did not write to named log&apos; ).
+    CALL FUNCTION &apos;BAL_GLB_MEMORY_REFRESH&apos;.
 
-    ENDMETHOD.
+    APPEND named_log-&gt;db_number TO log_numbers.
+    CALL FUNCTION &apos;BAL_DB_LOAD&apos;
+      EXPORTING
+        i_t_lognumber = log_numbers.
 
-    METHOD auto_saves_reopened_log.
-      DATA: log_numbers TYPE bal_t_logn,
-            act_texts TYPE table_of_strings,
-            act_text TYPE string.
-      reopened_log-&gt;add( &apos;This is another message in the database&apos; ).
-      CALL FUNCTION &apos;BAL_GLB_MEMORY_REFRESH&apos;.
+    lv_msg = get_first_message( named_log-&gt;handle ).
 
-      APPEND reopened_log-&gt;db_number TO log_numbers.
-      CALL FUNCTION &apos;BAL_DB_LOAD&apos;
-        EXPORTING
-          i_t_lognumber = log_numbers.
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;Message: Testing logger that saves.&apos;
+      act = lv_msg
+      msg = &apos;Did not write to named log&apos; ).
 
-      get_messages( EXPORTING log_handle  = reopened_log-&gt;handle
-                    IMPORTING texts       = act_texts ).
+  ENDMETHOD.                    &quot;auto_saves_named_log
 
-      READ TABLE act_texts INDEX 1 INTO act_text.
-      cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;This message is in the database&apos;
-        act = act_text
-        msg = &apos;Did not autosave to reopened log&apos; ).
+  METHOD auto_saves_reopened_log.
+    DATA: log_numbers TYPE bal_t_logn,
+          act_texts TYPE table_of_strings,
+          act_text TYPE string.
+    reopened_log-&gt;add( &apos;This is another message in the database&apos; ).
+    CALL FUNCTION &apos;BAL_GLB_MEMORY_REFRESH&apos;.
 
-      READ TABLE act_texts INDEX 2 INTO act_text.
-      cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;This is another message in the database&apos;
-        act = act_text
-        msg = &apos;Did not autosave to reopened log&apos; ).
+    APPEND reopened_log-&gt;db_number TO log_numbers.
+    CALL FUNCTION &apos;BAL_DB_LOAD&apos;
+      EXPORTING
+        i_t_lognumber = log_numbers.
 
-    ENDMETHOD.
+    get_messages( EXPORTING log_handle  = reopened_log-&gt;handle
+                  IMPORTING texts       = act_texts ).
 
-    METHOD can_log_string.
-      DATA: stringmessage TYPE string VALUE `Logging a string, guys!`.
-      anon_log-&gt;add( stringmessage ).
+    READ TABLE act_texts INDEX 1 INTO act_text.
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;This message is in the database&apos;
+      act = act_text
+      msg = &apos;Did not autosave to reopened log&apos; ).
 
-      cl_aunit_assert=&gt;assert_equals(
-        exp = stringmessage
-        act = get_first_message( anon_log-&gt;handle )
-        msg = &apos;Did not log system message properly&apos; ).
+    READ TABLE act_texts INDEX 2 INTO act_text.
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;This is another message in the database&apos;
+      act = act_text
+      msg = &apos;Did not autosave to reopened log&apos; ).
 
-    ENDMETHOD.
+  ENDMETHOD.                    &quot;auto_saves_reopened_log
 
-    METHOD can_log_char.
-      DATA: charmessage TYPE char70 VALUE &apos;Logging a char sequence!&apos;.
-      anon_log-&gt;add( charmessage ).
+  METHOD can_log_string.
+    DATA: stringmessage TYPE string VALUE `Logging a string, guys!`,
+          lv_msg TYPE char255.
 
-      cl_aunit_assert=&gt;assert_equals(
-        exp = charmessage
-        act = get_first_message( anon_log-&gt;handle )
-        msg = &apos;Did not log system message properly&apos; ).
-    ENDMETHOD.
+    anon_log-&gt;add( stringmessage ).
 
-    METHOD can_log_bapiret2.
-      DATA: bapi_msg TYPE bapiret2,
-            msg_handle TYPE balmsghndl,
-            expected_details TYPE bal_s_msg,
-            actual_details TYPE bal_s_msg,
-            actual_text TYPE char200.
+    lv_msg = get_first_message( anon_log-&gt;handle ).
 
-      expected_details-msgty = bapi_msg-type = &apos;W&apos;.
-      expected_details-msgid = bapi_msg-id = &apos;BL&apos;.
-      expected_details-msgno = bapi_msg-number = &apos;001&apos;.
-      expected_details-msgv1 = bapi_msg-message_v1 = &apos;This&apos;.
-      expected_details-msgv2 = bapi_msg-message_v2 = &apos;is&apos;.
-      expected_details-msgv3 = bapi_msg-message_v3 = &apos;a&apos;.
-      expected_details-msgv4 = bapi_msg-message_v4 = &apos;test&apos;.
+    cl_aunit_assert=&gt;assert_equals(
+      exp = stringmessage
+      act = lv_msg
+      msg = &apos;Did not log system message properly&apos; ).
 
-      anon_log-&gt;add( bapi_msg ).
+  ENDMETHOD.                    &quot;can_log_string
 
-      msg_handle-log_handle = anon_log-&gt;handle.
-      msg_handle-msgnumber = &apos;000001&apos;.
+  METHOD can_log_char.
+    DATA: charmessage TYPE char70 VALUE &apos;Logging a char sequence!&apos;,
+          lv_msg TYPE char255.
 
-      CALL FUNCTION &apos;BAL_LOG_MSG_READ&apos;
-        EXPORTING
-          i_s_msg_handle = msg_handle
-        IMPORTING
-          e_s_msg        = actual_details
-          e_txt_msg      = actual_text.
+    anon_log-&gt;add( charmessage ).
+
+    lv_msg = get_first_message( anon_log-&gt;handle ).
+
+    cl_aunit_assert=&gt;assert_equals(
+      exp = charmessage
+      act = lv_msg
+      msg = &apos;Did not log system message properly&apos; ).
+  ENDMETHOD.                    &quot;can_log_char
+
+  METHOD can_log_bapiret2.
+    DATA: bapi_msg TYPE bapiret2,
+          msg_handle TYPE balmsghndl,
+          expected_details TYPE bal_s_msg,
+          actual_details TYPE bal_s_msg,
+          actual_text TYPE char200.
+
+    expected_details-msgty = bapi_msg-type = &apos;W&apos;.
+    expected_details-msgid = bapi_msg-id = &apos;BL&apos;.
+    expected_details-msgno = bapi_msg-number = &apos;001&apos;.
+    expected_details-msgv1 = bapi_msg-message_v1 = &apos;This&apos;.
+    expected_details-msgv2 = bapi_msg-message_v2 = &apos;is&apos;.
+    expected_details-msgv3 = bapi_msg-message_v3 = &apos;a&apos;.
+    expected_details-msgv4 = bapi_msg-message_v4 = &apos;test&apos;.
+
+    anon_log-&gt;add( bapi_msg ).
+
+    msg_handle-log_handle = anon_log-&gt;handle.
+    msg_handle-msgnumber = &apos;000001&apos;.
+
+    CALL FUNCTION &apos;BAL_LOG_MSG_READ&apos;
+      EXPORTING
+        i_s_msg_handle = msg_handle
+      IMPORTING
+        e_s_msg        = actual_details
+        e_txt_msg      = actual_text.
+
+    cl_aunit_assert=&gt;assert_not_initial(
+      act = actual_details-time_stmp
+      msg = &apos;Did not log system message properly&apos; ).
+
+    expected_details-msg_count = 1.
+    CLEAR actual_details-time_stmp.
+
+    cl_aunit_assert=&gt;assert_equals(
+      exp = expected_details
+      act = actual_details
+      msg = &apos;Did not log system message properly&apos; ).
+
+    CONDENSE actual_text.
+
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;This is a test&apos;
+      act = actual_text
+      msg = &apos;Did not log system message properly&apos; ).
+  ENDMETHOD.                    &quot;can_log_bapiret2
+
+  METHOD can_log_bapirettab.
+    DATA: bapi_messages TYPE bapirettab,
+          bapi_msg      TYPE bapiret2,
+          exp_texts     TYPE table_of_strings,
+          exp_text      TYPE string,
+          exp_details   TYPE bal_t_msg,
+          exp_detail    TYPE bal_s_msg,
+          act_texts     TYPE table_of_strings,
+          act_text      TYPE string,
+          act_details   TYPE bal_t_msg,
+          act_detail    TYPE bal_s_msg.
+
+    exp_detail-msgty = bapi_msg-type = &apos;S&apos;.
+    exp_detail-msgid = bapi_msg-id   = &apos;BL&apos;.
+    exp_detail-msgno = bapi_msg-number = &apos;001&apos;.
+    exp_detail-msgv1 = bapi_msg-message_v1 = &apos;This&apos;.
+    exp_detail-msgv2 = bapi_msg-message_v2 = &apos;is&apos;.
+    exp_detail-msgv3 = bapi_msg-message_v3 = &apos;happy&apos;.
+    exp_detail-msgv4 = bapi_msg-message_v4 = &apos;message&apos;.
+    CONCATENATE exp_detail-msgv1 exp_detail-msgv2 exp_detail-msgv3 exp_detail-msgv4 INTO exp_text.
+    APPEND bapi_msg TO bapi_messages.
+    APPEND exp_detail TO exp_details.
+    APPEND exp_text TO exp_texts.
+
+    exp_detail-msgty = bapi_msg-type = &apos;W&apos;.
+    exp_detail-msgv3 = bapi_msg-message_v3 = &apos;warning&apos;.
+    CONCATENATE exp_detail-msgv1 exp_detail-msgv2 exp_detail-msgv3 exp_detail-msgv4 INTO exp_text.
+    APPEND bapi_msg TO bapi_messages.
+    APPEND exp_detail TO exp_details.
+    APPEND exp_text TO exp_texts.
+
+    exp_detail-msgty = bapi_msg-type = &apos;W&apos;.
+    exp_detail-msgv3 = bapi_msg-message_v3 = &apos;angry&apos;.
+    CONCATENATE exp_detail-msgv1 exp_detail-msgv2 exp_detail-msgv3 exp_detail-msgv4 INTO exp_text.
+    APPEND bapi_msg TO bapi_messages.
+    APPEND exp_detail TO exp_details.
+    APPEND exp_text TO exp_texts.
+
+    anon_log-&gt;add( bapi_messages ).
+
+    get_messages( EXPORTING log_handle  = anon_log-&gt;handle
+                  IMPORTING texts       = act_texts
+                            msg_details = act_details ).
+
+    DO 3 TIMES.
+      READ TABLE act_details INTO act_detail INDEX sy-index.
+      READ TABLE exp_details INTO exp_detail INDEX sy-index.
 
       cl_aunit_assert=&gt;assert_not_initial(
-        act = actual_details-time_stmp
+        act = act_detail-time_stmp
         msg = &apos;Did not log system message properly&apos; ).
 
-      expected_details-msg_count = 1.
-      CLEAR actual_details-time_stmp.
+      exp_detail-msg_count = 1.
+      CLEAR act_detail-time_stmp.
 
       cl_aunit_assert=&gt;assert_equals(
-        exp = expected_details
-        act = actual_details
-        msg = &apos;Did not log system message properly&apos; ).
+        exp = exp_detail
+        act = act_detail
+        msg = &apos;Did not log bapirettab properly&apos; ).
+
+      READ TABLE act_texts INTO act_text INDEX sy-index.
+      READ TABLE exp_texts INTO exp_text INDEX sy-index.
+
+      CONDENSE act_text NO-GAPS.
 
       cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;This is a test&apos;
-        act = condense( actual_text )
-        msg = &apos;Did not log system message properly&apos; ).
-    ENDMETHOD.
-
-    METHOD can_log_bapirettab.
-      DATA: bapi_messages TYPE bapirettab,
-            bapi_msg      TYPE bapiret2,
-            exp_texts     TYPE table_of_strings,
-            exp_text      TYPE string,
-            exp_details   TYPE bal_t_msg,
-            exp_detail    TYPE bal_s_msg,
-            act_texts     TYPE table_of_strings,
-            act_text      TYPE string,
-            act_details   TYPE bal_t_msg,
-            act_detail    TYPE bal_s_msg.
-
-      DEFINE messages_are.
-        exp_detail-msgty = bapi_msg-type = &amp;1.
-        exp_detail-msgid = bapi_msg-id   = &amp;2.
-        exp_detail-msgno = bapi_msg-number = &amp;3.
-        exp_detail-msgv1 = bapi_msg-message_v1 = &amp;4.
-        exp_detail-msgv2 = bapi_msg-message_v2 = &amp;5.
-        exp_detail-msgv3 = bapi_msg-message_v3 = &amp;6.
-        exp_detail-msgv4 = bapi_msg-message_v4 = &amp;7.
-        exp_text = |{ exp_detail-msgv1 } { exp_detail-msgv2 } {
-                      exp_detail-msgv3 } { exp_detail-msgv4 }|.
-        append bapi_msg to bapi_messages.
-        append exp_detail to exp_details.
-        append exp_text to exp_texts.
-      END-OF-DEFINITION.
-
-      messages_are: &apos;S&apos; &apos;BL&apos; &apos;001&apos; &apos;This&apos; &apos;is&apos; &apos;happy&apos; &apos;message&apos;,
-                    &apos;W&apos; &apos;BL&apos; &apos;001&apos; &apos;This&apos; &apos;is&apos; &apos;warning&apos; &apos;message&apos;,
-                    &apos;E&apos; &apos;BL&apos; &apos;001&apos; &apos;This&apos; &apos;is&apos; &apos;angry&apos; &apos;message&apos;.
-
-      anon_log-&gt;add( bapi_messages ).
-
-      get_messages( EXPORTING log_handle  = anon_log-&gt;handle
-                    IMPORTING texts       = act_texts
-                              msg_details = act_details ).
-
-      DO 3 TIMES.
-        READ TABLE act_details INTO act_detail INDEX sy-index.
-        READ TABLE exp_details INTO exp_detail INDEX sy-index.
-
-        cl_aunit_assert=&gt;assert_not_initial(
-          act = act_detail-time_stmp
-          msg = &apos;Did not log system message properly&apos; ).
-
-        exp_detail-msg_count = 1.
-        CLEAR act_detail-time_stmp.
-
-        cl_aunit_assert=&gt;assert_equals(
-          exp = exp_detail
-          act = act_detail
-          msg = &apos;Did not log bapirettab properly&apos; ).
-
-        READ TABLE act_texts INTO act_text INDEX sy-index.
-        READ TABLE exp_texts INTO exp_text INDEX sy-index.
-        cl_aunit_assert=&gt;assert_equals(
-          exp = exp_text
-          act = condense( act_text )
-          msg = &apos;Did not log bapirettab properly&apos; ).
-      ENDDO.
-
-    ENDMETHOD.
-
-    METHOD can_log_err.
-      DATA: impossible_int TYPE i,
-            err TYPE REF TO cx_sy_zerodivide,
-            act_txt TYPE char255,
-            msg_handle TYPE balmsghndl.
-
-      TRY.
-          impossible_int = 1 / 0. &quot;Make an error!
-        CATCH cx_sy_zerodivide INTO err.
-          anon_log-&gt;add( err ).
-      ENDTRY.
-
-      msg_handle-log_handle = anon_log-&gt;handle.
-      msg_handle-msgnumber = &apos;000001&apos;.
-      CALL FUNCTION &apos;BAL_LOG_EXCEPTION_READ&apos;
-        EXPORTING
-          i_s_msg_handle = msg_handle
-        IMPORTING
-          e_txt_msg      = act_txt.
-
-      cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;Division by zero&apos;
-        act = act_txt
-        msg = &apos;Did not log throwable correctly&apos; ).
-
-    ENDMETHOD.
-
-    METHOD can_log_batch_msgs.
-      DATA: batch_msgs TYPE TABLE OF bdcmsgcoll,
-            batch_msg TYPE bdcmsgcoll,
-            act_texts TYPE table_of_strings,
-            act_text TYPE string.
-
-      DEFINE messages_are.
-        batch_msg-msgtyp = &amp;1.
-        batch_msg-msgid = &amp;2.
-        batch_msg-msgnr = &amp;3.
-        batch_msg-msgv1 = &amp;4.
-        batch_msg-msgv2 = &amp;5.
-        batch_msg-msgv3 = &amp;6.
-        batch_msg-msgv4 = &amp;7.
-        APPEND batch_msg TO batch_msgs.
-      END-OF-DEFINITION.
-
-      messages_are:
-        &apos;S&apos; &apos;RCC_TEST&apos; &apos;001&apos; &apos;&apos;     &apos;&apos;   &apos;&apos;     &apos;&apos;,
-        &apos;S&apos; &apos;RCC_TEST&apos; &apos;002&apos; &apos;&apos;     &apos;&apos;   &apos;&apos;     &apos;&apos;,
-        &apos;S&apos; &apos;RCC_TEST&apos; &apos;004&apos; &apos;This&apos; &apos;is&apos; &apos;test&apos; &apos;message&apos;.
-
-      anon_log-&gt;add( batch_msgs ).
-
-      get_messages( EXPORTING log_handle = anon_log-&gt;handle
-                    IMPORTING texts      = act_texts ).
-
-      READ TABLE act_texts INDEX 1 INTO act_text.
-      cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;Message 1&apos;
+        exp = exp_text
         act = act_text
-        msg = &apos;Did not log BDC return messages correctly&apos; ).
+        msg = &apos;Did not log bapirettab properly&apos; ).
+    ENDDO.
 
-      READ TABLE act_texts INDEX 2 INTO act_text.
+  ENDMETHOD.                    &quot;can_log_bapirettab
+
+  METHOD can_export_bapirettab.
+    DATA: bapi_messages TYPE bapirettab,
+          bapi_msg      TYPE bapiret2,
+          exp_texts     TYPE table_of_strings,
+          exp_text      TYPE string,
+          exp_details   TYPE bal_t_msg,
+          exp_detail    TYPE bal_s_msg,
+          act_messages  TYPE bapiret2_t.
+
+    FIELD-SYMBOLS: &lt;bapiret2&gt; TYPE bapiret2.
+
+    exp_detail-msgty = bapi_msg-type = &apos;S&apos;.
+    exp_detail-msgid = bapi_msg-id   = &apos;BL&apos;.
+    exp_detail-msgno = bapi_msg-number = &apos;001&apos;.
+    exp_detail-msgv1 = bapi_msg-message_v1 = &apos;This&apos;.
+    exp_detail-msgv2 = bapi_msg-message_v2 = &apos;is&apos;.
+    exp_detail-msgv3 = bapi_msg-message_v3 = &apos;happy&apos;.
+    exp_detail-msgv4 = bapi_msg-message_v4 = &apos;message&apos;.
+    CONCATENATE exp_detail-msgv1 exp_detail-msgv2 exp_detail-msgv3 exp_detail-msgv4 INTO exp_text.
+    APPEND bapi_msg TO bapi_messages.
+    APPEND exp_detail TO exp_details.
+    APPEND exp_text TO exp_texts.
+
+    exp_detail-msgty = bapi_msg-type = &apos;W&apos;.
+    exp_detail-msgv3 = bapi_msg-message_v3 = &apos;warning&apos;.
+    CONCATENATE exp_detail-msgv1 exp_detail-msgv2 exp_detail-msgv3 exp_detail-msgv4 INTO exp_text.
+    APPEND bapi_msg TO bapi_messages.
+    APPEND exp_detail TO exp_details.
+    APPEND exp_text TO exp_texts.
+
+    exp_detail-msgty = bapi_msg-type = &apos;W&apos;.
+    exp_detail-msgv3 = bapi_msg-message_v3 = &apos;angry&apos;.
+    CONCATENATE exp_detail-msgv1 exp_detail-msgv2 exp_detail-msgv3 exp_detail-msgv4 INTO exp_text.
+    APPEND bapi_msg TO bapi_messages.
+    APPEND exp_detail TO exp_details.
+    APPEND exp_text TO exp_texts.
+
+    anon_log-&gt;add( bapi_messages ).
+
+    act_messages = anon_log-&gt;export_to_table( ).
+
+    DO 3 TIMES.
+      READ TABLE act_messages ASSIGNING &lt;bapiret2&gt; INDEX sy-index.
+      READ TABLE exp_details INTO exp_detail INDEX sy-index.
+
+      assert_equals( act = &lt;bapiret2&gt;-type exp = exp_detail-msgty ).
+      assert_equals( act = &lt;bapiret2&gt;-id exp = exp_detail-msgid ).
+      assert_equals( act = &lt;bapiret2&gt;-number exp = exp_detail-msgno ).
+      assert_equals( act = &lt;bapiret2&gt;-message_v1 exp = exp_detail-msgv1 ).
+      assert_equals( act = &lt;bapiret2&gt;-message_v2 exp = exp_detail-msgv2 ).
+      assert_equals( act = &lt;bapiret2&gt;-message_v3 exp = exp_detail-msgv3 ).
+      assert_equals( act = &lt;bapiret2&gt;-message_v4 exp = exp_detail-msgv4 ).
+
+      READ TABLE exp_texts INTO exp_text INDEX sy-index.
+      CONDENSE &lt;bapiret2&gt;-message NO-GAPS.
+
       cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;Message 2&apos;
-        act = act_text
-        msg = &apos;Did not log BDC return messages correctly&apos; ).
+        exp = exp_text
+        act = &lt;bapiret2&gt;-message
+        msg = &apos;Did not log bapirettab properly&apos; ).
+    ENDDO.
+  ENDMETHOD.                    &quot;can_export_bapirettab
 
-      READ TABLE act_texts INDEX 3 INTO act_text.
-      cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;Message: This is test message&apos;
-        act = act_text
-        msg = &apos;Did not log BDC return messages correctly&apos; ).
+  METHOD can_log_err.
+    DATA: impossible_int TYPE i,                            &quot;#EC NEEDED
+          err TYPE REF TO cx_sy_zerodivide,
+          act_txt TYPE char255,
+          msg_handle TYPE balmsghndl.
 
-    ENDMETHOD.
+    TRY.
+        impossible_int = 1 / 0. &quot;Make an error!
+      CATCH cx_sy_zerodivide INTO err.
+        anon_log-&gt;add( err ).
+    ENDTRY.
 
-    METHOD can_add_msg_context.
-      DATA: addl_context TYPE bseg-belnr VALUE &apos;4700012345&apos;,
-            msg_handle TYPE balmsghndl,
-            act_details TYPE bal_s_msg.
+    msg_handle-log_handle = anon_log-&gt;handle.
+    msg_handle-msgnumber = &apos;000001&apos;.
+    CALL FUNCTION &apos;BAL_LOG_EXCEPTION_READ&apos;
+      EXPORTING
+        i_s_msg_handle = msg_handle
+      IMPORTING
+        e_txt_msg      = act_txt.
 
-      anon_log-&gt;add( obj_to_log = &apos;Here is some text&apos;
-                     context = addl_context ).
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;Division by zero&apos;
+      act = act_txt
+      msg = &apos;Did not log throwable correctly&apos; ).
 
-      msg_handle-log_handle = anon_log-&gt;handle.
-      msg_handle-msgnumber = &apos;000001&apos;.
+  ENDMETHOD.                    &quot;can_log_err
+
+  METHOD can_log_batch_msgs.
+    DATA: batch_msgs TYPE TABLE OF bdcmsgcoll,
+          batch_msg TYPE bdcmsgcoll,
+          act_texts TYPE table_of_strings,
+          act_text TYPE string.
+
+    DEFINE messages_are.
+      batch_msg-msgtyp = &amp;1.
+      batch_msg-msgid = &amp;2.
+      batch_msg-msgnr = &amp;3.
+      batch_msg-msgv1 = &amp;4.
+      batch_msg-msgv2 = &amp;5.
+      batch_msg-msgv3 = &amp;6.
+      batch_msg-msgv4 = &amp;7.
+      append batch_msg to batch_msgs.
+    END-OF-DEFINITION.
+
+    messages_are:
+      &apos;S&apos; &apos;ZRCC_TEST&apos; &apos;001&apos; &apos;&apos;     &apos;&apos;   &apos;&apos;     &apos;&apos;,
+      &apos;S&apos; &apos;ZRCC_TEST&apos; &apos;002&apos; &apos;&apos;     &apos;&apos;   &apos;&apos;     &apos;&apos;,
+      &apos;S&apos; &apos;ZRCC_TEST&apos; &apos;004&apos; &apos;This&apos; &apos;is&apos; &apos;test&apos; &apos;message&apos;.
+
+    anon_log-&gt;add( batch_msgs ).
+
+    get_messages( EXPORTING log_handle = anon_log-&gt;handle
+                  IMPORTING texts      = act_texts ).
+
+    READ TABLE act_texts INDEX 1 INTO act_text.
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;Message 1&apos;
+      act = act_text
+      msg = &apos;Did not log BDC return messages correctly&apos; ).
+
+    READ TABLE act_texts INDEX 2 INTO act_text.
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;Message 2&apos;
+      act = act_text
+      msg = &apos;Did not log BDC return messages correctly&apos; ).
+
+    READ TABLE act_texts INDEX 3 INTO act_text.
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;Message: This is test message&apos;
+      act = act_text
+      msg = &apos;Did not log BDC return messages correctly&apos; ).
+
+  ENDMETHOD.                    &quot;can_log_batch_msgs
+
+  METHOD can_add_msg_context.
+    DATA: addl_context TYPE bseg-belnr VALUE &apos;4700012345&apos;,
+          msg_handle TYPE balmsghndl,
+          act_details TYPE bal_s_msg.
+
+    anon_log-&gt;add( obj_to_log = &apos;Here is some text&apos;
+                   context = addl_context ).
+
+    msg_handle-log_handle = anon_log-&gt;handle.
+    msg_handle-msgnumber = &apos;000001&apos;.
+    CALL FUNCTION &apos;BAL_LOG_MSG_READ&apos;
+      EXPORTING
+        i_s_msg_handle = msg_handle
+      IMPORTING
+        e_s_msg        = act_details.
+
+    cl_aunit_assert=&gt;assert_equals(
+      exp = addl_context
+      act = act_details-context-value
+      msg = &apos;Did not add context correctly&apos; ).
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;BELNR_D&apos;
+      act = act_details-context-tabname
+      msg = &apos;Did not add context correctly&apos; ).
+
+  ENDMETHOD.                    &quot;can_add_msg_context
+
+  METHOD can_add_callback_sub.
+    DATA: msg_handle TYPE balmsghndl,
+          msg_detail TYPE bal_s_msg,
+          exp_callback TYPE bal_s_clbk.
+
+    anon_log-&gt;add( obj_to_log = &apos;Message with Callback&apos;
+                   callback_form = &apos;FORM&apos;
+                   callback_prog = &apos;PROGRAM&apos; ).
+
+    msg_handle-log_handle = anon_log-&gt;handle.
+    msg_handle-msgnumber = &apos;000001&apos;.
+
+    CALL FUNCTION &apos;BAL_LOG_MSG_READ&apos;
+      EXPORTING
+        i_s_msg_handle = msg_handle
+      IMPORTING
+        e_s_msg        = msg_detail.
+
+    exp_callback-userexitf = &apos;FORM&apos;.
+    exp_callback-userexitp = &apos;PROGRAM&apos;.
+    exp_callback-userexitt = &apos; &apos;.
+
+    cl_aunit_assert=&gt;assert_equals(
+      exp = exp_callback
+      act = msg_detail-params-callback
+      msg = &apos;Did not add callback correctly&apos; ).
+
+  ENDMETHOD.                    &quot;can_add_callback_sub
+
+  METHOD can_add_callback_fm.
+    DATA: msg_handle TYPE balmsghndl,
+          msg_detail TYPE bal_s_msg,
+          exp_callback TYPE bal_s_clbk.
+
+    anon_log-&gt;add( obj_to_log = &apos;Message with Callback&apos;
+                   callback_fm = &apos;FUNCTION&apos; ).
+
+    msg_handle-log_handle = anon_log-&gt;handle.
+    msg_handle-msgnumber = &apos;000001&apos;.
+
+    CALL FUNCTION &apos;BAL_LOG_MSG_READ&apos;
+      EXPORTING
+        i_s_msg_handle = msg_handle
+      IMPORTING
+        e_s_msg        = msg_detail.
+
+    exp_callback-userexitf = &apos;FUNCTION&apos;.
+    exp_callback-userexitp = &apos; &apos;.
+    exp_callback-userexitt = &apos;F&apos;.
+
+    cl_aunit_assert=&gt;assert_equals(
+      exp = exp_callback
+      act = msg_detail-params-callback
+      msg = &apos;Did not add callback correctly&apos; ).
+  ENDMETHOD.                    &quot;can_add_callback_fm
+
+  METHOD must_use_factory.
+    DATA: lo_log TYPE REF TO object.
+    TRY.
+        CREATE OBJECT lo_log TYPE (&apos;ZCL_LOGGER&apos;).
+        cl_aunit_assert=&gt;fail( &apos;Did not force creation via factory&apos; ).
+      CATCH cx_sy_create_object_error.
+        RETURN. &quot;Test Passed.
+    ENDTRY.
+  ENDMETHOD.                    &quot;must_use_factory
+
+  METHOD can_use_and_chain_aliases.
+    DATA: texts TYPE table_of_strings,
+          text TYPE string,
+          msg_details TYPE bal_t_msg,
+          msg_detail TYPE bal_s_msg,
+          lo_logger TYPE REF TO zcl_logger.
+
+    lo_logger = anon_log-&gt;a( &apos;Severe Abort Error!&apos; ).
+    lo_logger-&gt;e( &apos;Here&apos;&apos;s an error!&apos; ).
+    lo_logger = anon_log-&gt;w( &apos;This is a warning&apos; ).
+    lo_logger-&gt;i( `Helpful Information` ).
+
+    lo_logger = anon_log-&gt;s( &apos;GreatSuccess&apos; ).
+
+    get_messages( EXPORTING log_handle  = anon_log-&gt;handle
+                  IMPORTING texts       = texts
+                            msg_details = msg_details ).
+    READ TABLE texts INDEX 1 INTO text.
+    READ TABLE msg_details INDEX 1 INTO msg_detail.
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;A&apos;
+      act = msg_detail-msgty
+      msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;Severe Abort Error!&apos;
+      act = text
+      msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
+    READ TABLE texts INDEX 2 INTO text.
+    READ TABLE msg_details INDEX 2 INTO msg_detail.
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;E&apos;
+      act = msg_detail-msgty
+      msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;Here&apos;&apos;s an error!&apos;
+      act = text
+      msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
+    READ TABLE texts INDEX 3 INTO text.
+    READ TABLE msg_details INDEX 3 INTO msg_detail.
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;W&apos;
+      act = msg_detail-msgty
+      msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;This is a warning&apos;
+      act = text
+      msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
+    READ TABLE texts INDEX 4 INTO text.
+    READ TABLE msg_details INDEX 4 INTO msg_detail.
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;I&apos;
+      act = msg_detail-msgty
+      msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;Helpful Information&apos;
+      act = text
+      msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
+    READ TABLE texts INDEX 5 INTO text.
+    READ TABLE msg_details INDEX 5 INTO msg_detail.
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;S&apos;
+      act = msg_detail-msgty
+      msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
+    cl_aunit_assert=&gt;assert_equals(
+      exp = &apos;GreatSuccess&apos;
+      act = text
+      msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
+
+  ENDMETHOD.                    &quot;can_use_and_chain_aliases
+
+  METHOD get_first_message.
+    DATA: msg_handle TYPE balmsghndl.
+    msg_handle-log_handle = log_handle.
+    msg_handle-msgnumber = &apos;000001&apos;.
+
+    CALL FUNCTION &apos;BAL_LOG_MSG_READ&apos;
+      EXPORTING
+        i_s_msg_handle = msg_handle
+      IMPORTING
+        e_txt_msg      = msg
+      EXCEPTIONS
+        log_not_found  = 0
+        msg_not_found  = 0.
+  ENDMETHOD.                    &quot;get_first_message
+
+  METHOD get_messages.
+
+    DATA: handle_as_table TYPE bal_t_logh,
+          message_handles TYPE bal_t_msgh,
+          msg_handle TYPE balmsghndl,
+          msg_detail TYPE bal_s_msg,
+          msg_text   TYPE char255.
+
+    APPEND log_handle TO handle_as_table.
+    CALL FUNCTION &apos;BAL_GLB_SEARCH_MSG&apos;
+      EXPORTING
+        i_t_log_handle = handle_as_table
+      IMPORTING
+        e_t_msg_handle = message_handles.
+
+    LOOP AT message_handles INTO msg_handle.
       CALL FUNCTION &apos;BAL_LOG_MSG_READ&apos;
         EXPORTING
           i_s_msg_handle = msg_handle
         IMPORTING
-          e_s_msg        = act_details.
+          e_s_msg        = msg_detail
+          e_txt_msg      = msg_text.
 
-      cl_aunit_assert=&gt;assert_equals(
-        exp = addl_context
-        act = act_details-context-value
-        msg = &apos;Did not add context correctly&apos; ).
-      cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;BELNR_D&apos;
-        act = act_details-context-tabname
-        msg = &apos;Did not add context correctly&apos; ).
+      APPEND msg_detail TO msg_details.
+      APPEND msg_text TO texts.
+    ENDLOOP.
 
-    ENDMETHOD.
+  ENDMETHOD.                    &quot;get_messages
 
-    METHOD can_add_callback_sub.
-      DATA: msg_handle TYPE balmsghndl,
-            msg_detail TYPE bal_s_msg,
-            exp_callback TYPE bal_s_clbk.
-
-      anon_log-&gt;add( obj_to_log = &apos;Message with Callback&apos;
-                     callback_form = &apos;FORM&apos;
-                     callback_prog = &apos;PROGRAM&apos; ).
-
-      msg_handle-log_handle = anon_log-&gt;handle.
-      msg_handle-msgnumber = &apos;000001&apos;.
-
-      CALL FUNCTION &apos;BAL_LOG_MSG_READ&apos;
-        EXPORTING
-          i_s_msg_handle = msg_handle
-        IMPORTING
-          e_s_msg        = msg_detail.
-
-      exp_callback-userexitf = &apos;FORM&apos;.
-      exp_callback-userexitp = &apos;PROGRAM&apos;.
-      exp_callback-userexitt = &apos; &apos;.
-
-      cl_aunit_assert=&gt;assert_equals(
-        exp = exp_callback
-        act = msg_detail-params-callback
-        msg = &apos;Did not add callback correctly&apos; ).
-
-    ENDMETHOD.
-
-    METHOD can_add_callback_fm.
-      DATA: msg_handle TYPE balmsghndl,
-            msg_detail TYPE bal_s_msg,
-            exp_callback TYPE bal_s_clbk.
-
-      anon_log-&gt;add( obj_to_log = &apos;Message with Callback&apos;
-                     callback_fm = &apos;FUNCTION&apos; ).
-
-      msg_handle-log_handle = anon_log-&gt;handle.
-      msg_handle-msgnumber = &apos;000001&apos;.
-
-      CALL FUNCTION &apos;BAL_LOG_MSG_READ&apos;
-        EXPORTING
-          i_s_msg_handle = msg_handle
-        IMPORTING
-          e_s_msg        = msg_detail.
-
-      exp_callback-userexitf = &apos;FUNCTION&apos;.
-      exp_callback-userexitp = &apos; &apos;.
-      exp_callback-userexitt = &apos;F&apos;.
-
-      cl_aunit_assert=&gt;assert_equals(
-        exp = exp_callback
-        act = msg_detail-params-callback
-        msg = &apos;Did not add callback correctly&apos; ).
-    ENDMETHOD.
-
-    METHOD must_use_factory.
-      DATA: log TYPE REF TO object.
-      TRY.
-          CREATE OBJECT log TYPE (&apos;ZCL_LOGGER&apos;).
-          cl_aunit_assert=&gt;fail( &apos;Did not force creation via factory&apos; ).
-        CATCH cx_sy_create_object_error.
-          &quot;PASSED
-      ENDTRY.
-    ENDMETHOD.
-
-    METHOD can_use_and_chain_aliases.
-      DATA: texts TYPE table_of_strings,
-            text TYPE string,
-            msg_details TYPE bal_t_msg,
-            msg_detail TYPE bal_s_msg.
-
-      anon_log-&gt;a( &apos;Severe Abort Error!&apos; )-&gt;e( |Here&apos;s an error!| ).
-      anon_log-&gt;w( &apos;This is a warning&apos; )-&gt;i( `Helpful Information` ).
-      anon_log-&gt;s( &apos;Great&apos; &amp;&amp; &apos;Success&apos; ).
-
-      get_messages( EXPORTING log_handle  = anon_log-&gt;handle
-                    IMPORTING texts       = texts
-                              msg_details = msg_details ).
-      READ TABLE texts INDEX 1 INTO text.
-      READ TABLE msg_details INDEX 1 INTO msg_detail.
-      cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;A&apos;
-        act = msg_detail-msgty
-        msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
-      cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;Severe Abort Error!&apos;
-        act = text
-        msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
-      READ TABLE texts INDEX 2 INTO text.
-      READ TABLE msg_details INDEX 2 INTO msg_detail.
-      cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;E&apos;
-        act = msg_detail-msgty
-        msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
-      cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;Here&apos;&apos;s an error!&apos;
-        act = text
-        msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
-      READ TABLE texts INDEX 3 INTO text.
-      READ TABLE msg_details INDEX 3 INTO msg_detail.
-      cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;W&apos;
-        act = msg_detail-msgty
-        msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
-      cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;This is a warning&apos;
-        act = text
-        msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
-      READ TABLE texts INDEX 4 INTO text.
-      READ TABLE msg_details INDEX 4 INTO msg_detail.
-      cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;I&apos;
-        act = msg_detail-msgty
-        msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
-      cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;Helpful Information&apos;
-        act = text
-        msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
-      READ TABLE texts INDEX 5 INTO text.
-      READ TABLE msg_details INDEX 5 INTO msg_detail.
-      cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;S&apos;
-        act = msg_detail-msgty
-        msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
-      cl_aunit_assert=&gt;assert_equals(
-        exp = &apos;GreatSuccess&apos;
-        act = text
-        msg = &apos;Didn&apos;&apos;t log by alias&apos; ).
-
-    ENDMETHOD.
-
-    METHOD get_first_message.
-      DATA: msg_handle TYPE balmsghndl.
-      msg_handle-log_handle = log_handle.
-      msg_handle-msgnumber = &apos;000001&apos;.
-
-      CALL FUNCTION &apos;BAL_LOG_MSG_READ&apos;
-        EXPORTING
-          i_s_msg_handle = msg_handle
-        IMPORTING
-          e_txt_msg      = msg.
-    ENDMETHOD.
-
-    METHOD get_messages.
-
-      DATA: handle_as_table TYPE bal_t_logh,
-            message_handles TYPE bal_t_msgh,
-            msg_handle TYPE balmsghndl,
-            msg_detail TYPE bal_s_msg,
-            msg_text   TYPE char255.
-
-      APPEND log_handle TO handle_as_table.
-      CALL FUNCTION &apos;BAL_GLB_SEARCH_MSG&apos;
-        EXPORTING
-          i_t_log_handle = handle_as_table
-        IMPORTING
-          e_t_msg_handle = message_handles.
-
-      LOOP AT message_handles INTO msg_handle.
-        CALL FUNCTION &apos;BAL_LOG_MSG_READ&apos;
-          EXPORTING
-            i_s_msg_handle = msg_handle
-          IMPORTING
-            e_s_msg        = msg_detail
-            e_txt_msg      = msg_text.
-        APPEND msg_detail TO msg_details.
-        APPEND msg_text TO texts.
-      ENDLOOP.
-
-    ENDMETHOD.
-
-    METHOD teardown.
-      CALL FUNCTION &apos;BAL_GLB_MEMORY_REFRESH&apos;.
-    ENDMETHOD.
-  ENDCLASS.       &quot;lcl_Test</localTestClasses>
+  METHOD teardown.
+    CALL FUNCTION &apos;BAL_GLB_MEMORY_REFRESH&apos;.
+  ENDMETHOD.                    &quot;teardown
+ENDCLASS.       &quot;lcl_Test</localTestClasses>
+ <textPool/>
  <classDocumentation OBJECT="ZCL_LOGGER">
   <language SPRAS="E">
    <textLine TDFORMAT="U1" TDLINE="&amp;FUNCTIONALITY&amp;"/>
@@ -832,18 +936,18 @@ CLASS lcl_test IMPLEMENTATION.
  </classDocumentation>
  <typeUsage CLSNAME="ZCL_LOGGER" TYPEGROUP="ABAP" VERSION="1" TPUTYPE="0" IMPLICIT="X"/>
  <forwardDeclaration>ABAP</forwardDeclaration>
- <attribute CLSNAME="ZCL_LOGGER" CMPNAME="AUTO_SAVE" VERSION="1" LANGU="E" DESCRIPT="Persist Messages?" EXPOSURE="0" STATE="1" EDITORDER="3 " ATTDECLTYP="0" ATTEXPVIRT="0" TYPTYPE="1" TYPE="ABAP_BOOL" SRCROW1="0 " SRCCOLUMN1="0 " SRCROW2="0 " SRCCOLUMN2="0 " TYPESRC_LENG="0 "/>
- <attribute CLSNAME="ZCL_LOGGER" CMPNAME="DB_NUMBER" VERSION="1" LANGU="E" DESCRIPT="Application log: log number" EXPOSURE="2" STATE="1" EDITORDER="3 " ATTDECLTYP="0" ATTRDONLY="X" ATTEXPVIRT="0" TYPTYPE="1" TYPE="BALOGNR" SRCROW1="0 " SRCCOLUMN1="0 " SRCROW2="0 " SRCCOLUMN2="0 " TYPESRC_LENG="0 "/>
- <attribute CLSNAME="ZCL_LOGGER" CMPNAME="HANDLE" VERSION="1" LANGU="E" DESCRIPT="Application Log: Log Handle" EXPOSURE="2" STATE="1" EDITORDER="2 " ATTDECLTYP="0" ATTRDONLY="X" ATTEXPVIRT="0" TYPTYPE="1" TYPE="BALLOGHNDL" SRCROW1="0 " SRCCOLUMN1="0 " SRCROW2="0 " SRCCOLUMN2="0 " TYPESRC_LENG="0 "/>
- <attribute CLSNAME="ZCL_LOGGER" CMPNAME="HEADER" VERSION="1" LANGU="E" DESCRIPT="Application Log: Log header data" EXPOSURE="2" STATE="1" EDITORDER="1 " ATTDECLTYP="0" ATTRDONLY="X" ATTEXPVIRT="0" TYPTYPE="1" TYPE="BAL_S_LOG" SRCROW1="0 " SRCCOLUMN1="0 " SRCROW2="0 " SRCCOLUMN2="0 " TYPESRC_LENG="0 "/>
- <method CLSNAME="ZCL_LOGGER" CMPNAME="A" VERSION="1" LANGU="E" DESCRIPT="Log ABORT-type Message" EXPOSURE="2" STATE="1" EDITORDER="4 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="0" BCMTDCAT="00" BCMTDSYN="0">
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="A" SCONAME="OBJ_TO_LOG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY" PAROPTIONL="X" PARPREFERD="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="A" SCONAME="CONTEXT" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="SIMPLE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="A" SCONAME="CALLBACK_FORM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="3 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="A" SCONAME="CALLBACK_PROG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="4 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="A" SCONAME="CALLBACK_FM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="5 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="A" SCONAME="IMPORTANCE" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="6 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="BALPROBCL" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="A" SCONAME="SELF" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="7 " DISPID="0 " PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_LOGGER"/>
+ <attribute CLSNAME="ZCL_LOGGER" CMPNAME="AUTO_SAVE" VERSION="1" LANGU="E" DESCRIPT="Persist Messages?" EXPOSURE="0" STATE="1" EDITORDER="3 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" ATTDECLTYP="0" ATTEXPVIRT="0" TYPTYPE="1" TYPE="ABAP_BOOL" SRCROW1="0 " SRCCOLUMN1="0 " SRCROW2="0 " SRCCOLUMN2="0 " R3RELEASE="700" TYPESRC_LENG="0 "/>
+ <attribute CLSNAME="ZCL_LOGGER" CMPNAME="DB_NUMBER" VERSION="1" LANGU="E" DESCRIPT="Application log: log number" EXPOSURE="2" STATE="1" EDITORDER="3 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" ATTDECLTYP="0" ATTRDONLY="X" ATTEXPVIRT="0" TYPTYPE="1" TYPE="BALOGNR" SRCROW1="0 " SRCCOLUMN1="0 " SRCROW2="0 " SRCCOLUMN2="0 " R3RELEASE="700" TYPESRC_LENG="0 "/>
+ <attribute CLSNAME="ZCL_LOGGER" CMPNAME="HANDLE" VERSION="1" LANGU="E" DESCRIPT="Application Log: Log Handle" EXPOSURE="2" STATE="1" EDITORDER="2 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" ATTDECLTYP="0" ATTRDONLY="X" ATTEXPVIRT="0" TYPTYPE="1" TYPE="BALLOGHNDL" SRCROW1="0 " SRCCOLUMN1="0 " SRCROW2="0 " SRCCOLUMN2="0 " R3RELEASE="700" TYPESRC_LENG="0 "/>
+ <attribute CLSNAME="ZCL_LOGGER" CMPNAME="HEADER" VERSION="1" LANGU="E" DESCRIPT="Application Log: Log header data" EXPOSURE="2" STATE="1" EDITORDER="1 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" ATTDECLTYP="0" ATTRDONLY="X" ATTEXPVIRT="0" TYPTYPE="1" TYPE="BAL_S_LOG" SRCROW1="0 " SRCCOLUMN1="0 " SRCROW2="0 " SRCCOLUMN2="0 " R3RELEASE="700" TYPESRC_LENG="0 "/>
+ <method CLSNAME="ZCL_LOGGER" CMPNAME="A" VERSION="1" LANGU="E" DESCRIPT="Log ABORT-type Message" EXPOSURE="2" STATE="1" EDITORDER="4 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" MTDTYPE="0" MTDDECLTYP="0" R3RELEASE="700" BCMTDCAT="00" BCMTDSYN="0">
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="A" SCONAME="OBJ_TO_LOG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY" PAROPTIONL="X" PARPREFERD="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="A" SCONAME="CONTEXT" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="SIMPLE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="A" SCONAME="CALLBACK_FORM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="3 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="A" SCONAME="CALLBACK_PROG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="4 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="A" SCONAME="CALLBACK_FM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="5 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="A" SCONAME="IMPORTANCE" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="6 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="BALPROBCL" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="A" SCONAME="SELF" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="7 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_LOGGER"/>
   <source>method A.
   self = add(
     obj_to_log    = obj_to_log
@@ -854,31 +958,33 @@ CLASS lcl_test IMPLEMENTATION.
     type          = &apos;A&apos;
     importance    = importance ).
 endmethod.</source>
+  <methodDocumentation/>
  </method>
- <method CLSNAME="ZCL_LOGGER" CMPNAME="ADD" VERSION="1" LANGU="E" DESCRIPT="Add Message to Log" EXPOSURE="2" STATE="1" EDITORDER="3 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="0" BCMTDCAT="00" BCMTDSYN="0">
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="ADD" SCONAME="OBJ_TO_LOG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY" PAROPTIONL="X" PARPREFERD="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="ADD" SCONAME="CONTEXT" VERSION="1" LANGU="E" DESCRIPT="Additional context not in message text" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="SIMPLE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="ADD" SCONAME="CALLBACK_FORM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="3 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="ADD" SCONAME="CALLBACK_PROG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="4 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="ADD" SCONAME="CALLBACK_FM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="5 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="ADD" SCONAME="TYPE" VERSION="1" LANGU="E" DESCRIPT="Message Type" CMPTYPE="1" MTDTYPE="0" EDITORDER="6 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="SYMSGTY" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="ADD" SCONAME="IMPORTANCE" VERSION="1" LANGU="E" DESCRIPT="1 (Severe) to 4 (Addl Info)" CMPTYPE="1" MTDTYPE="0" EDITORDER="7 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="BALPROBCL" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="ADD" SCONAME="SELF" VERSION="1" LANGU="E" DESCRIPT="Returns Self for Chaining" CMPTYPE="1" MTDTYPE="0" EDITORDER="8 " DISPID="0 " PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_LOGGER"/>
+ <method CLSNAME="ZCL_LOGGER" CMPNAME="ADD" VERSION="1" LANGU="E" DESCRIPT="Add Message to Log" EXPOSURE="2" STATE="1" EDITORDER="3 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" MTDTYPE="0" MTDDECLTYP="0" R3RELEASE="700" BCMTDCAT="00" BCMTDSYN="0">
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="ADD" SCONAME="OBJ_TO_LOG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY" PAROPTIONL="X" PARPREFERD="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="ADD" SCONAME="CONTEXT" VERSION="1" LANGU="E" DESCRIPT="Additional context not in message text" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="SIMPLE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="ADD" SCONAME="CALLBACK_FORM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="3 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="ADD" SCONAME="CALLBACK_PROG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="4 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="ADD" SCONAME="CALLBACK_FM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="5 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="ADD" SCONAME="TYPE" VERSION="1" LANGU="E" DESCRIPT="Message Type" CMPTYPE="1" MTDTYPE="0" EDITORDER="6 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="SYMSGTY" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="ADD" SCONAME="IMPORTANCE" VERSION="1" LANGU="E" DESCRIPT="1 (Severe) to 4 (Addl Info)" CMPTYPE="1" MTDTYPE="0" EDITORDER="7 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="BALPROBCL" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="ADD" SCONAME="SELF" VERSION="1" LANGU="E" DESCRIPT="Returns Self for Chaining" CMPTYPE="1" MTDTYPE="0" EDITORDER="8 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_LOGGER"/>
   <source>METHOD add.
 
   DATA: detailed_msg  TYPE bal_s_msg,
         free_text_msg TYPE char200,
         msg_type  TYPE REF TO cl_abap_typedescr,
-        msg_table_type TYPE REF TO cl_abap_tabledescr,
         exception_data TYPE bal_s_exc,
         log_numbers TYPE bal_t_lgnm,
         log_handles TYPE bal_t_logh,
         log_number  TYPE bal_s_lgnm,
         formatted_context TYPE bal_s_cont,
-        formatted_params TYPE bal_s_parm.
+        formatted_params TYPE bal_s_parm,
+        lo_typedescr TYPE REF TO cl_abap_typedescr,
+        lv_ddic_header TYPE x030l.
 
-  FIELD-SYMBOLS: &lt;table_of_messages&gt; TYPE any table,
-                 &lt;message_line&gt; TYPE any,
+  FIELD-SYMBOLS: &lt;table_of_messages&gt; TYPE ANY TABLE,
+                 &lt;message_line&gt; TYPE ANY,
                  &lt;bapi_msg&gt; TYPE bapiret2,
                  &lt;bdc_msg&gt; TYPE bdcmsgcoll,
                  &lt;context_val&gt; TYPE c.
@@ -886,8 +992,9 @@ endmethod.</source>
   IF context IS NOT INITIAL.
     ASSIGN context TO &lt;context_val&gt; CASTING.
     formatted_context-value = &lt;context_val&gt;.
-    formatted_context-tabname =
-      cl_abap_typedescr=&gt;describe_by_data( context )-&gt;get_ddic_header( )-tabname.
+    lo_typedescr = cl_abap_typedescr=&gt;describe_by_data( context ).
+    lv_ddic_header = lo_typedescr-&gt;get_ddic_header( ).
+    formatted_context-tabname = lv_ddic_header-tabname.
   ENDIF.
 
   IF callback_fm IS NOT INITIAL.
@@ -981,15 +1088,16 @@ endmethod.</source>
 
   self = me.
 ENDMETHOD.</source>
+  <methodDocumentation/>
  </method>
- <method CLSNAME="ZCL_LOGGER" CMPNAME="E" VERSION="1" LANGU="E" DESCRIPT="Log ERROR-type Message" EXPOSURE="2" STATE="1" EDITORDER="5 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="0" BCMTDCAT="00" BCMTDSYN="0">
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="E" SCONAME="OBJ_TO_LOG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY" PAROPTIONL="X" PARPREFERD="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="E" SCONAME="CONTEXT" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="SIMPLE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="E" SCONAME="CALLBACK_FORM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="3 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="E" SCONAME="CALLBACK_PROG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="4 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="E" SCONAME="CALLBACK_FM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="5 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="E" SCONAME="IMPORTANCE" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="6 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="BALPROBCL" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="E" SCONAME="SELF" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="7 " DISPID="0 " PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_LOGGER"/>
+ <method CLSNAME="ZCL_LOGGER" CMPNAME="E" VERSION="1" LANGU="E" DESCRIPT="Log ERROR-type Message" EXPOSURE="2" STATE="1" EDITORDER="5 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" MTDTYPE="0" MTDDECLTYP="0" R3RELEASE="700" BCMTDCAT="00" BCMTDSYN="0">
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="E" SCONAME="OBJ_TO_LOG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY" PAROPTIONL="X" PARPREFERD="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="E" SCONAME="CONTEXT" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="SIMPLE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="E" SCONAME="CALLBACK_FORM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="3 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="E" SCONAME="CALLBACK_PROG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="4 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="E" SCONAME="CALLBACK_FM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="5 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="E" SCONAME="IMPORTANCE" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="6 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="BALPROBCL" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="E" SCONAME="SELF" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="7 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_LOGGER"/>
   <source>method E.
   self = add(
     obj_to_log    = obj_to_log
@@ -1000,8 +1108,61 @@ ENDMETHOD.</source>
     type          = &apos;E&apos;
     importance    = importance ).
 endmethod.</source>
+  <methodDocumentation/>
  </method>
- <method CLSNAME="ZCL_LOGGER" CMPNAME="FULLSCREEN" VERSION="1" LANGU="E" DESCRIPT="Display Messages in Full-Screen" EXPOSURE="2" STATE="1" EDITORDER="10 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="0" BCMTDCAT="00" BCMTDSYN="0">
+ <method CLSNAME="ZCL_LOGGER" CMPNAME="EXPORT_TO_TABLE" VERSION="1" LANGU="E" DESCRIPT="Get Bapiret Table of Messages" EXPOSURE="2" STATE="1" EDITORDER="11 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20141001" CHANGEDON="00000000" MTDTYPE="0" MTDDECLTYP="0" R3RELEASE="700" BCMTDCAT="00" BCMTDSYN="0">
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="EXPORT_TO_TABLE" SCONAME="RT_BAPIRET" VERSION="1" LANGU="E" DESCRIPT="Table with BAPI Return Information" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20141001" CHANGEDON="00000000" PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="1" TYPE="BAPIRETTAB"/>
+  <source>METHOD export_to_table.
+  DATA: log_handle TYPE bal_t_logh,
+        message_handles TYPE bal_t_msgh,
+        message TYPE bal_s_msg,
+        bapiret2 TYPE bapiret2.
+
+  FIELD-SYMBOLS &lt;msg_handle&gt; TYPE balmsghndl.
+
+  INSERT handle INTO TABLE log_handle.
+
+  CALL FUNCTION &apos;BAL_GLB_SEARCH_MSG&apos;
+    EXPORTING
+      i_t_log_handle = log_handle
+    IMPORTING
+      e_t_msg_handle = message_handles
+    EXCEPTIONS
+      msg_not_found  = 0.
+
+  LOOP AT message_handles ASSIGNING &lt;msg_handle&gt;.
+    CALL FUNCTION &apos;BAL_LOG_MSG_READ&apos;
+      EXPORTING
+        i_s_msg_handle = &lt;msg_handle&gt;
+      IMPORTING
+        e_s_msg        = message
+      EXCEPTIONS
+        OTHERS         = 3.
+    IF sy-subrc IS INITIAL.
+      MESSAGE ID message-msgid
+              TYPE message-msgty
+              NUMBER message-msgno
+              INTO bapiret2-message
+              WITH message-msgv1 message-msgv2 message-msgv3 message-msgv4.
+
+      bapiret2-type          = message-msgty.
+      bapiret2-id            = message-msgid.
+      bapiret2-number        = message-msgno.
+      bapiret2-log_no        = &lt;msg_handle&gt;-log_handle. &quot;last 2 chars missing!!
+      bapiret2-log_msg_no    = &lt;msg_handle&gt;-msgnumber.
+      bapiret2-message_v1    = message-msgv1.
+      bapiret2-message_v2    = message-msgv2.
+      bapiret2-message_v3    = message-msgv3.
+      bapiret2-message_v4    = message-msgv4.
+      bapiret2-system        = sy-sysid.
+      APPEND bapiret2 TO rt_bapiret.
+    ENDIF.
+  ENDLOOP.
+
+ENDMETHOD.</source>
+  <methodDocumentation/>
+ </method>
+ <method CLSNAME="ZCL_LOGGER" CMPNAME="FULLSCREEN" VERSION="1" LANGU="E" DESCRIPT="Display Messages in Full-Screen" EXPOSURE="2" STATE="1" EDITORDER="10 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" MTDTYPE="0" MTDDECLTYP="0" R3RELEASE="700" BCMTDCAT="00" BCMTDSYN="0">
   <source>method FULLSCREEN.
 
   DATA: profile TYPE bal_s_prof.
@@ -1014,15 +1175,16 @@ endmethod.</source>
       i_s_display_profile    = profile
       i_t_log_handle         = me-&gt;handle.
 endmethod.</source>
+  <methodDocumentation/>
  </method>
- <method CLSNAME="ZCL_LOGGER" CMPNAME="I" VERSION="1" LANGU="E" DESCRIPT="Log INFO-type Message" EXPOSURE="2" STATE="1" EDITORDER="7 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="0" BCMTDCAT="00" BCMTDSYN="0">
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="I" SCONAME="OBJ_TO_LOG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY" PAROPTIONL="X" PARPREFERD="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="I" SCONAME="CONTEXT" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="SIMPLE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="I" SCONAME="CALLBACK_FORM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="3 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="I" SCONAME="CALLBACK_PROG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="4 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="I" SCONAME="CALLBACK_FM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="5 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="I" SCONAME="IMPORTANCE" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="6 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="BALPROBCL" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="I" SCONAME="SELF" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="7 " DISPID="0 " PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_LOGGER"/>
+ <method CLSNAME="ZCL_LOGGER" CMPNAME="I" VERSION="1" LANGU="E" DESCRIPT="Log INFO-type Message" EXPOSURE="2" STATE="1" EDITORDER="7 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" MTDTYPE="0" MTDDECLTYP="0" R3RELEASE="700" BCMTDCAT="00" BCMTDSYN="0">
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="I" SCONAME="OBJ_TO_LOG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY" PAROPTIONL="X" PARPREFERD="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="I" SCONAME="CONTEXT" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="SIMPLE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="I" SCONAME="CALLBACK_FORM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="3 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="I" SCONAME="CALLBACK_PROG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="4 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="I" SCONAME="CALLBACK_FM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="5 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="I" SCONAME="IMPORTANCE" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="6 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="BALPROBCL" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="I" SCONAME="SELF" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="7 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_LOGGER"/>
   <source>method I.
   self = add(
     obj_to_log    = obj_to_log
@@ -1033,15 +1195,17 @@ endmethod.</source>
     type          = &apos;I&apos;
     importance    = importance ).
 endmethod.</source>
+  <methodDocumentation/>
  </method>
- <method CLSNAME="ZCL_LOGGER" CMPNAME="NEW" VERSION="1" LANGU="E" DESCRIPT="Create New Log in Memory or DB" EXPOSURE="2" STATE="1" EDITORDER="1 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="1" BCMTDCAT="00" BCMTDSYN="0">
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="NEW" SCONAME="OBJECT" VERSION="1" LANGU="E" DESCRIPT="Log Object" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="NEW" SCONAME="SUBOBJECT" VERSION="1" LANGU="E" DESCRIPT="Log Sub-Object" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="NEW" SCONAME="DESC" VERSION="1" LANGU="E" DESCRIPT="Log Description" CMPTYPE="1" MTDTYPE="0" EDITORDER="3 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="NEW" SCONAME="CONTEXT" VERSION="1" LANGU="E" DESCRIPT="Addl Context to Log" CMPTYPE="1" MTDTYPE="0" EDITORDER="4 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="SIMPLE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="NEW" SCONAME="R_LOG" VERSION="1" LANGU="E" DESCRIPT="Interface to Application Log" CMPTYPE="1" MTDTYPE="0" EDITORDER="5 " DISPID="0 " PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_LOGGER"/>
+ <method CLSNAME="ZCL_LOGGER" CMPNAME="NEW" VERSION="1" LANGU="E" DESCRIPT="Create New Log in Memory or DB" EXPOSURE="2" STATE="1" EDITORDER="1 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" MTDTYPE="0" MTDDECLTYP="1" R3RELEASE="700" BCMTDCAT="00" BCMTDSYN="0">
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="NEW" SCONAME="OBJECT" VERSION="1" LANGU="E" DESCRIPT="Log Object" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="NEW" SCONAME="SUBOBJECT" VERSION="1" LANGU="E" DESCRIPT="Log Sub-Object" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="NEW" SCONAME="DESC" VERSION="1" LANGU="E" DESCRIPT="Log Description" CMPTYPE="1" MTDTYPE="0" EDITORDER="3 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="NEW" SCONAME="CONTEXT" VERSION="1" LANGU="E" DESCRIPT="Addl Context to Log" CMPTYPE="1" MTDTYPE="0" EDITORDER="4 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="SIMPLE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="NEW" SCONAME="R_LOG" VERSION="1" LANGU="E" DESCRIPT="Interface to Application Log" CMPTYPE="1" MTDTYPE="0" EDITORDER="5 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_LOGGER"/>
   <source>METHOD new.
-
+  DATA: lo_typedescr TYPE REF TO cl_abap_typedescr,
+        lv_ddic_header TYPE x030l.
   FIELD-SYMBOLS &lt;context_val&gt; TYPE c.
 
   CREATE OBJECT r_log.
@@ -1053,8 +1217,9 @@ endmethod.</source>
   ENDIF.
 
   IF context IS SUPPLIED.
-    r_log-&gt;header-context-tabname =
-      cl_abap_typedescr=&gt;describe_by_data( context )-&gt;get_ddic_header( )-tabname.
+    lo_typedescr = cl_abap_typedescr=&gt;describe_by_data( context ).
+    lv_ddic_header = lo_typedescr-&gt;get_ddic_header( ).
+    r_log-&gt;header-context-tabname = lv_ddic_header-tabname.
     ASSIGN context TO &lt;context_val&gt; CASTING.
     r_log-&gt;header-context-value = &lt;context_val&gt;.
   ENDIF.
@@ -1074,13 +1239,14 @@ endmethod.</source>
       e_s_log      = r_log-&gt;header.
 
 ENDMETHOD.</source>
+  <methodDocumentation/>
  </method>
- <method CLSNAME="ZCL_LOGGER" CMPNAME="OPEN" VERSION="1" LANGU="E" DESCRIPT="Reopen log on DB" EXPOSURE="2" STATE="1" EDITORDER="2 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="1" BCMTDCAT="00" BCMTDSYN="0">
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="OPEN" SCONAME="OBJECT" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="OPEN" SCONAME="SUBOBJECT" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="OPEN" SCONAME="DESC" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="3 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="OPEN" SCONAME="CREATE_IF_DOES_NOT_EXIST" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="4 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ABAP_BOOL" PARVALUE="ABAP_FALSE"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="OPEN" SCONAME="R_LOG" VERSION="1" LANGU="E" DESCRIPT="Interface to Application Log" CMPTYPE="1" MTDTYPE="0" EDITORDER="5 " DISPID="0 " PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_LOGGER"/>
+ <method CLSNAME="ZCL_LOGGER" CMPNAME="OPEN" VERSION="1" LANGU="E" DESCRIPT="Reopen log on DB" EXPOSURE="2" STATE="1" EDITORDER="2 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" MTDTYPE="0" MTDDECLTYP="1" R3RELEASE="700" BCMTDCAT="00" BCMTDSYN="0">
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="OPEN" SCONAME="OBJECT" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="OPEN" SCONAME="SUBOBJECT" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="OPEN" SCONAME="DESC" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="3 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="OPEN" SCONAME="CREATE_IF_DOES_NOT_EXIST" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="4 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ABAP_BOOL" PARVALUE="ABAP_FALSE"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="OPEN" SCONAME="R_LOG" VERSION="1" LANGU="E" DESCRIPT="Interface to Application Log" CMPTYPE="1" MTDTYPE="0" EDITORDER="5 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_LOGGER"/>
   <source>method OPEN.
 
   DATA: filter TYPE bal_s_lfil,
@@ -1089,8 +1255,7 @@ ENDMETHOD.</source>
         subobj_filter TYPE bal_s_sub,
 
         found_headers TYPE balhdr_t,
-        most_recent_header TYPE balhdr,
-        handles_loaded TYPE bal_t_logh.
+        most_recent_header TYPE balhdr.
 
   desc_filter-option = subobj_filter-option = obj_filter-option = &apos;EQ&apos;.
   desc_filter-sign = subobj_filter-sign = obj_filter-sign = &apos;I&apos;.
@@ -1144,8 +1309,9 @@ ENDMETHOD.</source>
       e_s_log      = r_log-&gt;header.
 
 endmethod.</source>
+  <methodDocumentation/>
  </method>
- <method CLSNAME="ZCL_LOGGER" CMPNAME="POPUP" VERSION="1" LANGU="E" DESCRIPT="Display Messages in Popup" EXPOSURE="2" STATE="1" EDITORDER="9 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="0" BCMTDCAT="00" BCMTDSYN="0">
+ <method CLSNAME="ZCL_LOGGER" CMPNAME="POPUP" VERSION="1" LANGU="E" DESCRIPT="Display Messages in Popup" EXPOSURE="2" STATE="1" EDITORDER="9 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" MTDTYPE="0" MTDDECLTYP="0" R3RELEASE="700" BCMTDCAT="00" BCMTDSYN="0">
   <source>method POPUP.
 * See SBAL_DEMO_04_POPUP for ideas
 
@@ -1160,15 +1326,16 @@ endmethod.</source>
       i_t_log_handle         = me-&gt;handle.
 
 endmethod.</source>
+  <methodDocumentation/>
  </method>
- <method CLSNAME="ZCL_LOGGER" CMPNAME="S" VERSION="1" LANGU="E" DESCRIPT="Log SUCCESS-type Message" EXPOSURE="2" STATE="1" EDITORDER="8 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="0" BCMTDCAT="00" BCMTDSYN="0">
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="S" SCONAME="OBJ_TO_LOG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY" PAROPTIONL="X" PARPREFERD="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="S" SCONAME="CONTEXT" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="SIMPLE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="S" SCONAME="CALLBACK_FORM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="3 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="S" SCONAME="CALLBACK_PROG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="4 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="S" SCONAME="CALLBACK_FM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="5 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="S" SCONAME="IMPORTANCE" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="6 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="BALPROBCL" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="S" SCONAME="SELF" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="7 " DISPID="0 " PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_LOGGER"/>
+ <method CLSNAME="ZCL_LOGGER" CMPNAME="S" VERSION="1" LANGU="E" DESCRIPT="Log SUCCESS-type Message" EXPOSURE="2" STATE="1" EDITORDER="8 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" MTDTYPE="0" MTDDECLTYP="0" R3RELEASE="700" BCMTDCAT="00" BCMTDSYN="0">
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="S" SCONAME="OBJ_TO_LOG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY" PAROPTIONL="X" PARPREFERD="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="S" SCONAME="CONTEXT" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="SIMPLE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="S" SCONAME="CALLBACK_FORM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="3 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="S" SCONAME="CALLBACK_PROG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="4 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="S" SCONAME="CALLBACK_FM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="5 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="S" SCONAME="IMPORTANCE" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="6 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="BALPROBCL" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="S" SCONAME="SELF" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="7 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_LOGGER"/>
   <source>method S.
   self = add(
     obj_to_log    = obj_to_log
@@ -1179,15 +1346,16 @@ endmethod.</source>
     type          = &apos;S&apos;
     importance    = importance ).
 endmethod.</source>
+  <methodDocumentation/>
  </method>
- <method CLSNAME="ZCL_LOGGER" CMPNAME="W" VERSION="1" LANGU="E" DESCRIPT="Log WARNING-type Message" EXPOSURE="2" STATE="1" EDITORDER="6 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="0" BCMTDCAT="00" BCMTDSYN="0">
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="W" SCONAME="OBJ_TO_LOG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY" PAROPTIONL="X" PARPREFERD="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="W" SCONAME="CONTEXT" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="SIMPLE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="W" SCONAME="CALLBACK_FORM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="3 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="W" SCONAME="CALLBACK_PROG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="4 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="W" SCONAME="CALLBACK_FM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="5 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="W" SCONAME="IMPORTANCE" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="6 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="BALPROBCL" PAROPTIONL="X"/>
-  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="W" SCONAME="SELF" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="7 " DISPID="0 " PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_LOGGER"/>
+ <method CLSNAME="ZCL_LOGGER" CMPNAME="W" VERSION="1" LANGU="E" DESCRIPT="Log WARNING-type Message" EXPOSURE="2" STATE="1" EDITORDER="6 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" MTDTYPE="0" MTDDECLTYP="0" R3RELEASE="700" BCMTDCAT="00" BCMTDSYN="0">
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="W" SCONAME="OBJ_TO_LOG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="1 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="ANY" PAROPTIONL="X" PARPREFERD="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="W" SCONAME="CONTEXT" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="2 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="SIMPLE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="W" SCONAME="CALLBACK_FORM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="3 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="W" SCONAME="CALLBACK_PROG" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="4 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="W" SCONAME="CALLBACK_FM" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="5 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="CSEQUENCE" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="W" SCONAME="IMPORTANCE" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="6 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="BALPROBCL" PAROPTIONL="X"/>
+  <parameter CLSNAME="ZCL_LOGGER" CMPNAME="W" SCONAME="SELF" VERSION="1" LANGU="E" CMPTYPE="1" MTDTYPE="0" EDITORDER="7 " DISPID="0 " AUTHOR="TETREAUL_SAP" CREATEDON="20140930" CHANGEDON="00000000" PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_LOGGER"/>
   <source>method W.
   self = add(
     obj_to_log    = obj_to_log
@@ -1198,5 +1366,6 @@ endmethod.</source>
     type          = &apos;W&apos;
     importance    = importance ).
 endmethod.</source>
+  <methodDocumentation/>
  </method>
 </CLAS>
