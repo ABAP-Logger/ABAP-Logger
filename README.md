@@ -124,7 +124,8 @@ It's 2014, so yes, you can chain method calls.
 
 ## Installation
 
-Either copy-paste the source code and unit tests into your system, or use SAPLink to import the slinky file.
+1. Create the Subobject "LOGGER" for Object "ABAPUNIT" in transaction code SLG0.
+2. Either copy-paste the source code and unit tests into your system, or use SAPLink to import the slinky file.
 
 ## Contributing
 
