@@ -1,3 +1,4 @@
+
 CLASS lcl_test DEFINITION FOR TESTING
   DURATION SHORT
   RISK LEVEL HARMLESS.
@@ -41,6 +42,16 @@ CLASS lcl_test DEFINITION FOR TESTING
         EXPORTING
           texts TYPE table_of_strings
           msg_details TYPE bal_t_msg,
+
+      format_message
+        IMPORTING id like sy-msgid DEFAULT sy-msgid
+                  lang type char02 DEFAULT '-'
+                  no like sy-msgno DEFAULT SY-MSGNO
+                  v1 like sy-msgv1 DEFAULT SY-MSGV1
+                  v2 like sy-msgv2 DEFAULT SY-MSGV2
+                  v3 like sy-msgv3 DEFAULT SY-MSGV3
+                  v4 like sy-msgv4 DEFAULT SY-MSGV4
+        RETURNING VALUE(msg) type string,
 
       can_create_anon_log FOR TESTING,
       can_create_named_log FOR TESTING,
@@ -189,10 +200,12 @@ CLASS lcl_test IMPLEMENTATION.
 
     METHOD auto_saves_named_log.
       DATA: dummy TYPE c,
-            log_numbers TYPE bal_t_logn.
+            log_numbers TYPE bal_t_logn,
+            msg type string.
 
       MESSAGE s004(rcc_test) WITH 'Testing' 'logger' 'that' 'saves.' INTO dummy.
       named_log->add( ).
+      msg = format_message( ).
 
       CALL FUNCTION 'BAL_GLB_MEMORY_REFRESH'.
 
@@ -202,7 +215,7 @@ CLASS lcl_test IMPLEMENTATION.
           i_t_lognumber = log_numbers.
 
       cl_aunit_assert=>assert_equals(
-        exp = 'Message: Testing logger that saves.'
+        exp = msg
         act = get_first_message( named_log->handle )
         msg = 'Did not write to named log' ).
 
@@ -370,12 +383,15 @@ CLASS lcl_test IMPLEMENTATION.
       DATA: impossible_int TYPE i,
             err TYPE REF TO cx_sy_zerodivide,
             act_txt TYPE char255,
+            exp_txt type char255,
             msg_handle TYPE balmsghndl.
 
       TRY.
           impossible_int = 1 / 0. "Make an error!
         CATCH cx_sy_zerodivide INTO err.
           anon_log->add( err ).
+          exp_txt = err->IF_MESSAGE~GET_TEXT( ).
+          data(long_text) = err->IF_MESSAGE~GET_LONGTEXT( ).
       ENDTRY.
 
       msg_handle-log_handle = anon_log->handle.
@@ -387,7 +403,7 @@ CLASS lcl_test IMPLEMENTATION.
           e_txt_msg      = act_txt.
 
       cl_aunit_assert=>assert_equals(
-        exp = 'Division by zero'
+        exp = exp_txt "'Division by zero'
         act = act_txt
         msg = 'Did not log throwable correctly' ).
 
@@ -422,19 +438,19 @@ CLASS lcl_test IMPLEMENTATION.
 
       READ TABLE act_texts INDEX 1 INTO act_text.
       cl_aunit_assert=>assert_equals(
-        exp = 'Message 1'
+        exp = format_message( id = 'RCC_TEST' no = 001 )" 'Message 1'
         act = act_text
         msg = 'Did not log BDC return messages correctly' ).
 
       READ TABLE act_texts INDEX 2 INTO act_text.
       cl_aunit_assert=>assert_equals(
-        exp = 'Message 2'
+        exp = format_message( id = 'RCC_TEST' no = 002 )" 'Message 2'
         act = act_text
         msg = 'Did not log BDC return messages correctly' ).
 
       READ TABLE act_texts INDEX 3 INTO act_text.
       cl_aunit_assert=>assert_equals(
-        exp = 'Message: This is test message'
+        exp = format_message( id = 'RCC_TEST' no = 004 v1 = 'This' v2 = 'is' v3 = 'test' v4 = 'message' )" 'Message: This is test message'
         act = act_text
         msg = 'Did not log BDC return messages correctly' ).
 
@@ -637,6 +653,24 @@ CLASS lcl_test IMPLEMENTATION.
         APPEND msg_text TO texts.
       ENDLOOP.
 
+    ENDMETHOD.
+
+    METHOD format_message.
+       CALL FUNCTION 'FORMAT_MESSAGE'
+       EXPORTING
+         ID              = id
+         LANG            = lang
+         NO              = no
+         V1              = v1
+         V2              = v2
+         V3              = v3
+         V4              = v4
+       IMPORTING
+         MSG             = msg
+       EXCEPTIONS
+         NOT_FOUND       = 1
+         OTHERS          = 2.
+*      TODO: raise abap unit
     ENDMETHOD.
 
     METHOD teardown.
