@@ -351,7 +351,7 @@ METHOD new.
     r_log->auto_save = abap_true.
   ENDIF.
 
-  IF context IS SUPPLIED.
+  IF context IS SUPPLIED AND context IS NOT INITIAL.
     r_log->header-context-tabname =
       cl_abap_typedescr=>describe_by_data( context )->get_ddic_header( )-tabname.
     ASSIGN context TO <context_val> CASTING.
