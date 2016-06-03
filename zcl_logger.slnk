@@ -1119,7 +1119,11 @@ ENDMETHOD.</source>
  <method CLSNAME="ZCL_LOGGER" CMPNAME="FULLSCREEN" VERSION="1" LANGU="E" DESCRIPT="Display Messages in Full-Screen" EXPOSURE="2" STATE="1" EDITORDER="10 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="0" BCMTDCAT="00" BCMTDSYN="0">
   <source>method FULLSCREEN.
 
-  DATA: profile TYPE bal_s_prof.
+  data: profile        type bal_s_prof,
+        lt_log_handles type bal_t_logh.
+  
+    append me->handle to lt_log_handles.
+
   CALL FUNCTION &apos;BAL_DSP_PROFILE_SINGLE_LOG_GET&apos;
     IMPORTING
       e_s_display_profile = profile.
@@ -1127,7 +1131,8 @@ ENDMETHOD.</source>
   CALL FUNCTION &apos;BAL_DSP_LOG_DISPLAY&apos;
     EXPORTING
       i_s_display_profile    = profile
-      i_t_log_handle         = me-&gt;handle.
+      i_t_log_handle         = lt_log_handles.
+      
 endmethod.</source>
  </method>
  <method CLSNAME="ZCL_LOGGER" CMPNAME="GET_AUTOSAVE" VERSION="1" LANGU="E" DESCRIPT="Get the value for Autosave" EXPOSURE="2" STATE="1" EDITORDER="12 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="0" BCMTDCAT="00" BCMTDSYN="0">
