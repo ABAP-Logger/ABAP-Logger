@@ -3,6 +3,7 @@ class ZCL_LOGGER definition
   create private .
 
 public section.
+
 *"* public components of class ZCL_LOGGER
 *"* do not include other source files here!!!
 
@@ -16,6 +17,7 @@ public section.
       !SUBOBJECT type CSEQUENCE optional
       !DESC type CSEQUENCE optional
       !CONTEXT type SIMPLE optional
+      !AUTO_SAVE type ABAP_BOOL optional
     returning
       value(R_LOG) type ref to ZCL_LOGGER .
   type-pools ABAP .
@@ -25,6 +27,7 @@ public section.
       !SUBOBJECT type CSEQUENCE
       !DESC type CSEQUENCE optional
       !CREATE_IF_DOES_NOT_EXIST type ABAP_BOOL default ABAP_FALSE
+      !AUTO_SAVE type ABAP_BOOL optional
     returning
       value(R_LOG) type ref to ZCL_LOGGER .
   methods ADD
@@ -96,6 +99,16 @@ public section.
       value(SELF) type ref to ZCL_LOGGER .
   methods POPUP .
   methods FULLSCREEN .
+  methods EXPORT_TO_TABLE
+    returning
+      value(RT_BAPIRET) type BAPIRETTAB .
+  methods GET_AUTOSAVE
+    returning
+      value(AUTO_SAVE) type ABAP_BOOL .
+  methods SET_AUTOSAVE
+    importing
+      !AUTO_SAVE type ABAP_BOOL .
+  methods SAVE .
 protected section.
 *"* protected components of class ZCL_LOGGER
 *"* do not include other source files here!!!
@@ -147,7 +160,7 @@ endmethod.
 * | [--->] IMPORTANCE                     TYPE        BALPROBCL(optional)
 * | [<-()] SELF                           TYPE REF TO ZCL_LOGGER
 * +--------------------------------------------------------------------------------------</SIGNATURE>
-METHOD add.
+method add.
 
   DATA: detailed_msg  TYPE bal_s_msg,
         free_text_msg TYPE char200,
@@ -263,7 +276,7 @@ METHOD add.
   ENDIF.
 
   self = me.
-ENDMETHOD.
+endmethod.
 
 
 * <SIGNATURE>---------------------------------------------------------------------------------------+
@@ -290,20 +303,92 @@ endmethod.
 
 
 * <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_LOGGER->EXPORT_TO_TABLE
+* +-------------------------------------------------------------------------------------------------+
+* | [<-()] RT_BAPIRET                     TYPE        BAPIRETTAB
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method  export_to_table.
+  DATA: log_handle TYPE bal_t_logh,
+        message_handles TYPE bal_t_msgh,
+        message TYPE bal_s_msg,
+        bapiret2 TYPE bapiret2.
+
+  FIELD-SYMBOLS <msg_handle> TYPE balmsghndl.
+
+  INSERT handle INTO TABLE log_handle.
+
+  CALL FUNCTION 'BAL_GLB_SEARCH_MSG'
+    EXPORTING
+      i_t_log_handle = log_handle
+    IMPORTING
+      e_t_msg_handle = message_handles
+    EXCEPTIONS
+      msg_not_found  = 0.
+
+  LOOP AT message_handles ASSIGNING <msg_handle>.
+    CALL FUNCTION 'BAL_LOG_MSG_READ'
+      EXPORTING
+        i_s_msg_handle = <msg_handle>
+      IMPORTING
+        e_s_msg        = message
+      EXCEPTIONS
+        OTHERS         = 3.
+    IF sy-subrc IS INITIAL.
+      MESSAGE ID message-msgid
+              TYPE message-msgty
+              NUMBER message-msgno
+              INTO bapiret2-message
+              WITH message-msgv1 message-msgv2 message-msgv3 message-msgv4.
+
+      bapiret2-type          = message-msgty.
+      bapiret2-id            = message-msgid.
+      bapiret2-number        = message-msgno.
+      bapiret2-log_no        = <msg_handle>-log_handle. "last 2 chars missing!!
+      bapiret2-log_msg_no    = <msg_handle>-msgnumber.
+      bapiret2-message_v1    = message-msgv1.
+      bapiret2-message_v2    = message-msgv2.
+      bapiret2-message_v3    = message-msgv3.
+      bapiret2-message_v4    = message-msgv4.
+      bapiret2-system        = sy-sysid.
+      APPEND bapiret2 TO rt_bapiret.
+    ENDIF.
+  ENDLOOP.
+
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
 * | Instance Public Method ZCL_LOGGER->FULLSCREEN
 * +-------------------------------------------------------------------------------------------------+
 * +--------------------------------------------------------------------------------------</SIGNATURE>
-method FULLSCREEN.
+method fullscreen.
 
-  DATA: profile TYPE bal_s_prof.
+  DATA: profile        TYPE bal_s_prof,
+        lt_log_handles TYPE bal_t_logh.
+
+  APPEND me->handle TO lt_log_handles.
+
   CALL FUNCTION 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
     IMPORTING
       e_s_display_profile = profile.
 
   CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
     EXPORTING
-      i_s_display_profile    = profile
-      i_t_log_handle         = me->handle.
+      i_s_display_profile = profile
+      i_t_log_handle      = lt_log_handles.
+
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_LOGGER->GET_AUTOSAVE
+* +-------------------------------------------------------------------------------------------------+
+* | [<-()] AUTO_SAVE                      TYPE        ABAP_BOOL
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method GET_AUTOSAVE.
+
+  auto_save = me->AUTO_SAVE.
+
 endmethod.
 
 
@@ -337,9 +422,17 @@ endmethod.
 * | [--->] SUBOBJECT                      TYPE        CSEQUENCE(optional)
 * | [--->] DESC                           TYPE        CSEQUENCE(optional)
 * | [--->] CONTEXT                        TYPE        SIMPLE(optional)
+* | [--->] AUTO_SAVE                      TYPE        ABAP_BOOL(optional)
 * | [<-()] R_LOG                          TYPE REF TO ZCL_LOGGER
 * +--------------------------------------------------------------------------------------</SIGNATURE>
-METHOD new.
+method new.
+
+*-- Added AUTO_SAVE as a parameter.  There are times when
+*-- you do not want to save the log unless certain kinds
+*-- of messages are put in the log.  By allowing the explicit
+*-- setting of the AUTO_SAVE value, this can be done
+*-- The SAVE method must be called at the end processing
+*-- to save all of the log data
 
   FIELD-SYMBOLS <context_val> TYPE c.
 
@@ -347,7 +440,11 @@ METHOD new.
   r_log->header-object = object.
   r_log->header-subobject = subobject.
   r_log->header-extnumber = desc.
-  IF object IS NOT INITIAL AND subobject IS NOT INITIAL.
+
+*-- If AUTO_SAVE is not passed in, then use the old logic
+*-- This is to ensure backwards compatiblilty
+  IF NOT auto_save IS SUPPLIED AND
+    object IS NOT INITIAL AND subobject IS NOT INITIAL.
     r_log->auto_save = abap_true.
   ENDIF.
 
@@ -372,7 +469,7 @@ METHOD new.
     IMPORTING
       e_s_log      = r_log->header.
 
-ENDMETHOD.
+endmethod.
 
 
 * <SIGNATURE>---------------------------------------------------------------------------------------+
@@ -382,9 +479,17 @@ ENDMETHOD.
 * | [--->] SUBOBJECT                      TYPE        CSEQUENCE
 * | [--->] DESC                           TYPE        CSEQUENCE(optional)
 * | [--->] CREATE_IF_DOES_NOT_EXIST       TYPE        ABAP_BOOL (default =ABAP_FALSE)
+* | [--->] AUTO_SAVE                      TYPE        ABAP_BOOL(optional)
 * | [<-()] R_LOG                          TYPE REF TO ZCL_LOGGER
 * +--------------------------------------------------------------------------------------</SIGNATURE>
-method OPEN.
+METHOD open.
+
+*-- Added AUTO_SAVE as a parameter.  There are times when
+*-- you do not want to save the log unless certain kinds
+*-- of messages are put in the log.  By allowing the explicit
+*-- setting of the AUTO_SAVE value, this can be done
+*-- The SAVE method must be called at the end processing
+*-- to save all of the log data
 
   DATA: filter TYPE bal_s_lfil,
         desc_filter TYPE bal_s_extn,
@@ -432,7 +537,12 @@ method OPEN.
   READ TABLE found_headers INDEX 1 INTO most_recent_header.
 
   CREATE OBJECT r_log.
-  r_log->auto_save = abap_true.
+*-- If AUTO_SAVE is not passed in, then use the old logic
+*-- This is to ensure backwards compatiblilty
+  IF NOT auto_save IS SUPPLIED.
+    r_log->auto_save = abap_true.
+  ENDIF.
+
   r_log->db_number = most_recent_header-lognumber.
   r_log->handle = most_recent_header-log_handle.
 
@@ -446,7 +556,7 @@ method OPEN.
     IMPORTING
       e_s_log      = r_log->header.
 
-endmethod.
+ENDMETHOD.
 
 
 * <SIGNATURE>---------------------------------------------------------------------------------------+
@@ -490,6 +600,52 @@ method S.
     type          = 'S'
     importance    = importance ).
 endmethod.
+        
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_LOGGER->SAVE
+* +-------------------------------------------------------------------------------------------------+
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method save.
+*--------------------------------------------------------------------*
+* Method to save the log on demand.  Intended to be called at the    *
+*  end of the log processing so that logs can be saved depending     *
+*  on other criteria, like the existance of error messages.          *
+*  If there are no error messages, it may not be desireable to save  *
+*  a log                                                             *
+*--------------------------------------------------------------------*
+
+
+  DATA:
+    log_handles TYPE bal_t_logh,
+    log_numbers TYPE bal_t_lgnm,
+    log_number  TYPE bal_s_lgnm.
+
+  CHECK auto_save = abap_false.
+
+  APPEND me->handle TO log_handles.
+  CALL FUNCTION 'BAL_DB_SAVE'
+    EXPORTING
+      i_t_log_handle   = log_handles
+    IMPORTING
+      e_new_lognumbers = log_numbers.
+  IF me->db_number IS INITIAL.
+    READ TABLE log_numbers INDEX 1 INTO log_number.
+    me->db_number = log_number-lognumber.
+  ENDIF.
+
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_LOGGER->SET_AUTOSAVE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] AUTO_SAVE                      TYPE        ABAP_BOOL
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method set_autosave.
+
+  me->auto_save = auto_save.
+
+endmethod.
 
 
 * <SIGNATURE>---------------------------------------------------------------------------------------+
@@ -514,3 +670,4 @@ method W.
     importance    = importance ).
 endmethod.
 ENDCLASS.
+
