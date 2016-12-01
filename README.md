@@ -77,6 +77,11 @@ Log a...gasp...TABLE of bapi return messages!
     DATA: msgs TYPE TABLE OF bapiret2.
     log->add( msgs ).
 
+Log a HR error messages
+
+    DATA: hr_msg TYPE HRPAD_MESSAGE .
+    log->add( hr_msg ).
+    
 Log an exception? Yep!
 
     TRY.
