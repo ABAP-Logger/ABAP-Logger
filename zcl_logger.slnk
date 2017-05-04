@@ -834,7 +834,7 @@ ENDCLASS.       &quot;lcl_Test&lt;/localTestClasses&gt;</localTestClasses>
    <textLine TDLINE="of objects can be logged by passing them to the same method.  ZCL_LOGGER"/>
    <textLine TDLINE="also has these strengths."/>
    <textLine TDFORMAT="AS" TDLINE="An instance of this class can be passed a number of objects by different"/>
-   <textLine TDLINE="methods.  Method ADD accepts a string, bapiret2, bdcmsgcoll, exception"/>
+   <textLine TDLINE="methods.  Method ADD accepts a string, bapiret2, bdcmsgcoll, exception, hrpad_message"/>
    <textLine TDLINE="object, or a table of any of those data types.  Methods A, E, W, I and S"/>
    <textLine TDLINE="accept exactly the same but they add the type of message corresponding"/>
    <textLine TDLINE="to their names."/>
@@ -928,7 +928,8 @@ endmethod.</source>
   <parameter CLSNAME="ZCL_LOGGER" CMPNAME="ADD" SCONAME="TYPE" VERSION="1" LANGU="E" DESCRIPT="Message Type" CMPTYPE="1" MTDTYPE="0" EDITORDER="6 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="SYMSGTY" PAROPTIONL="X"/>
   <parameter CLSNAME="ZCL_LOGGER" CMPNAME="ADD" SCONAME="IMPORTANCE" VERSION="1" LANGU="E" DESCRIPT="1 (Severe) to 4 (Addl Info)" CMPTYPE="1" MTDTYPE="0" EDITORDER="7 " DISPID="0 " PARDECLTYP="0" PARPASSTYP="1" TYPTYPE="1" TYPE="BALPROBCL" PAROPTIONL="X"/>
   <parameter CLSNAME="ZCL_LOGGER" CMPNAME="ADD" SCONAME="SELF" VERSION="1" LANGU="E" DESCRIPT="Returns Self for Chaining" CMPTYPE="1" MTDTYPE="0" EDITORDER="8 " DISPID="0 " PARDECLTYP="3" PARPASSTYP="0" TYPTYPE="3" TYPE="ZCL_LOGGER"/>
-  <source>METHOD add.
+  <source>
+  .
 
   DATA: detailed_msg  TYPE bal_s_msg,
         free_text_msg TYPE char200,
@@ -945,6 +946,7 @@ endmethod.</source>
                  &lt;message_line&gt; TYPE any,
                  &lt;bapi_msg&gt; TYPE bapiret2,
                  &lt;bdc_msg&gt; TYPE bdcmsgcoll,
+                 &lt;hrpad_msg&gt; type hrpad_message,
                  &lt;context_val&gt; TYPE c.
 
   IF context IS NOT INITIAL.
@@ -1002,6 +1004,15 @@ endmethod.</source>
     detailed_msg-msgv2 = &lt;bdc_msg&gt;-msgv2.
     detailed_msg-msgv3 = &lt;bdc_msg&gt;-msgv3.
     detailed_msg-msgv4 = &lt;bdc_msg&gt;-msgv4.
+  elseif msg_type->absolute_name = &apos;\TYPE=HRPAD_MESSAGE&apos;.
+    assign obj_to_log to &lt;hrpad_msg&gt;.
+    detailed_msg-msgty = &lt;hrpad_msg&gt;-msgty.
+    detailed_msg-msgid = &lt;hrpad_msg&gt;-msgid.
+    detailed_msg-msgno = &lt;hrpad_msg&gt;-msgno.
+    detailed_msg-msgv1 = &lt;hrpad_msg&gt;-msgv1.
+    detailed_msg-msgv2 = &lt;hrpad_msg&gt;-msgv2.
+    detailed_msg-msgv3 = &lt;hrpad_msg&gt;-msgv3.
+    detailed_msg-msgv4 = &lt;hrpad_msg&gt;-msgv4.
   ELSE.
     free_text_msg = obj_to_log.
   ENDIF.
@@ -1119,7 +1130,11 @@ ENDMETHOD.</source>
  <method CLSNAME="ZCL_LOGGER" CMPNAME="FULLSCREEN" VERSION="1" LANGU="E" DESCRIPT="Display Messages in Full-Screen" EXPOSURE="2" STATE="1" EDITORDER="10 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="0" BCMTDCAT="00" BCMTDSYN="0">
   <source>method FULLSCREEN.
 
-  DATA: profile TYPE bal_s_prof.
+  data: profile        type bal_s_prof,
+        lt_log_handles type bal_t_logh.
+  
+    append me->handle to lt_log_handles.
+
   CALL FUNCTION &apos;BAL_DSP_PROFILE_SINGLE_LOG_GET&apos;
     IMPORTING
       e_s_display_profile = profile.
@@ -1127,7 +1142,8 @@ ENDMETHOD.</source>
   CALL FUNCTION &apos;BAL_DSP_LOG_DISPLAY&apos;
     EXPORTING
       i_s_display_profile    = profile
-      i_t_log_handle         = me-&gt;handle.
+      i_t_log_handle         = lt_log_handles.
+      
 endmethod.</source>
  </method>
  <method CLSNAME="ZCL_LOGGER" CMPNAME="GET_AUTOSAVE" VERSION="1" LANGU="E" DESCRIPT="Get the value for Autosave" EXPOSURE="2" STATE="1" EDITORDER="12 " DISPID="0 " MTDTYPE="0" MTDDECLTYP="0" BCMTDCAT="00" BCMTDSYN="0">
