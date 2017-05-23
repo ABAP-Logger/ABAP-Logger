@@ -1,4 +1,4 @@
-# ZCL_LOGGER
+# ABAP Logger
 
 SAP Logging as painless as any other language
 
@@ -73,8 +73,6 @@ log = zcl_logger=>new( object = 'ZINTERFACES'
 
 log->e( 'You see, what had happened was...' ).
 ```
-
-All the information, none of the boilerplate. This is the power of ZCL_LOGGER.
 
 Method calls can be chained, too. 
 
