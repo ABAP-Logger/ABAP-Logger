@@ -462,9 +462,12 @@ method new.
 
 *-- If AUTO_SAVE is not passed in, then use the old logic
 *-- This is to ensure backwards compatiblilty
-  if not auto_save is supplied and
-    object is not initial and subobject is not initial.
-    r_log->auto_save = abap_true.
+  if auto_save is supplied.
+    r_log->auto_save = auto_save.
+  else.
+    if object is not initial and subobject is not initial.
+      r_log->auto_save = abap_true.
+    endif.
   endif.
   
 * Use secondary database connection to write data to database even if 
@@ -565,8 +568,10 @@ method open.
   create object r_log.
 *-- If AUTO_SAVE is not passed in, then use the old logic
 *-- This is to ensure backwards compatiblilty
-  if not auto_save is supplied.
+  if auto_save is not supplied.
     r_log->auto_save = abap_true.
+  else.
+    r_log->auto_save = auto_save.
   endif.
 
   r_log->db_number = most_recent_header-lognumber.
