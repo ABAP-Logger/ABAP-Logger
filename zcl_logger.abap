@@ -5,9 +5,7 @@
 *----------------------------------------------------------------------*
 class zcl_logger definition
   public
-  create private
-
-  global friends zcl_logger_hr .
+  create private.
 
 public section.
 
@@ -25,6 +23,7 @@ public section.
       !desc type csequence optional
       !context type simple optional
       !auto_save type abap_bool optional
+      !second_db_conn type abap_bool default abap_true
     returning
       value(r_log) type ref to zcl_logger .
   class-methods open
@@ -124,6 +123,8 @@ private section.
 
   type-pools abap .
   data auto_save type abap_bool .
+  data sec_connection type abap_bool .
+  data sec_connect_commit type abap_bool .
 endclass.
 
 
@@ -282,9 +283,11 @@ method add.
     append me->handle to log_handles.
     call function 'BAL_DB_SAVE'
       exporting
-        i_t_log_handle   = log_handles
+        i_t_log_handle       = log_handles
+        i_2th_connection     = me->sec_connection
+        i_2th_connect_commit = me->sec_connect_commit
       importing
-        e_new_lognumbers = log_numbers.
+        e_new_lognumbers     = log_numbers.
     if me->db_number is initial.
       read table log_numbers index 1 into log_number.
       me->db_number = log_number-lognumber.
@@ -462,6 +465,13 @@ method new.
   if not auto_save is supplied and
     object is not initial and subobject is not initial.
     r_log->auto_save = abap_true.
+  endif.
+  
+* Use secondary database connection to write data to database even if 
+* main program does a rollback (e. g. during a dump).
+  if second_db_conn = abap_true.
+    r_log->sec_connection = abap_true.
+    r_log->sec_connect_commit = abap_true.
   endif.
 
   if context is supplied and context is not initial.
@@ -642,9 +652,11 @@ method save.
   append me->handle to log_handles.
   call function 'BAL_DB_SAVE'
     exporting
-      i_t_log_handle   = log_handles
+      i_t_log_handle       = log_handles
+      i_2th_connection     = me->sec_connection
+      i_2th_connect_commit = me->sec_connect_commit
     importing
-      e_new_lognumbers = log_numbers.
+      e_new_lognumbers     = log_numbers.
   if me->db_number is initial.
     read table log_numbers index 1 into log_number.
     me->db_number = log_number-lognumber.
