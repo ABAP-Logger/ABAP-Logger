@@ -3,117 +3,117 @@
 *----------------------------------------------------------------------*
 *
 *----------------------------------------------------------------------*
-class ZCL_LOGGER definition
+class zcl_logger definition
   public
   create private .
 
 public section.
-  type-pools ABAP .
+  type-pools abap .
 
 *"* public components of class ZCL_LOGGER
 *"* do not include other source files here!!!
-  data HEADER type BAL_S_LOG read-only .
-  data HANDLE type BALLOGHNDL read-only .
-  data DB_NUMBER type BALOGNR read-only .
+  data header type bal_s_log read-only .
+  data handle type balloghndl read-only .
+  data db_number type balognr read-only .
 
-  class-methods NEW
+  class-methods new
     importing
-      !OBJECT type CSEQUENCE optional
-      !SUBOBJECT type CSEQUENCE optional
-      !DESC type CSEQUENCE optional
-      !CONTEXT type SIMPLE optional
-      !AUTO_SAVE type ABAP_BOOL optional
-      !SECOND_DB_CONN type ABAP_BOOL default ABAP_TRUE
+      !object type csequence optional
+      !subobject type csequence optional
+      !desc type csequence optional
+      !context type simple optional
+      !auto_save type abap_bool optional
+      !second_db_conn type abap_bool default abap_true
     returning
-      value(R_LOG) type ref to ZCL_LOGGER .
-  class-methods OPEN
+      value(r_log) type ref to zcl_logger .
+  class-methods open
     importing
-      !OBJECT type CSEQUENCE
-      !SUBOBJECT type CSEQUENCE
-      !DESC type CSEQUENCE optional
-      !CREATE_IF_DOES_NOT_EXIST type ABAP_BOOL default ABAP_FALSE
-      !AUTO_SAVE type ABAP_BOOL optional
+      !object type csequence
+      !subobject type csequence
+      !desc type csequence optional
+      !create_if_does_not_exist type abap_bool default abap_false
+      !auto_save type abap_bool optional
     returning
-      value(R_LOG) type ref to ZCL_LOGGER .
-  methods ADD
+      value(r_log) type ref to zcl_logger .
+  methods add
     importing
-      !OBJ_TO_LOG type ANY optional
-      !CONTEXT type SIMPLE optional
-      !CALLBACK_FORM type CSEQUENCE optional
-      !CALLBACK_PROG type CSEQUENCE optional
-      !CALLBACK_FM type CSEQUENCE optional
-      !TYPE type SYMSGTY optional
-      !IMPORTANCE type BALPROBCL optional
-    preferred parameter OBJ_TO_LOG
+      !obj_to_log type any optional
+      !context type simple optional
+      !callback_form type csequence optional
+      !callback_prog type csequence optional
+      !callback_fm type csequence optional
+      !type type symsgty optional
+      !importance type balprobcl optional
+    preferred parameter obj_to_log
     returning
-      value(SELF) type ref to ZCL_LOGGER .
-  methods A
+      value(self) type ref to zcl_logger .
+  methods a
     importing
-      !OBJ_TO_LOG type ANY optional
-      !CONTEXT type SIMPLE optional
-      !CALLBACK_FORM type CSEQUENCE optional
-      !CALLBACK_PROG type CSEQUENCE optional
-      !CALLBACK_FM type CSEQUENCE optional
-      !IMPORTANCE type BALPROBCL optional
-    preferred parameter OBJ_TO_LOG
+      !obj_to_log type any optional
+      !context type simple optional
+      !callback_form type csequence optional
+      !callback_prog type csequence optional
+      !callback_fm type csequence optional
+      !importance type balprobcl optional
+    preferred parameter obj_to_log
     returning
-      value(SELF) type ref to ZCL_LOGGER .
-  methods E
+      value(self) type ref to zcl_logger .
+  methods e
     importing
-      !OBJ_TO_LOG type ANY optional
-      !CONTEXT type SIMPLE optional
-      !CALLBACK_FORM type CSEQUENCE optional
-      !CALLBACK_PROG type CSEQUENCE optional
-      !CALLBACK_FM type CSEQUENCE optional
-      !IMPORTANCE type BALPROBCL optional
-    preferred parameter OBJ_TO_LOG
+      !obj_to_log type any optional
+      !context type simple optional
+      !callback_form type csequence optional
+      !callback_prog type csequence optional
+      !callback_fm type csequence optional
+      !importance type balprobcl optional
+    preferred parameter obj_to_log
     returning
-      value(SELF) type ref to ZCL_LOGGER .
-  methods W
+      value(self) type ref to zcl_logger .
+  methods w
     importing
-      !OBJ_TO_LOG type ANY optional
-      !CONTEXT type SIMPLE optional
-      !CALLBACK_FORM type CSEQUENCE optional
-      !CALLBACK_PROG type CSEQUENCE optional
-      !CALLBACK_FM type CSEQUENCE optional
-      !IMPORTANCE type BALPROBCL optional
-    preferred parameter OBJ_TO_LOG
+      !obj_to_log type any optional
+      !context type simple optional
+      !callback_form type csequence optional
+      !callback_prog type csequence optional
+      !callback_fm type csequence optional
+      !importance type balprobcl optional
+    preferred parameter obj_to_log
     returning
-      value(SELF) type ref to ZCL_LOGGER .
-  methods I
+      value(self) type ref to zcl_logger .
+  methods i
     importing
-      !OBJ_TO_LOG type ANY optional
-      !CONTEXT type SIMPLE optional
-      !CALLBACK_FORM type CSEQUENCE optional
-      !CALLBACK_PROG type CSEQUENCE optional
-      !CALLBACK_FM type CSEQUENCE optional
-      !IMPORTANCE type BALPROBCL optional
-    preferred parameter OBJ_TO_LOG
+      !obj_to_log type any optional
+      !context type simple optional
+      !callback_form type csequence optional
+      !callback_prog type csequence optional
+      !callback_fm type csequence optional
+      !importance type balprobcl optional
+    preferred parameter obj_to_log
     returning
-      value(SELF) type ref to ZCL_LOGGER .
-  methods S
+      value(self) type ref to zcl_logger .
+  methods s
     importing
-      !OBJ_TO_LOG type ANY optional
-      !CONTEXT type SIMPLE optional
-      !CALLBACK_FORM type CSEQUENCE optional
-      !CALLBACK_PROG type CSEQUENCE optional
-      !CALLBACK_FM type CSEQUENCE optional
-      !IMPORTANCE type BALPROBCL optional
-    preferred parameter OBJ_TO_LOG
+      !obj_to_log type any optional
+      !context type simple optional
+      !callback_form type csequence optional
+      !callback_prog type csequence optional
+      !callback_fm type csequence optional
+      !importance type balprobcl optional
+    preferred parameter obj_to_log
     returning
-      value(SELF) type ref to ZCL_LOGGER .
-  methods POPUP .
-  methods FULLSCREEN .
-  methods EXPORT_TO_TABLE
+      value(self) type ref to zcl_logger .
+  methods popup .
+  methods fullscreen .
+  methods export_to_table
     returning
-      value(RT_BAPIRET) type BAPIRETTAB .
-  methods GET_AUTOSAVE
+      value(rt_bapiret) type bapirettab .
+  methods get_autosave
     returning
-      value(AUTO_SAVE) type ABAP_BOOL .
-  methods SET_AUTOSAVE
+      value(auto_save) type abap_bool .
+  methods set_autosave
     importing
-      !AUTO_SAVE type ABAP_BOOL .
-  methods SAVE .
+      !auto_save type abap_bool .
+  methods save .
   protected section.
 *"* protected components of class ZCL_LOGGER
 *"* do not include other source files here!!!
