@@ -148,17 +148,12 @@ class lcl_test implementation.
   method can_add_log_context.
 
     data: log                 type ref to zcl_logger,
-          random_country_data type t005,
+          random_country_data type t005t,
           act_header          type bal_s_log.
 
-    random_country_data-mandt  = sy-mandt.
-    random_country_data-land1  = 'DE'.
-    random_country_data-landk  = 'D'.
-    random_country_data-lnplz  = 5.
-    random_country_data-spras  = 'D'.
-    random_country_data-intca  = 'DE'.
-    random_country_data-intca3 = 'DEU'.
-    random_country_data-intcn3 = 276.
+    random_country_data-mandt = sy-mandt.
+    random_country_data-spras = 'D'.
+    random_country_data-land1 = 'DE'.
 
     log = zcl_logger=>new( context = random_country_data ).
 
