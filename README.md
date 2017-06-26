@@ -172,10 +172,9 @@ CALL FUNCTION 'BAL_LOG_MSG_CUMULATE'
 
 ## Installation
 
-A pull request migrating this project to AbapGit is sorely needed, but until then:
+Just pull this project via [ABAPGit](http://abapgit.org).
 
-1. Create the Subobject "LOGGER" for Object "ABAPUNIT" in transaction code SLG0.
-2. Either copy-paste the source code and unit tests into your system, or use SAPLink to import the slinky file.
+Then create the Subobject "LOGGER" for Object "ABAPUNIT" in transaction code SLG0. Now you're ready to go.
 
 ## Contributing
 
