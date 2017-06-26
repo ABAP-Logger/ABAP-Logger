@@ -164,7 +164,7 @@ class lcl_test implementation.
         e_s_log      = act_header.
 
     cl_aunit_assert=>assert_equals(
-      exp = 'T005'
+      exp = 'T005T'
       act = act_header-context-tabname
       msg = 'Did not add context to log' ).
 
