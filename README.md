@@ -172,9 +172,8 @@ CALL FUNCTION 'BAL_LOG_MSG_CUMULATE'
 
 ## Installation
 
-Just pull this project via [ABAPGit](http://abapgit.org).
-
-Then create the Subobject "LOGGER" for Object "ABAPUNIT" in transaction code SLG0. Now you're ready to go.
+1. Install this project via [ABAPGit](http://abapgit.org).
+2. Create the Subobject "LOGGER" for Object "ABAPUNIT" in transaction code SLG0. Now you're ready to go.
 
 ## Contributing
 
