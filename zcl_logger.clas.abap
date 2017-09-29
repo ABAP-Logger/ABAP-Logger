@@ -363,8 +363,9 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 
   method fullscreen.
 
-    data: profile        type bal_s_prof,
-          lt_log_handles type bal_t_logh.
+    data:
+      profile        type bal_s_prof,
+      lt_log_handles type bal_t_logh.
 
     append me->handle to lt_log_handles.
 
@@ -538,7 +539,12 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   method popup.
 * See SBAL_DEMO_04_POPUP for ideas
 
-    data: profile type bal_s_prof.
+    data:
+      profile        type bal_s_prof,
+      lt_log_handles type bal_t_logh.
+
+    append me->handle to lt_log_handles.
+
     call function 'BAL_DSP_PROFILE_POPUP_GET'
       importing
         e_s_display_profile = profile.
@@ -546,7 +552,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     call function 'BAL_DSP_LOG_DISPLAY'
       exporting
         i_s_display_profile = profile
-        i_t_log_handle      = me->handle.
+        i_t_log_handle      = lt_log_handles.
 
   endmethod.
 
