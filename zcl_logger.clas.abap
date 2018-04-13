@@ -16,6 +16,20 @@ class zcl_logger definition
     data handle type balloghndl read-only .
     data db_number type balognr read-only .
 
+    interfaces zif_logger.
+    aliases: add for zif_logger~add,
+             a for zif_logger~a,
+             e for zif_logger~e,
+             w for zif_logger~w,
+             i for zif_logger~i,
+             s for zif_logger~s,
+             save for zif_logger~save,
+             get_autosave for zif_logger~get_autosave,
+             set_autosave for zif_logger~set_autosave,
+             export_to_table for zif_logger~export_to_table,
+             fullscreen for zif_logger~fullscreen,
+             popup for zif_logger~popup.
+
     class-methods new
       importing
         !object         type csequence optional
@@ -35,85 +49,7 @@ class zcl_logger definition
         !auto_save                type abap_bool optional
       returning
         value(r_log)              type ref to zcl_logger .
-    methods add
-      importing
-        !obj_to_log    type any optional
-        !context       type simple optional
-        !callback_form type csequence optional
-        !callback_prog type csequence optional
-        !callback_fm   type csequence optional
-        !type          type symsgty optional
-        !importance    type balprobcl optional
-          preferred parameter obj_to_log
-      returning
-        value(self)    type ref to zcl_logger .
-    methods a
-      importing
-        !obj_to_log    type any optional
-        !context       type simple optional
-        !callback_form type csequence optional
-        !callback_prog type csequence optional
-        !callback_fm   type csequence optional
-        !importance    type balprobcl optional
-          preferred parameter obj_to_log
-      returning
-        value(self)    type ref to zcl_logger .
-    methods e
-      importing
-        !obj_to_log    type any optional
-        !context       type simple optional
-        !callback_form type csequence optional
-        !callback_prog type csequence optional
-        !callback_fm   type csequence optional
-        !importance    type balprobcl optional
-          preferred parameter obj_to_log
-      returning
-        value(self)    type ref to zcl_logger .
-    methods w
-      importing
-        !obj_to_log    type any optional
-        !context       type simple optional
-        !callback_form type csequence optional
-        !callback_prog type csequence optional
-        !callback_fm   type csequence optional
-        !importance    type balprobcl optional
-          preferred parameter obj_to_log
-      returning
-        value(self)    type ref to zcl_logger .
-    methods i
-      importing
-        !obj_to_log    type any optional
-        !context       type simple optional
-        !callback_form type csequence optional
-        !callback_prog type csequence optional
-        !callback_fm   type csequence optional
-        !importance    type balprobcl optional
-          preferred parameter obj_to_log
-      returning
-        value(self)    type ref to zcl_logger .
-    methods s
-      importing
-        !obj_to_log    type any optional
-        !context       type simple optional
-        !callback_form type csequence optional
-        !callback_prog type csequence optional
-        !callback_fm   type csequence optional
-        !importance    type balprobcl optional
-          preferred parameter obj_to_log
-      returning
-        value(self)    type ref to zcl_logger .
-    methods popup .
-    methods fullscreen .
-    methods export_to_table
-      returning
-        value(rt_bapiret) type bapirettab .
-    methods get_autosave
-      returning
-        value(auto_save) type abap_bool .
-    methods set_autosave
-      importing
-        !auto_save type abap_bool .
-    methods save .
+
   protected section.
 *"* protected components of class ZCL_LOGGER
 *"* do not include other source files here!!!
@@ -127,7 +63,7 @@ class zcl_logger definition
     types: begin of hrpad_message_alike,
              cause(32)    type c,              "original: hrpad_message_cause
              detail_level type ballevel.
-        include type symsg .
+            include type symsg .
     types: field_list type standard table of hrpad_message_field_list_alike
            with non-unique key scrrprfd.
     types: end of hrpad_message_alike.
@@ -137,11 +73,11 @@ class zcl_logger definition
     data auto_save type abap_bool .
     data sec_connection type abap_bool .
     data sec_connect_commit type abap_bool .
-ENDCLASS.
+endclass.
 
 
 
-CLASS ZCL_LOGGER IMPLEMENTATION.
+class zcl_logger implementation.
 
 
   method a.
@@ -619,4 +555,4 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       type          = 'W'
       importance    = importance ).
   endmethod.
-ENDCLASS.
+endclass.
