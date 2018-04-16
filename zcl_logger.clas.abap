@@ -5,16 +5,13 @@
 *----------------------------------------------------------------------*
 class zcl_logger definition
   public
-  create private .
+  create private
+  global friends zcl_logger_factory .
 
   public section.
-    type-pools abap .
-
 *"* public components of class ZCL_LOGGER
 *"* do not include other source files here!!!
-    data header type bal_s_log read-only .
-    data handle type balloghndl read-only .
-    data db_number type balognr read-only .
+    type-pools abap .
 
     interfaces zif_logger.
     aliases: add for zif_logger~add,
@@ -28,8 +25,12 @@ class zcl_logger definition
              set_autosave for zif_logger~set_autosave,
              export_to_table for zif_logger~export_to_table,
              fullscreen for zif_logger~fullscreen,
-             popup for zif_logger~popup.
+             popup for zif_logger~popup,
+             handle for zif_logger~handle,
+             db_number for zif_logger~db_number,
+             header for zif_logger~header.
 
+    " backwards compatibility only -> use zcl_logger_factory instead
     class-methods new
       importing
         !object         type csequence optional
@@ -39,7 +40,9 @@ class zcl_logger definition
         !auto_save      type abap_bool optional
         !second_db_conn type abap_bool default abap_true
       returning
-        value(r_log)    type ref to zcl_logger .
+        value(r_log)    type ref to zif_logger .
+
+    " backwards compatibility only -> use zcl_logger_factory instead
     class-methods open
       importing
         !object                   type csequence
@@ -48,7 +51,7 @@ class zcl_logger definition
         !create_if_does_not_exist type abap_bool default abap_false
         !auto_save                type abap_bool optional
       returning
-        value(r_log)              type ref to zcl_logger .
+        value(r_log)              type ref to zif_logger .
 
   protected section.
 *"* protected components of class ZCL_LOGGER
@@ -338,136 +341,46 @@ class zcl_logger implementation.
 
   method new.
 
-*-- Added AUTO_SAVE as a parameter.  There are times when
-*-- you do not want to save the log unless certain kinds
-*-- of messages are put in the log.  By allowing the explicit
-*-- setting of the AUTO_SAVE value, this can be done
-*-- The SAVE method must be called at the end processing
-*-- to save all of the log data
-
-    field-symbols <context_val> type c.
-
-    create object r_log.
-    r_log->header-object = object.
-    r_log->header-subobject = subobject.
-    r_log->header-extnumber = desc.
-
-*-- If AUTO_SAVE is not passed in, then use the old logic
-*-- This is to ensure backwards compatiblilty
     if auto_save is supplied.
-      r_log->auto_save = auto_save.
+      r_log = zcl_logger_factory=>create_log(
+        !object = object
+        !subobject = subobject
+        !desc = desc
+        !context = context
+        !auto_save = auto_save
+        !second_db_conn = second_db_conn
+      ).
     else.
-      if object is not initial and subobject is not initial.
-        r_log->auto_save = abap_true.
-      endif.
+      r_log = zcl_logger_factory=>create_log(
+        !object = object
+        !subobject = subobject
+        !desc = desc
+        !context = context
+        !second_db_conn = second_db_conn
+      ).
     endif.
-
-* Use secondary database connection to write data to database even if
-* main program does a rollback (e. g. during a dump).
-    if second_db_conn = abap_true.
-      r_log->sec_connection = abap_true.
-      r_log->sec_connect_commit = abap_true.
-    endif.
-
-    if context is supplied and context is not initial.
-      r_log->header-context-tabname =
-        cl_abap_typedescr=>describe_by_data( context )->get_ddic_header( )-tabname.
-      assign context to <context_val> casting.
-      r_log->header-context-value = <context_val>.
-    endif.
-
-    call function 'BAL_LOG_CREATE'
-      exporting
-        i_s_log      = r_log->header
-      importing
-        e_log_handle = r_log->handle.
-
-* BAL_LOG_CREATE will fill in some additional header data.
-* This FM updates our instance attribute to reflect that.
-    call function 'BAL_LOG_HDR_READ'
-      exporting
-        i_log_handle = r_log->handle
-      importing
-        e_s_log      = r_log->header.
 
   endmethod.
 
 
   method open.
 
-*-- Added AUTO_SAVE as a parameter.  There are times when
-*-- you do not want to save the log unless certain kinds
-*-- of messages are put in the log.  By allowing the explicit
-*-- setting of the AUTO_SAVE value, this can be done
-*-- The SAVE method must be called at the end processing
-*-- to save all of the log data
-
-    data: filter             type bal_s_lfil,
-          desc_filter        type bal_s_extn,
-          obj_filter         type bal_s_obj,
-          subobj_filter      type bal_s_sub,
-
-          found_headers      type balhdr_t,
-          most_recent_header type balhdr,
-          handles_loaded     type bal_t_logh.
-
-    desc_filter-option = subobj_filter-option = obj_filter-option = 'EQ'.
-    desc_filter-sign = subobj_filter-sign = obj_filter-sign = 'I'.
-
-    obj_filter-low = object.
-    append obj_filter to filter-object.
-    subobj_filter-low = subobject.
-    append subobj_filter to filter-subobject.
-    if desc is supplied.
-      desc_filter-low = desc.
-      append desc_filter to filter-extnumber.
-    endif.
-
-    call function 'BAL_DB_SEARCH'
-      exporting
-        i_s_log_filter = filter
-      importing
-        e_t_log_header = found_headers
-      exceptions
-        log_not_found  = 1.
-
-    if sy-subrc = 1.
-      if create_if_does_not_exist = abap_true.
-        r_log = zcl_logger=>new( object    = object
-                                 subobject = subobject
-                                 desc      = desc ).
-      endif.
-      return.
-    endif.
-
-* Delete all but the last row.  Keep the found_headers table this way
-* so we can pass it to BAL_DB_LOAD.
-    if lines( found_headers ) > 1.
-      delete found_headers to ( lines( found_headers ) - 1 ).
-    endif.
-    read table found_headers index 1 into most_recent_header.
-
-    create object r_log.
-*-- If AUTO_SAVE is not passed in, then use the old logic
-*-- This is to ensure backwards compatiblilty
-    if auto_save is not supplied.
-      r_log->auto_save = abap_true.
+    if auto_save is supplied.
+      r_log = zcl_logger_factory=>open_log(
+        !object = object
+        !subobject = subobject
+        !desc = desc
+        !create_if_does_not_exist = create_if_does_not_exist
+        !auto_save = auto_save
+      ).
     else.
-      r_log->auto_save = auto_save.
+      r_log = zcl_logger_factory=>open_log(
+        !object = object
+        !subobject = subobject
+        !desc = desc
+        !create_if_does_not_exist = create_if_does_not_exist
+      ).
     endif.
-
-    r_log->db_number = most_recent_header-lognumber.
-    r_log->handle = most_recent_header-log_handle.
-
-    call function 'BAL_DB_LOAD'
-      exporting
-        i_t_log_header = found_headers.
-
-    call function 'BAL_LOG_HDR_READ'
-      exporting
-        i_log_handle = r_log->handle
-      importing
-        e_s_log      = r_log->header.
 
   endmethod.
 

@@ -1,5 +1,8 @@
 interface zif_logger
   public .
+  data handle type balloghndl read-only .
+  data db_number type balognr read-only .
+  data header type bal_s_log read-only .
   methods add
     importing
       obj_to_log    type any optional
@@ -11,7 +14,7 @@ interface zif_logger
       importance    type balprobcl optional
         preferred parameter obj_to_log
     returning
-      value(self)   type ref to zcl_logger .
+      value(self)   type ref to zif_logger .
   methods a
     importing
       obj_to_log    type any optional
@@ -22,7 +25,7 @@ interface zif_logger
       importance    type balprobcl optional
         preferred parameter obj_to_log
     returning
-      value(self)   type ref to zcl_logger .
+      value(self)   type ref to zif_logger .
   methods e
     importing
       obj_to_log    type any optional
@@ -33,7 +36,7 @@ interface zif_logger
       importance    type balprobcl optional
         preferred parameter obj_to_log
     returning
-      value(self)   type ref to zcl_logger .
+      value(self)   type ref to zif_logger .
   methods w
     importing
       obj_to_log    type any optional
@@ -44,7 +47,7 @@ interface zif_logger
       importance    type balprobcl optional
         preferred parameter obj_to_log
     returning
-      value(self)   type ref to zcl_logger .
+      value(self)   type ref to zif_logger .
   methods i
     importing
       obj_to_log    type any optional
@@ -55,7 +58,7 @@ interface zif_logger
       importance    type balprobcl optional
         preferred parameter obj_to_log
     returning
-      value(self)   type ref to zcl_logger .
+      value(self)   type ref to zif_logger .
   methods s
     importing
       obj_to_log    type any optional
@@ -66,7 +69,7 @@ interface zif_logger
       importance    type balprobcl optional
         preferred parameter obj_to_log
     returning
-      value(self)   type ref to zcl_logger .
+      value(self)   type ref to zif_logger .
   methods save .
   methods get_autosave
     returning
