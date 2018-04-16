@@ -65,11 +65,11 @@ do you wish the ABAP example above looked like?  How about this:
 ## Usage
 
 ```abap
-DATA: log TYPE REF TO zcl_logger.
+DATA: log TYPE REF TO zif_logger.
 
-log = zcl_logger=>new( object = 'ZINTERFACES'
-                       subobject = 'ACCOUNTING'
-                       desc = 'Stuff imported from legacy systems' ).
+log = zcl_logger_factory=>create_log( object = 'ZINTERFACES'
+                                      subobject = 'ACCOUNTING'
+                                      desc = 'Stuff imported from legacy systems' ).
 
 log->e( 'You see, what had happened was...' ).
 ```
@@ -77,13 +77,13 @@ log->e( 'You see, what had happened was...' ).
 Method calls can be chained, too. 
 
 ```abap
-zcl_logger=>new( object = 'foo' )->e( 'Bad things happened: See details' )->e( error ).
+zcl_logger_factory=>create_log( object = 'foo' )->e( 'Bad things happened: See details' )->e( error ).
 ```
 
 ## Logging Different Types
 
 Making use of SAP's run-time type services, we can pass almost anything we
-might want to log to an instance of ZCL_LOGGER, and it will do the heavy lifting.
+might want to log to an instance of ZIF_LOGGER, and it will do the heavy lifting.
 
 Log a string:
 
