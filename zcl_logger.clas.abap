@@ -146,7 +146,7 @@ class zcl_logger implementation.
 
     msg_type = cl_abap_typedescr=>describe_by_data( obj_to_log ).
 
-    if obj_to_log is initial.
+    if obj_to_log is not supplied.
       detailed_msg-msgty = sy-msgty.
       detailed_msg-msgid = sy-msgid.
       detailed_msg-msgno = sy-msgno.
