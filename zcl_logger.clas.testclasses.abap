@@ -24,9 +24,9 @@ class lcl_test definition for testing
   private section.
 
     data:
-      anon_log     type ref to zcl_logger,
-      named_log    type ref to zcl_logger,
-      reopened_log type ref to zcl_logger.
+      anon_log     type ref to zif_logger,
+      named_log    type ref to zif_logger,
+      reopened_log type ref to zif_logger.
 
     class-methods:
       class_setup.
@@ -123,7 +123,7 @@ class lcl_test implementation.
   endmethod.
 
   method can_open_or_create.
-    data: created_log type ref to zcl_logger,
+    data: created_log type ref to zif_logger,
           handles     type bal_t_logh.
     call function 'BAL_GLB_MEMORY_REFRESH'. "Close Logs
     reopened_log = zcl_logger=>open( object = 'ABAPUNIT'
@@ -147,7 +147,7 @@ class lcl_test implementation.
 
   method can_add_log_context.
 
-    data: log                 type ref to zcl_logger,
+    data: log                 type ref to zif_logger,
           random_country_data type t005t,
           act_header          type bal_s_log.
 

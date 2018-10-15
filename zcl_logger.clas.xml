@@ -13,6 +13,325 @@
     <UNICODE>X</UNICODE>
     <WITH_UNIT_TESTS>X</WITH_UNIT_TESTS>
    </VSEOCLASS>
+   <TPOOL>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+    <item/>
+   </TPOOL>
+   <LINES>
+    <TLINE>
+     <TDFORMAT>U1</TDFORMAT>
+     <TDLINE>&amp;FUNCTIONALITY&amp;</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>AS</TDFORMAT>
+     <TDLINE>The class ZCL_LOGGER is designed to make logging in ABAP more like in</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDLINE>other languages.  To create a log and add messages in Android Java,</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDLINE>Ruby, and Javascript, at most two lines of code are required: one to</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDLINE>create the log and one to add the message.  In addition, different types</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDLINE>of objects can be logged by passing them to the same method.  ZCL_LOGGER</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDLINE>also has these strengths.</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>AS</TDFORMAT>
+     <TDLINE>An instance of this class can be passed a number of objects by different</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDLINE>methods.  Method ADD accepts a string, bapiret2, bdcmsgcoll, exception</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDLINE>object, or a table of any of those data types.  Methods A, E, W, I and S</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDLINE>accept exactly the same but they add the type of message corresponding</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDLINE>to their names.</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>U1</TDFORMAT>
+     <TDLINE>&amp;RELATIONS&amp;</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>AS</TDFORMAT>
+     <TDLINE>ZCL_LOGGER makes a bunch of calls to function group</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>=</TDFORMAT>
+     <TDLINE>&lt;DS:RE.SAPLSBAL&gt;SBAL&lt;/&gt;.</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>U1</TDFORMAT>
+     <TDLINE>&amp;EXAMPLE&amp;</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>U3</TDFORMAT>
+     <TDLINE>Creating a Log in SLG1</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>PE</TDFORMAT>
+     <TDLINE>DATA: log TYPE REF TO zcl_logger.</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>* If you create a log without any parameters, it will only be in memory</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>log = zcl_logger=&gt;new( ).</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>* If you supply an object and subobject, the log will be created on the</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>* database the first time a message is stored, so you can view it later</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>* in SLG1.</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>log = zcl_logger=&gt;new( object = &apos;WF&apos;</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>subobject = &apos;NOTIFICATIONS&apos;</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>desc = |Notifications on { sy-datum }| ).</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>U3</TDFORMAT>
+     <TDLINE>Logging Strings</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>PE</TDFORMAT>
+     <TDLINE>DATA: log TYPE REF TO zcl_logger.</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>log = zcl_logger=&gt;new( ).</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>log-&gt;s( &apos;This is a success message&apos; ).</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>log-&gt;w( &apos;This is a warning message&apos; ).</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>U3</TDFORMAT>
+     <TDLINE>Logging Errors</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>PE</TDFORMAT>
+     <TDLINE>DATA: log TYPE REF TO zcl_logger,</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>l_err TYPE REF TO zcx_operation_failed.</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>log = zcl_logger=&gt;new( object = &apos;WF&apos; subobject = &apos;NOTIFICATIONS&apos; ).</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>TRY.</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>my_class=&gt;do_some_operation( ).</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>CATCH zcx_operation_failed INTO l_err.</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>log-&gt;e( l_err ).</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>ENDTRY.</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>U3</TDFORMAT>
+     <TDLINE>Logging BAPI Messages</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>PE</TDFORMAT>
+     <TDLINE>DATA: rtn_msgs TYPE TABLE OF bapiret2.</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>CALL FUNCTION &apos;BAPI_ACC_DOCUMENT_POST&apos;</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>EXPORTING</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>parameter1 = foo</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>parameter2 = bar</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>TABLES</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>return = rtn_msgs.</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>IF rtn_msgs IS NOT INITIAL.</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>log = zcl_logger=&gt;new( object = &apos;ACCOUNTING&apos; subobject = &apos;INTERFACES&apos;</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDLINE>).</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>log-&gt;add( rtn_msgs ).</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>ENDIF.</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>U3</TDFORMAT>
+     <TDLINE>Displaying a log</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>PE</TDFORMAT>
+     <TDLINE>log-&gt;popup( ).</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>/</TDFORMAT>
+     <TDLINE>log-&gt;fullscreen( ).</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>AS</TDFORMAT>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>U1</TDFORMAT>
+     <TDLINE>&amp;HINTS&amp;</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>AS</TDFORMAT>
+     <TDLINE>Calls to the log can be chained, like:</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>PE</TDFORMAT>
+     <TDLINE>log-&gt;e( &apos;An error occurred. See following:&apos; )-&gt;e( l_err ).</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>U1</TDFORMAT>
+     <TDLINE>&amp;FURTHER_SOURCES_OF_INF&amp;</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDFORMAT>AS</TDFORMAT>
+     <TDLINE>If you plan on modifying or adding to this class, see the local unit</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDLINE>tests.  You can run them and they will test the class in a number of</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDLINE>different scenarios.  You can set breakpoints before running unit tests</TDLINE>
+    </TLINE>
+    <TLINE>
+     <TDLINE>to see the behavior in action.</TDLINE>
+    </TLINE>
+   </LINES>
   </asx:values>
  </asx:abap>
 </abapGit>
