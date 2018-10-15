@@ -40,7 +40,7 @@ class zcl_logger definition
         !auto_save      type abap_bool optional
         !second_db_conn type abap_bool default abap_true
       returning
-        value(r_log)    type ref to zif_logger .
+        value(r_log)    type ref to zcl_logger .
 
     " backwards compatibility only -> use zcl_logger_factory instead
     class-methods open
@@ -51,7 +51,7 @@ class zcl_logger definition
         !create_if_does_not_exist type abap_bool default abap_false
         !auto_save                type abap_bool optional
       returning
-        value(r_log)              type ref to zif_logger .
+        value(r_log)              type ref to zcl_logger .
 
   protected section.
 *"* protected components of class ZCL_LOGGER
@@ -342,22 +342,22 @@ class zcl_logger implementation.
   method new.
 
     if auto_save is supplied.
-      r_log = zcl_logger_factory=>create_log(
+      r_log = cast zcl_logger( zcl_logger_factory=>create_log(
         !object = object
         !subobject = subobject
         !desc = desc
         !context = context
         !auto_save = auto_save
         !second_db_conn = second_db_conn
-      ).
+      ) ).
     else.
-      r_log = zcl_logger_factory=>create_log(
+      r_log = cast zcl_logger( zcl_logger_factory=>create_log(
         !object = object
         !subobject = subobject
         !desc = desc
         !context = context
         !second_db_conn = second_db_conn
-      ).
+      ) ).
     endif.
 
   endmethod.
@@ -366,20 +366,20 @@ class zcl_logger implementation.
   method open.
 
     if auto_save is supplied.
-      r_log = zcl_logger_factory=>open_log(
+      r_log = cast zcl_logger( zcl_logger_factory=>open_log(
         !object = object
         !subobject = subobject
         !desc = desc
         !create_if_does_not_exist = create_if_does_not_exist
         !auto_save = auto_save
-      ).
+      ) ).
     else.
-      r_log = zcl_logger_factory=>open_log(
+      r_log = cast zcl_logger( zcl_logger_factory=>open_log(
         !object = object
         !subobject = subobject
         !desc = desc
         !create_if_does_not_exist = create_if_does_not_exist
-      ).
+      ) ).
     endif.
 
   endmethod.

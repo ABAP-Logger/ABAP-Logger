@@ -131,7 +131,7 @@
     </TLINE>
     <TLINE>
      <TDFORMAT>=</TDFORMAT>
-     <TDLINE> &lt;DS:RE.SAPLSBAL&gt;SBAL&lt;/&gt;.</TDLINE>
+     <TDLINE>&lt;DS:RE.SAPLSBAL&gt;SBAL&lt;/&gt;.</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>U1</TDFORMAT>
@@ -174,11 +174,11 @@
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
-     <TDLINE>                       subobject = &apos;NOTIFICATIONS&apos;</TDLINE>
+     <TDLINE>subobject = &apos;NOTIFICATIONS&apos;</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
-     <TDLINE>                       desc = |Notifications on { sy-datum }| ).</TDLINE>
+     <TDLINE>desc = |Notifications on { sy-datum }| ).</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>U3</TDFORMAT>
@@ -210,7 +210,7 @@
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
-     <TDLINE>      l_err TYPE REF TO zcx_operation_failed.</TDLINE>
+     <TDLINE>l_err TYPE REF TO zcx_operation_failed.</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
@@ -222,15 +222,15 @@
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
-     <TDLINE>    my_class=&gt;do_some_operation( ).</TDLINE>
+     <TDLINE>my_class=&gt;do_some_operation( ).</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
-     <TDLINE>  CATCH zcx_operation_failed INTO l_err.</TDLINE>
+     <TDLINE>CATCH zcx_operation_failed INTO l_err.</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
-     <TDLINE>    log-&gt;e( l_err ).</TDLINE>
+     <TDLINE>log-&gt;e( l_err ).</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
@@ -250,23 +250,23 @@
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
-     <TDLINE>  EXPORTING</TDLINE>
+     <TDLINE>EXPORTING</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
-     <TDLINE>    parameter1 = foo</TDLINE>
+     <TDLINE>parameter1 = foo</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
-     <TDLINE>    parameter2 = bar</TDLINE>
+     <TDLINE>parameter2 = bar</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
-     <TDLINE>  TABLES</TDLINE>
+     <TDLINE>TABLES</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
-     <TDLINE>    return = rtn_msgs.</TDLINE>
+     <TDLINE>return = rtn_msgs.</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
@@ -274,14 +274,14 @@
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
-     <TDLINE>  log = zcl_logger=&gt;new( object = &apos;ACCOUNTING&apos; subobject = &apos;INTERFACES&apos;</TDLINE>
+     <TDLINE>log = zcl_logger=&gt;new( object = &apos;ACCOUNTING&apos; subobject = &apos;INTERFACES&apos;</TDLINE>
     </TLINE>
     <TLINE>
      <TDLINE>).</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
-     <TDLINE>  log-&gt;add( rtn_msgs ).</TDLINE>
+     <TDLINE>log-&gt;add( rtn_msgs ).</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
