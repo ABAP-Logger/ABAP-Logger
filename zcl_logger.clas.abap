@@ -57,9 +57,6 @@ class zcl_logger definition
 *"* protected components of class ZCL_LOGGER
 *"* do not include other source files here!!!
   private section.
-
-    constants: c_max_exception_drill_down type i value 10.
-
 * Local type for hrpad_message as it is not available in an ABAP Development System
     types: begin of hrpad_message_field_list_alike,
              scrrprfd type scrrprfd.
@@ -78,6 +75,7 @@ class zcl_logger definition
     data auto_save          type abap_bool .
     data sec_connection     type abap_bool .
     data sec_connect_commit type abap_bool .
+    data: max_exception_drill_down type i.
 
     methods:
       drill_down_into_exception importing exception                      type ref to cx_root
@@ -492,7 +490,7 @@ class zcl_logger implementation.
 
     previous_exception = exception.
 
-    while i <= c_max_exception_drill_down.
+    while i <= max_exception_drill_down.
       if previous_exception->previous is not bound.
         exit.
       endif.

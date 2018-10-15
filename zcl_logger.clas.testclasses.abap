@@ -24,9 +24,9 @@ class lcl_test definition for testing
   private section.
 
     data:
-      anon_log     type ref to zif_logger,
-      named_log    type ref to zif_logger,
-      reopened_log type ref to zif_logger.
+          anon_log     type ref to zif_logger,
+          named_log    type ref to zif_logger,
+          reopened_log type ref to zif_logger.
 
     class-methods:
       class_setup.
@@ -73,6 +73,7 @@ class lcl_test definition for testing
       can_log_bapiret2 for testing,
       can_log_bapirettab for testing,
       can_log_err for testing,
+      can_log_chained_exceptions for testing,
       can_log_batch_msgs for testing,
 
       can_add_msg_context for testing,
@@ -95,7 +96,7 @@ class lcl_test implementation.
   endmethod.
 
   method setup.
-    anon_log = zcl_logger=>new( ).
+    anon_log  = zcl_logger=>new( ).
     named_log = zcl_logger=>new( object = 'ABAPUNIT'
                                  subobject = 'LOGGER'
                                  desc = `Hey it's a log` ).
@@ -125,7 +126,7 @@ class lcl_test implementation.
   method can_open_or_create.
     data: created_log type ref to zif_logger,
           handles     type bal_t_logh.
-    call function 'BAL_GLB_MEMORY_REFRESH'. "Close Logs
+    call function 'BAL_GLB_MEMORY_REFRESH'.                "Close Logs
     reopened_log = zcl_logger=>open( object = 'ABAPUNIT'
                                      subobject = 'LOGGER'
                                      desc = 'Log saved in database'
@@ -291,7 +292,7 @@ class lcl_test implementation.
     anon_log->add( bapi_msg ).
 
     msg_handle-log_handle = anon_log->handle.
-    msg_handle-msgnumber = '000001'.
+    msg_handle-msgnumber  = '000001'.
 
     call function 'BAL_LOG_MSG_READ'
       exporting
@@ -389,15 +390,15 @@ class lcl_test implementation.
           msg_handle     type balmsghndl.
 
     try.
-        impossible_int = 1 / 0. "Make an error!
+        impossible_int = 1 / 0.                            "Make an error!
       catch cx_sy_zerodivide into err.
         anon_log->add( err ).
-        exp_txt = err->if_message~get_text( ).
+        exp_txt         = err->if_message~get_text( ).
         data(long_text) = err->if_message~get_longtext( ).
     endtry.
 
     msg_handle-log_handle = anon_log->handle.
-    msg_handle-msgnumber = '000001'.
+    msg_handle-msgnumber  = '000001'.
     call function 'BAL_LOG_EXCEPTION_READ'
       exporting
         i_s_msg_handle = msg_handle
@@ -409,6 +410,63 @@ class lcl_test implementation.
       act = act_txt
       msg = 'Did not log throwable correctly' ).
 
+  endmethod.
+
+  method can_log_chained_exceptions.
+    data: main_exception     type ref to lcx_t100,
+          previous_exception type ref to lcx_t100,
+          msg_handle         type balmsghndl,
+          act_texts          type table_of_strings,
+          act_text           type string.
+
+    define exceptions_are.
+      main_exception = new lcx_t100(
+          previous = previous_exception
+          id       = &1
+          no       = &2
+          msgv1    = &3
+          msgv2    = &4
+          msgv3    = &5
+          msgv4    = &6
+      ).
+      previous_exception = main_exception.
+    end-of-definition.
+
+    "Given
+    exceptions_are:
+      'SABP_UNIT' '010' ''     ''   ''     '',
+      'SABP_UNIT' '030' ''     ''   ''     '',
+      'SABP_UNIT' '000' 'This' 'is' 'test' 'message'.
+
+
+    "When
+    try.
+        raise exception main_exception.
+      catch lcx_t100 into data(catched_exception).
+        anon_log->add( catched_exception ).
+    endtry.
+
+    "Then
+    get_messages( exporting log_handle = anon_log->handle
+                  importing texts      = act_texts ).
+
+    read table act_texts index 1 into act_text.
+    cl_aunit_assert=>assert_equals(
+      exp = format_message( id = 'SABP_UNIT' no = 010 )    " 'Message 1'
+      act = act_text
+      msg = 'Did not log chained exception correctly' ).
+
+    read table act_texts index 2 into act_text.
+    cl_aunit_assert=>assert_equals(
+      exp = format_message( id = 'SABP_UNIT' no = 030 )    " 'Message 2'
+      act = act_text
+      msg = 'Did not log chained exception correctly' ).
+
+    read table act_texts index 3 into act_text.
+    cl_aunit_assert=>assert_equals(
+      exp = format_message( id = 'SABP_UNIT' no = 000 v1 = 'This' v2 = 'is' v3 = 'test' v4 = 'message' )      " 'Message: This is test message'
+      act = act_text
+      msg = 'Did not log chained exception correctly' ).
   endmethod.
 
   method can_log_batch_msgs.
@@ -440,26 +498,26 @@ class lcl_test implementation.
 
     read table act_texts index 1 into act_text.
     cl_aunit_assert=>assert_equals(
-      exp = format_message( id = 'SABP_UNIT' no = 010 )" 'Message 1'
+      exp = format_message( id = 'SABP_UNIT' no = 010 )    " 'Message 1'
       act = act_text
       msg = 'Did not log BDC return messages correctly' ).
 
     read table act_texts index 2 into act_text.
     cl_aunit_assert=>assert_equals(
-      exp = format_message( id = 'SABP_UNIT' no = 030 )" 'Message 2'
+      exp = format_message( id = 'SABP_UNIT' no = 030 )    " 'Message 2'
       act = act_text
       msg = 'Did not log BDC return messages correctly' ).
 
     read table act_texts index 3 into act_text.
     cl_aunit_assert=>assert_equals(
-      exp = format_message( id = 'SABP_UNIT' no = 000 v1 = 'This' v2 = 'is' v3 = 'test' v4 = 'message' )" 'Message: This is test message'
+      exp = format_message( id = 'SABP_UNIT' no = 000 v1 = 'This' v2 = 'is' v3 = 'test' v4 = 'message' )       " 'Message: This is test message'
       act = act_text
       msg = 'Did not log BDC return messages correctly' ).
 
   endmethod.
 
   method can_add_msg_context.
-    data: addl_context type bezei20 value 'Berlin', "data element from dictionary!
+    data: addl_context type bezei20 value 'Berlin',        "data element from dictionary!
           msg_handle   type balmsghndl,
           act_details  type bal_s_msg.
 
@@ -467,7 +525,7 @@ class lcl_test implementation.
                    context = addl_context ).
 
     msg_handle-log_handle = anon_log->handle.
-    msg_handle-msgnumber = '000001'.
+    msg_handle-msgnumber  = '000001'.
     call function 'BAL_LOG_MSG_READ'
       exporting
         i_s_msg_handle = msg_handle
@@ -495,7 +553,7 @@ class lcl_test implementation.
                    callback_prog = 'PROGRAM' ).
 
     msg_handle-log_handle = anon_log->handle.
-    msg_handle-msgnumber = '000001'.
+    msg_handle-msgnumber  = '000001'.
 
     call function 'BAL_LOG_MSG_READ'
       exporting
@@ -523,7 +581,7 @@ class lcl_test implementation.
                    callback_fm = 'FUNCTION' ).
 
     msg_handle-log_handle = anon_log->handle.
-    msg_handle-msgnumber = '000001'.
+    msg_handle-msgnumber  = '000001'.
 
     call function 'BAL_LOG_MSG_READ'
       exporting
@@ -620,7 +678,7 @@ class lcl_test implementation.
   method get_first_message.
     data: msg_handle type balmsghndl.
     msg_handle-log_handle = log_handle.
-    msg_handle-msgnumber = '000001'.
+    msg_handle-msgnumber  = '000001'.
 
     call function 'BAL_LOG_MSG_READ'
       exporting

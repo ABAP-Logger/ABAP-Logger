@@ -7,14 +7,15 @@ class zcl_logger_factory definition
 
     class-methods create_log
       importing
-        !object         type csequence optional
-        !subobject      type csequence optional
-        !desc           type csequence optional
-        !context        type simple optional
-        !auto_save      type abap_bool optional
-        !second_db_conn type abap_bool default abap_true
+        !object                  type csequence optional
+        !subobject               type csequence optional
+        !desc                    type csequence optional
+        !context                 type simple optional
+        !auto_save               type abap_bool optional
+        !second_db_conn          type abap_bool default abap_true
+        max_exception_drill_down type i default 10
       returning
-        value(r_log)    type ref to zif_logger .
+        value(r_log)             type ref to zif_logger .
 
     class-methods open_log
       importing
@@ -47,7 +48,7 @@ class zcl_logger_factory implementation.
     field-symbols <context_val> type c.
 
     create object lo_log.
-    lo_log->header-object = object.
+    lo_log->header-object    = object.
     lo_log->header-subobject = subobject.
     lo_log->header-extnumber = desc.
 
@@ -64,9 +65,12 @@ class zcl_logger_factory implementation.
 * Use secondary database connection to write data to database even if
 * main program does a rollback (e. g. during a dump).
     if second_db_conn = abap_true.
-      lo_log->sec_connection = abap_true.
+      lo_log->sec_connection     = abap_true.
       lo_log->sec_connect_commit = abap_true.
     endif.
+
+* Safety limit for previous exception drill down
+    lo_log->max_exception_drill_down = max_exception_drill_down.
 
     if context is supplied and context is not initial.
       lo_log->header-context-tabname =
@@ -103,18 +107,18 @@ class zcl_logger_factory implementation.
 *-- The SAVE method must be called at the end processing
 *-- to save all of the log data
 
-    data: filter             type bal_s_lfil,
-          desc_filter        type bal_s_extn,
-          obj_filter         type bal_s_obj,
-          subobj_filter      type bal_s_sub,
+    data: filter        type bal_s_lfil,
+          desc_filter   type bal_s_extn,
+          obj_filter    type bal_s_obj,
+          subobj_filter type bal_s_sub,
 
           found_headers      type balhdr_t,
           most_recent_header type balhdr,
           handles_loaded     type bal_t_logh.
-    data: lo_log type ref to zcl_logger.
+    data: lo_log             type ref to zcl_logger.
 
     desc_filter-option = subobj_filter-option = obj_filter-option = 'EQ'.
-    desc_filter-sign = subobj_filter-sign = obj_filter-sign = 'I'.
+    desc_filter-sign   = subobj_filter-sign = obj_filter-sign = 'I'.
 
     obj_filter-low = object.
     append obj_filter to filter-object.
@@ -159,7 +163,7 @@ class zcl_logger_factory implementation.
     endif.
 
     lo_log->db_number = most_recent_header-lognumber.
-    lo_log->handle = most_recent_header-log_handle.
+    lo_log->handle    = most_recent_header-log_handle.
 
     call function 'BAL_DB_LOAD'
       exporting
