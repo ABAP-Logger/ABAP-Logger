@@ -58,13 +58,15 @@ class zcl_logger definition
 *"* do not include other source files here!!!
   private section.
 
+    constants: c_max_exception_drill_down type i value 10.
+
 * Local type for hrpad_message as it is not available in an ABAP Development System
     types: begin of hrpad_message_field_list_alike,
              scrrprfd type scrrprfd.
     types: end of hrpad_message_field_list_alike.
 
     types: begin of hrpad_message_alike,
-             cause(32)    type c,              "original: hrpad_message_cause
+             cause(32)    type c,                          "original: hrpad_message_cause
              detail_level type ballevel.
             include type symsg .
     types: field_list type standard table of hrpad_message_field_list_alike
@@ -73,9 +75,16 @@ class zcl_logger definition
 
 *"* private components of class ZCL_LOGGER
 *"* do not include other source files here!!!
-    data auto_save type abap_bool .
-    data sec_connection type abap_bool .
+    data auto_save          type abap_bool .
+    data sec_connection     type abap_bool .
     data sec_connect_commit type abap_bool .
+
+    methods:
+      drill_down_into_exception importing exception                      type ref to cx_root
+                                          type                           type symsgty optional
+                                          importance                     type balprobcl optional
+                                returning value(rt_exception_data_table) type tty_exception_data.
+
 endclass.
 
 
@@ -97,18 +106,18 @@ class zcl_logger implementation.
 
   method add.
 
-    data: detailed_msg      type bal_s_msg,
-          free_text_msg     type char200,
-          ctx_type          type ref to cl_abap_typedescr,
-          ctx_ddic_header   type x030l,
-          msg_type          type ref to cl_abap_typedescr,
-          msg_table_type    type ref to cl_abap_tabledescr,
-          exception_data    type bal_s_exc,
-          log_numbers       type bal_t_lgnm,
-          log_handles       type bal_t_logh,
-          log_number        type bal_s_lgnm,
-          formatted_context type bal_s_cont,
-          formatted_params  type bal_s_parm.
+    data: detailed_msg         type bal_s_msg,
+          exception_data_table type tty_exception_data,
+          free_text_msg        type char200,
+          ctx_type             type ref to cl_abap_typedescr,
+          ctx_ddic_header      type x030l,
+          msg_type             type ref to cl_abap_typedescr,
+          msg_table_type       type ref to cl_abap_tabledescr,
+          log_numbers          type bal_t_lgnm,
+          log_handles          type bal_t_logh,
+          log_number           type bal_s_lgnm,
+          formatted_context    type bal_s_cont,
+          formatted_params     type bal_s_parm.
 
     field-symbols: <table_of_messages> type any table,
                    <message_line>      type any,
@@ -120,7 +129,7 @@ class zcl_logger implementation.
     if context is not initial.
       assign context to <context_val>.
       formatted_context-value = <context_val>.
-      ctx_type = cl_abap_typedescr=>describe_by_data( context ).
+      ctx_type                = cl_abap_typedescr=>describe_by_data( context ).
 
       call method ctx_type->get_ddic_header
         receiving
@@ -155,9 +164,11 @@ class zcl_logger implementation.
       detailed_msg-msgv3 = sy-msgv3.
       detailed_msg-msgv4 = sy-msgv4.
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_oref.
-      exception_data-exception = obj_to_log.
-      exception_data-msgty = type.
-      exception_data-probclass = importance.
+      exception_data_table = me->drill_down_into_exception(
+          exception   = obj_to_log
+          type        = type
+          importance  = importance
+          ).
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_table.
       assign obj_to_log to <table_of_messages>.
       loop at <table_of_messages> assigning <message_line>.
@@ -204,14 +215,16 @@ class zcl_logger implementation.
           i_text       = free_text_msg
           i_s_context  = formatted_context
           i_s_params   = formatted_params.
-    elseif exception_data is not initial.
-      call function 'BAL_LOG_EXCEPTION_ADD'
-        exporting
-          i_log_handle = me->handle
-          i_s_exc      = exception_data.
+    elseif exception_data_table is not initial.
+      loop at exception_data_table assigning field-symbol(<exception_data>).
+        call function 'BAL_LOG_EXCEPTION_ADD'
+          exporting
+            i_log_handle = me->handle
+            i_s_exc      = <exception_data>.
+      endloop.
     elseif detailed_msg is not initial.
-      detailed_msg-context = formatted_context.
-      detailed_msg-params = formatted_params.
+      detailed_msg-context   = formatted_context.
+      detailed_msg-params    = formatted_params.
       detailed_msg-probclass = importance.
       call function 'BAL_LOG_MSG_ADD'
         exporting
@@ -283,16 +296,16 @@ class zcl_logger implementation.
                 into bapiret2-message
                 with message-msgv1 message-msgv2 message-msgv3 message-msgv4.
 
-        bapiret2-type          = message-msgty.
-        bapiret2-id            = message-msgid.
-        bapiret2-number        = message-msgno.
-        bapiret2-log_no        = <msg_handle>-log_handle. "last 2 chars missing!!
-        bapiret2-log_msg_no    = <msg_handle>-msgnumber.
-        bapiret2-message_v1    = message-msgv1.
-        bapiret2-message_v2    = message-msgv2.
-        bapiret2-message_v3    = message-msgv3.
-        bapiret2-message_v4    = message-msgv4.
-        bapiret2-system        = sy-sysid.
+        bapiret2-type       = message-msgty.
+        bapiret2-id         = message-msgid.
+        bapiret2-number     = message-msgno.
+        bapiret2-log_no     = <msg_handle>-log_handle.     "last 2 chars missing!!
+        bapiret2-log_msg_no = <msg_handle>-msgnumber.
+        bapiret2-message_v1 = message-msgv1.
+        bapiret2-message_v2 = message-msgv2.
+        bapiret2-message_v3 = message-msgv3.
+        bapiret2-message_v4 = message-msgv4.
+        bapiret2-system     = sy-sysid.
         append bapiret2 to rt_bapiret.
       endif.
     endloop.
@@ -303,8 +316,8 @@ class zcl_logger implementation.
   method fullscreen.
 
     data:
-      profile        type bal_s_prof,
-      lt_log_handles type bal_t_logh.
+          profile        type bal_s_prof,
+          lt_log_handles type bal_t_logh.
 
     append me->handle to lt_log_handles.
 
@@ -389,8 +402,8 @@ class zcl_logger implementation.
 * See SBAL_DEMO_04_POPUP for ideas
 
     data:
-      profile        type bal_s_prof,
-      lt_log_handles type bal_t_logh.
+          profile        type bal_s_prof,
+          lt_log_handles type bal_t_logh.
 
     append me->handle to lt_log_handles.
 
@@ -429,9 +442,9 @@ class zcl_logger implementation.
 
 
     data:
-      log_handles type bal_t_logh,
-      log_numbers type bal_t_lgnm,
-      log_number  type bal_s_lgnm.
+          log_handles type bal_t_logh,
+          log_numbers type bal_t_lgnm,
+          log_number  type bal_s_lgnm.
 
     check auto_save = abap_false.
 
@@ -468,4 +481,36 @@ class zcl_logger implementation.
       type          = 'W'
       importance    = importance ).
   endmethod.
+
+  method drill_down_into_exception.
+    data: i                  type i value 2,
+          previous_exception type ref to cx_root,
+          exceptions         type tty_exception.
+
+
+    append value #( level = 1  exception = exception ) to exceptions.
+
+    previous_exception = exception.
+
+    while i <= c_max_exception_drill_down.
+      if previous_exception->previous is not bound.
+        exit.
+      endif.
+
+      previous_exception ?= previous_exception->previous.
+
+      append value #( level = i exception = previous_exception ) to exceptions.
+      i = i + 1.
+    endwhile.
+
+    sort exceptions by level descending.                   "Display the deepest exception first
+    loop at exceptions assigning field-symbol(<exception>).
+      append value #(
+          exception = <exception>-exception
+          msgty     = type
+          probclass = importance
+        ) to rt_exception_data_table.
+    endloop.
+  endmethod.
+
 endclass.
