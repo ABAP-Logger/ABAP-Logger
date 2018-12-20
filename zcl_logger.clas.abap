@@ -72,9 +72,9 @@ class zcl_logger definition
 
 *"* private components of class ZCL_LOGGER
 *"* do not include other source files here!!!
-    data auto_save          type abap_bool .
-    data sec_connection     type abap_bool .
-    data sec_connect_commit type abap_bool .
+    data  auto_save                type abap_bool .
+    data  sec_connection           type abap_bool .
+    data  sec_connect_commit       type abap_bool .
     data: max_exception_drill_down type i.
 
     methods:
@@ -119,9 +119,13 @@ class zcl_logger implementation.
 
     field-symbols: <table_of_messages> type any table,
                    <message_line>      type any,
+                   <bapiret1_msg>      type bapiret1,
                    <bapi_msg>          type bapiret2,
+                   <bapi_coru_msg>     type bapi_coru_return,
+                   <bapi_order_msg>    type bapi_order_return,
                    <bdc_msg>           type bdcmsgcoll,
                    <hrpad_msg>         type hrpad_message_alike,
+                   <rcomp_msg>         type rcomp,
                    <context_val>       type any.
 
     if context is not initial.
@@ -173,6 +177,15 @@ class zcl_logger implementation.
         add( <message_line> ).
       endloop.
       return.
+    elseif msg_type->absolute_name = '\TYPE=BAPIRET1'.
+      assign obj_to_log to <bapiret1_msg>.
+      detailed_msg-msgty = <bapiret1_msg>-type.
+      detailed_msg-msgid = <bapiret1_msg>-id.
+      detailed_msg-msgno = <bapiret1_msg>-number.
+      detailed_msg-msgv1 = <bapiret1_msg>-message_v1.
+      detailed_msg-msgv2 = <bapiret1_msg>-message_v2.
+      detailed_msg-msgv3 = <bapiret1_msg>-message_v3.
+      detailed_msg-msgv4 = <bapiret1_msg>-message_v4.
     elseif msg_type->absolute_name = '\TYPE=BAPIRET2'.
       assign obj_to_log to <bapi_msg>.
       detailed_msg-msgty = <bapi_msg>-type.
@@ -182,6 +195,24 @@ class zcl_logger implementation.
       detailed_msg-msgv2 = <bapi_msg>-message_v2.
       detailed_msg-msgv3 = <bapi_msg>-message_v3.
       detailed_msg-msgv4 = <bapi_msg>-message_v4.
+    elseif msg_type->absolute_name = '\TYPE=BAPI_CORU_RETURN'.
+      assign obj_to_log to <bapi_coru_msg>.
+      detailed_msg-msgty = <bapi_coru_msg>-type.
+      detailed_msg-msgid = <bapi_coru_msg>-id.
+      detailed_msg-msgno = <bapi_coru_msg>-number.
+      detailed_msg-msgv1 = <bapi_coru_msg>-message_v1.
+      detailed_msg-msgv2 = <bapi_coru_msg>-message_v2.
+      detailed_msg-msgv3 = <bapi_coru_msg>-message_v3.
+      detailed_msg-msgv4 = <bapi_coru_msg>-message_v4.
+    elseif msg_type->absolute_name = '\TYPE=BAPI_ORDER_RETURN'.
+      assign obj_to_log to <bapi_order_msg>.
+      detailed_msg-msgty = <bapi_order_msg>-type.
+      detailed_msg-msgid = <bapi_order_msg>-id.
+      detailed_msg-msgno = <bapi_order_msg>-number.
+      detailed_msg-msgv1 = <bapi_order_msg>-message_v1.
+      detailed_msg-msgv2 = <bapi_order_msg>-message_v2.
+      detailed_msg-msgv3 = <bapi_order_msg>-message_v3.
+      detailed_msg-msgv4 = <bapi_order_msg>-message_v4.
     elseif msg_type->absolute_name = '\TYPE=BDCMSGCOLL'.
       assign obj_to_log to <bdc_msg>.
       detailed_msg-msgty = <bdc_msg>-msgtyp.
@@ -200,6 +231,15 @@ class zcl_logger implementation.
       detailed_msg-msgv2 = <hrpad_msg>-msgv2.
       detailed_msg-msgv3 = <hrpad_msg>-msgv3.
       detailed_msg-msgv4 = <hrpad_msg>-msgv4.
+    elseif msg_type->absolute_name = '\TYPE=RCOMP'.
+      assign obj_to_log to <rcomp_msg>.
+      detailed_msg-msgty = <rcomp_msg>-msgty.
+      detailed_msg-msgid = <rcomp_msg>-msgid.
+      detailed_msg-msgno = <rcomp_msg>-msgno.
+      detailed_msg-msgv1 = <rcomp_msg>-msgv1.
+      detailed_msg-msgv2 = <rcomp_msg>-msgv2.
+      detailed_msg-msgv3 = <rcomp_msg>-msgv3.
+      detailed_msg-msgv4 = <rcomp_msg>-msgv4.
     else.
       free_text_msg = obj_to_log.
     endif.
