@@ -904,7 +904,7 @@ class lcl_test implementation.
     call function 'FORMAT_MESSAGE'
       exporting
         id        = id
-        lang      = lang
+        lang      = 'E'
         no        = no
         v1        = v1
         v2        = v2
