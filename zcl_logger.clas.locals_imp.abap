@@ -4,14 +4,14 @@ class lcx_t100 definition inheriting from cx_static_check.
     methods constructor importing previous like previous optional
                                   id       type symsgid
                                   no       type symsgno
-                                  msgv1    type syst_msgv optional
-                                  msgv2    type syst_msgv optional
-                                  msgv3    type syst_msgv optional
-                                  msgv4    type syst_msgv optional.
-    data msgv1 type syst_msgv.
-    data msgv2 type syst_msgv.
-    data msgv3 type syst_msgv.
-    data msgv4 type syst_msgv.
+                                  msgv1    type symsgv optional
+                                  msgv2    type symsgv optional
+                                  msgv3    type symsgv optional
+                                  msgv4    type symsgv optional.
+    data msgv1 type symsgv.
+    data msgv2 type symsgv.
+    data msgv3 type symsgv.
+    data msgv4 type symsgv.
 endclass.
 
 class lcx_t100 implementation.

@@ -83,11 +83,11 @@ class zcl_logger definition
                                           importance                     type balprobcl optional
                                 returning value(rt_exception_data_table) type tty_exception_data.
 
-endclass.
+ENDCLASS.
 
 
 
-class zcl_logger implementation.
+CLASS ZCL_LOGGER IMPLEMENTATION.
 
 
   method a.
@@ -254,7 +254,8 @@ class zcl_logger implementation.
           i_s_context  = formatted_context
           i_s_params   = formatted_params.
     elseif exception_data_table is not initial.
-      loop at exception_data_table assigning field-symbol(<exception_data>).
+      field-symbols <exception_data> like line of exception_data_table.
+      loop at exception_data_table assigning <exception_data>.
         call function 'BAL_LOG_EXCEPTION_ADD'
           exporting
             i_log_handle = me->handle
@@ -286,6 +287,42 @@ class zcl_logger implementation.
     endif.
 
     self = me.
+  endmethod.
+
+
+  method drill_down_into_exception.
+    data: i                  type i value 2,
+          previous_exception type ref to cx_root,
+          exceptions         type tty_exception.
+
+    field-symbols <ex> like line of exceptions.
+    append initial line to exceptions assigning <ex>.
+    <ex>-level = 1.
+    <ex>-exception = exception.
+
+    previous_exception = exception.
+
+    while i <= max_exception_drill_down.
+      if previous_exception->previous is not bound.
+        exit.
+      endif.
+
+      previous_exception ?= previous_exception->previous.
+
+      append initial line to exceptions assigning <ex>.
+      <ex>-level = i.
+      <ex>-exception = previous_exception.
+      i = i + 1.
+    endwhile.
+
+    field-symbols <ret> like line of rt_exception_data_table.
+    sort exceptions by level descending.                   "Display the deepest exception first
+    loop at exceptions assigning <ex>.
+      append initial line to rt_exception_data_table assigning <ret>.
+      <ret>-exception = <ex>-exception.
+      <ret>-msgty     = type.
+      <ret>-probclass = importance.
+    endloop.
   endmethod.
 
 
@@ -393,22 +430,22 @@ class zcl_logger implementation.
   method new.
 
     if auto_save is supplied.
-      r_log = cast zcl_logger( zcl_logger_factory=>create_log(
+      r_log ?= zcl_logger_factory=>create_log(
         !object = object
         !subobject = subobject
         !desc = desc
         !context = context
         !auto_save = auto_save
         !second_db_conn = second_db_conn
-      ) ).
+      ).
     else.
-      r_log = cast zcl_logger( zcl_logger_factory=>create_log(
+      r_log ?= zcl_logger_factory=>create_log(
         !object = object
         !subobject = subobject
         !desc = desc
         !context = context
         !second_db_conn = second_db_conn
-      ) ).
+      ).
     endif.
 
   endmethod.
@@ -417,20 +454,20 @@ class zcl_logger implementation.
   method open.
 
     if auto_save is supplied.
-      r_log = cast zcl_logger( zcl_logger_factory=>open_log(
+      r_log ?= zcl_logger_factory=>open_log(
         !object = object
         !subobject = subobject
         !desc = desc
         !create_if_does_not_exist = create_if_does_not_exist
         !auto_save = auto_save
-      ) ).
+      ).
     else.
-      r_log = cast zcl_logger( zcl_logger_factory=>open_log(
+      r_log ?= zcl_logger_factory=>open_log(
         !object = object
         !subobject = subobject
         !desc = desc
         !create_if_does_not_exist = create_if_does_not_exist
-      ) ).
+      ).
     endif.
 
   endmethod.
@@ -519,36 +556,4 @@ class zcl_logger implementation.
       type          = 'W'
       importance    = importance ).
   endmethod.
-
-  method drill_down_into_exception.
-    data: i                  type i value 2,
-          previous_exception type ref to cx_root,
-          exceptions         type tty_exception.
-
-
-    append value #( level = 1  exception = exception ) to exceptions.
-
-    previous_exception = exception.
-
-    while i <= max_exception_drill_down.
-      if previous_exception->previous is not bound.
-        exit.
-      endif.
-
-      previous_exception ?= previous_exception->previous.
-
-      append value #( level = i exception = previous_exception ) to exceptions.
-      i = i + 1.
-    endwhile.
-
-    sort exceptions by level descending.                   "Display the deepest exception first
-    loop at exceptions assigning field-symbol(<exception>).
-      append value #(
-          exception = <exception>-exception
-          msgty     = type
-          probclass = importance
-        ) to rt_exception_data_table.
-    endloop.
-  endmethod.
-
-endclass.
+ENDCLASS.

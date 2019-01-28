@@ -572,6 +572,7 @@ class lcl_test implementation.
           err            type ref to cx_sy_zerodivide,
           act_txt        type char255,
           exp_txt        type char255,
+          long_text      type string,
           msg_handle     type balmsghndl.
 
     try.
@@ -579,7 +580,7 @@ class lcl_test implementation.
       catch cx_sy_zerodivide into err.
         anon_log->add( err ).
         exp_txt         = err->if_message~get_text( ).
-        data(long_text) = err->if_message~get_longtext( ).
+        long_text       = err->if_message~get_longtext( ).
     endtry.
 
     msg_handle-log_handle = anon_log->handle.
@@ -600,20 +601,21 @@ class lcl_test implementation.
   method can_log_chained_exceptions.
     data: main_exception     type ref to lcx_t100,
           previous_exception type ref to lcx_t100,
+          catched_exception  type ref to lcx_t100,
           msg_handle         type balmsghndl,
           act_texts          type table_of_strings,
           act_text           type string.
 
     define exceptions_are.
-      main_exception = new lcx_t100(
+      create object main_exception
+        exporting
           previous = previous_exception
           id       = &1
           no       = &2
           msgv1    = &3
           msgv2    = &4
           msgv3    = &5
-          msgv4    = &6
-      ).
+          msgv4    = &6.
       previous_exception = main_exception.
     end-of-definition.
 
@@ -627,7 +629,7 @@ class lcl_test implementation.
     "When
     try.
         raise exception main_exception.
-      catch lcx_t100 into data(catched_exception).
+      catch lcx_t100 into catched_exception.
         anon_log->add( catched_exception ).
     endtry.
 
