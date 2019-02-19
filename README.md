@@ -141,7 +141,7 @@ And that's every scenario I've been able to think of, so far.
 ## Don't Ignore SAP's Strengths
 
 The SAP environment has a lot of power, and it would be good not to ignore
-it. Transaction code SLG1 views and filters logs with ease, and it allows
+it. Transaction codes SLG1 and SLGD views and filters logs with ease, and it allows
 for added context variables and parameters. A new logger class should not
 reinvent the wheel, the wheelbarrow, or the mechanisms for saving and
 displaying logs.

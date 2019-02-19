@@ -72,9 +72,9 @@ class zcl_logger definition
 
 *"* private components of class ZCL_LOGGER
 *"* do not include other source files here!!!
-    data auto_save          type abap_bool .
-    data sec_connection     type abap_bool .
-    data sec_connect_commit type abap_bool .
+    data  auto_save                type abap_bool .
+    data  sec_connection           type abap_bool .
+    data  sec_connect_commit       type abap_bool .
     data: max_exception_drill_down type i.
 
     methods:
@@ -83,11 +83,11 @@ class zcl_logger definition
                                           importance                     type balprobcl optional
                                 returning value(rt_exception_data_table) type tty_exception_data.
 
-endclass.
+ENDCLASS.
 
 
 
-class zcl_logger implementation.
+CLASS ZCL_LOGGER IMPLEMENTATION.
 
 
   method a.
@@ -119,9 +119,13 @@ class zcl_logger implementation.
 
     field-symbols: <table_of_messages> type any table,
                    <message_line>      type any,
+                   <bapiret1_msg>      type bapiret1,
                    <bapi_msg>          type bapiret2,
+                   <bapi_coru_msg>     type bapi_coru_return,
+                   <bapi_order_msg>    type bapi_order_return,
                    <bdc_msg>           type bdcmsgcoll,
                    <hrpad_msg>         type hrpad_message_alike,
+                   <rcomp_msg>         type rcomp,
                    <context_val>       type any.
 
     if context is not initial.
@@ -173,6 +177,15 @@ class zcl_logger implementation.
         add( <message_line> ).
       endloop.
       return.
+    elseif msg_type->absolute_name = '\TYPE=BAPIRET1'.
+      assign obj_to_log to <bapiret1_msg>.
+      detailed_msg-msgty = <bapiret1_msg>-type.
+      detailed_msg-msgid = <bapiret1_msg>-id.
+      detailed_msg-msgno = <bapiret1_msg>-number.
+      detailed_msg-msgv1 = <bapiret1_msg>-message_v1.
+      detailed_msg-msgv2 = <bapiret1_msg>-message_v2.
+      detailed_msg-msgv3 = <bapiret1_msg>-message_v3.
+      detailed_msg-msgv4 = <bapiret1_msg>-message_v4.
     elseif msg_type->absolute_name = '\TYPE=BAPIRET2'.
       assign obj_to_log to <bapi_msg>.
       detailed_msg-msgty = <bapi_msg>-type.
@@ -182,6 +195,24 @@ class zcl_logger implementation.
       detailed_msg-msgv2 = <bapi_msg>-message_v2.
       detailed_msg-msgv3 = <bapi_msg>-message_v3.
       detailed_msg-msgv4 = <bapi_msg>-message_v4.
+    elseif msg_type->absolute_name = '\TYPE=BAPI_CORU_RETURN'.
+      assign obj_to_log to <bapi_coru_msg>.
+      detailed_msg-msgty = <bapi_coru_msg>-type.
+      detailed_msg-msgid = <bapi_coru_msg>-id.
+      detailed_msg-msgno = <bapi_coru_msg>-number.
+      detailed_msg-msgv1 = <bapi_coru_msg>-message_v1.
+      detailed_msg-msgv2 = <bapi_coru_msg>-message_v2.
+      detailed_msg-msgv3 = <bapi_coru_msg>-message_v3.
+      detailed_msg-msgv4 = <bapi_coru_msg>-message_v4.
+    elseif msg_type->absolute_name = '\TYPE=BAPI_ORDER_RETURN'.
+      assign obj_to_log to <bapi_order_msg>.
+      detailed_msg-msgty = <bapi_order_msg>-type.
+      detailed_msg-msgid = <bapi_order_msg>-id.
+      detailed_msg-msgno = <bapi_order_msg>-number.
+      detailed_msg-msgv1 = <bapi_order_msg>-message_v1.
+      detailed_msg-msgv2 = <bapi_order_msg>-message_v2.
+      detailed_msg-msgv3 = <bapi_order_msg>-message_v3.
+      detailed_msg-msgv4 = <bapi_order_msg>-message_v4.
     elseif msg_type->absolute_name = '\TYPE=BDCMSGCOLL'.
       assign obj_to_log to <bdc_msg>.
       detailed_msg-msgty = <bdc_msg>-msgtyp.
@@ -200,6 +231,15 @@ class zcl_logger implementation.
       detailed_msg-msgv2 = <hrpad_msg>-msgv2.
       detailed_msg-msgv3 = <hrpad_msg>-msgv3.
       detailed_msg-msgv4 = <hrpad_msg>-msgv4.
+    elseif msg_type->absolute_name = '\TYPE=RCOMP'.
+      assign obj_to_log to <rcomp_msg>.
+      detailed_msg-msgty = <rcomp_msg>-msgty.
+      detailed_msg-msgid = <rcomp_msg>-msgid.
+      detailed_msg-msgno = <rcomp_msg>-msgno.
+      detailed_msg-msgv1 = <rcomp_msg>-msgv1.
+      detailed_msg-msgv2 = <rcomp_msg>-msgv2.
+      detailed_msg-msgv3 = <rcomp_msg>-msgv3.
+      detailed_msg-msgv4 = <rcomp_msg>-msgv4.
     else.
       free_text_msg = obj_to_log.
     endif.
@@ -214,7 +254,8 @@ class zcl_logger implementation.
           i_s_context  = formatted_context
           i_s_params   = formatted_params.
     elseif exception_data_table is not initial.
-      loop at exception_data_table assigning field-symbol(<exception_data>).
+      field-symbols <exception_data> like line of exception_data_table.
+      loop at exception_data_table assigning <exception_data>.
         call function 'BAL_LOG_EXCEPTION_ADD'
           exporting
             i_log_handle = me->handle
@@ -246,6 +287,42 @@ class zcl_logger implementation.
     endif.
 
     self = me.
+  endmethod.
+
+
+  method drill_down_into_exception.
+    data: i                  type i value 2,
+          previous_exception type ref to cx_root,
+          exceptions         type tty_exception.
+
+    field-symbols <ex> like line of exceptions.
+    append initial line to exceptions assigning <ex>.
+    <ex>-level = 1.
+    <ex>-exception = exception.
+
+    previous_exception = exception.
+
+    while i <= max_exception_drill_down.
+      if previous_exception->previous is not bound.
+        exit.
+      endif.
+
+      previous_exception ?= previous_exception->previous.
+
+      append initial line to exceptions assigning <ex>.
+      <ex>-level = i.
+      <ex>-exception = previous_exception.
+      i = i + 1.
+    endwhile.
+
+    field-symbols <ret> like line of rt_exception_data_table.
+    sort exceptions by level descending.                   "Display the deepest exception first
+    loop at exceptions assigning <ex>.
+      append initial line to rt_exception_data_table assigning <ret>.
+      <ret>-exception = <ex>-exception.
+      <ret>-msgty     = type.
+      <ret>-probclass = importance.
+    endloop.
   endmethod.
 
 
@@ -353,22 +430,22 @@ class zcl_logger implementation.
   method new.
 
     if auto_save is supplied.
-      r_log = cast zcl_logger( zcl_logger_factory=>create_log(
+      r_log ?= zcl_logger_factory=>create_log(
         !object = object
         !subobject = subobject
         !desc = desc
         !context = context
         !auto_save = auto_save
         !second_db_conn = second_db_conn
-      ) ).
+      ).
     else.
-      r_log = cast zcl_logger( zcl_logger_factory=>create_log(
+      r_log ?= zcl_logger_factory=>create_log(
         !object = object
         !subobject = subobject
         !desc = desc
         !context = context
         !second_db_conn = second_db_conn
-      ) ).
+      ).
     endif.
 
   endmethod.
@@ -377,20 +454,20 @@ class zcl_logger implementation.
   method open.
 
     if auto_save is supplied.
-      r_log = cast zcl_logger( zcl_logger_factory=>open_log(
+      r_log ?= zcl_logger_factory=>open_log(
         !object = object
         !subobject = subobject
         !desc = desc
         !create_if_does_not_exist = create_if_does_not_exist
         !auto_save = auto_save
-      ) ).
+      ).
     else.
-      r_log = cast zcl_logger( zcl_logger_factory=>open_log(
+      r_log ?= zcl_logger_factory=>open_log(
         !object = object
         !subobject = subobject
         !desc = desc
         !create_if_does_not_exist = create_if_does_not_exist
-      ) ).
+      ).
     endif.
 
   endmethod.
@@ -479,36 +556,4 @@ class zcl_logger implementation.
       type          = 'W'
       importance    = importance ).
   endmethod.
-
-  method drill_down_into_exception.
-    data: i                  type i value 2,
-          previous_exception type ref to cx_root,
-          exceptions         type tty_exception.
-
-
-    append value #( level = 1  exception = exception ) to exceptions.
-
-    previous_exception = exception.
-
-    while i <= max_exception_drill_down.
-      if previous_exception->previous is not bound.
-        exit.
-      endif.
-
-      previous_exception ?= previous_exception->previous.
-
-      append value #( level = i exception = previous_exception ) to exceptions.
-      i = i + 1.
-    endwhile.
-
-    sort exceptions by level descending.                   "Display the deepest exception first
-    loop at exceptions assigning field-symbol(<exception>).
-      append value #(
-          exception = <exception>-exception
-          msgty     = type
-          probclass = importance
-        ) to rt_exception_data_table.
-    endloop.
-  endmethod.
-
-endclass.
+ENDCLASS.

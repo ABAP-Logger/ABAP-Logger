@@ -70,7 +70,11 @@ class lcl_test definition for testing
 
       can_log_string for testing,
       can_log_char   for testing,
-      can_log_bapiret2 for testing,
+      can_log_bapiret1  for testing,
+      can_log_bapiret2  for testing,
+      can_log_bapi_coru_return for testing,
+      can_log_bapi_order_return for testing,
+      can_log_rcomp     for testing,
       can_log_bapirettab for testing,
       can_log_err for testing,
       can_log_chained_exceptions for testing,
@@ -274,6 +278,51 @@ class lcl_test implementation.
       msg = 'Did not log system message properly' ).
   endmethod.
 
+  method can_log_bapiret1.
+    data: bapi_msg         type bapiret1,
+          msg_handle       type balmsghndl,
+          expected_details type bal_s_msg,
+          actual_details   type bal_s_msg,
+          actual_text      type char200.
+
+    expected_details-msgty = bapi_msg-type = 'W'.
+    expected_details-msgid = bapi_msg-id = 'BL'.
+    expected_details-msgno = bapi_msg-number = '001'.
+    expected_details-msgv1 = bapi_msg-message_v1 = 'This'.
+    expected_details-msgv2 = bapi_msg-message_v2 = 'is'.
+    expected_details-msgv3 = bapi_msg-message_v3 = 'a'.
+    expected_details-msgv4 = bapi_msg-message_v4 = 'test'.
+
+    anon_log->add( bapi_msg ).
+
+    msg_handle-log_handle = anon_log->handle.
+    msg_handle-msgnumber  = '000001'.
+
+    call function 'BAL_LOG_MSG_READ'
+      exporting
+        i_s_msg_handle = msg_handle
+      importing
+        e_s_msg        = actual_details
+        e_txt_msg      = actual_text.
+
+    cl_aunit_assert=>assert_not_initial(
+      act = actual_details-time_stmp
+      msg = 'Did not log system message properly' ).
+
+    expected_details-msg_count = 1.
+    clear actual_details-time_stmp.
+
+    cl_aunit_assert=>assert_equals(
+      exp = expected_details
+      act = actual_details
+      msg = 'Did not log system message properly' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = 'This is a test'
+      act = condense( actual_text )
+      msg = 'Did not log system message properly' ).
+  endmethod.
+
   method can_log_bapiret2.
     data: bapi_msg         type bapiret2,
           msg_handle       type balmsghndl,
@@ -318,6 +367,142 @@ class lcl_test implementation.
       act = condense( actual_text )
       msg = 'Did not log system message properly' ).
   endmethod.
+
+  method can_log_bapi_coru_return.
+    data: bapi_msg         type bapi_coru_return,
+          msg_handle       type balmsghndl,
+          expected_details type bal_s_msg,
+          actual_details   type bal_s_msg,
+          actual_text      type char200.
+
+    expected_details-msgty = bapi_msg-type = 'W'.
+    expected_details-msgid = bapi_msg-id = 'BL'.
+    expected_details-msgno = bapi_msg-number = '001'.
+    expected_details-msgv1 = bapi_msg-message_v1 = 'This'.
+    expected_details-msgv2 = bapi_msg-message_v2 = 'is'.
+    expected_details-msgv3 = bapi_msg-message_v3 = 'a'.
+    expected_details-msgv4 = bapi_msg-message_v4 = 'test'.
+
+    anon_log->add( bapi_msg ).
+
+    msg_handle-log_handle = anon_log->handle.
+    msg_handle-msgnumber  = '000001'.
+
+    call function 'BAL_LOG_MSG_READ'
+      exporting
+        i_s_msg_handle = msg_handle
+      importing
+        e_s_msg        = actual_details
+        e_txt_msg      = actual_text.
+
+    cl_aunit_assert=>assert_not_initial(
+      act = actual_details-time_stmp
+      msg = 'Did not log system message properly' ).
+
+    expected_details-msg_count = 1.
+    clear actual_details-time_stmp.
+
+    cl_aunit_assert=>assert_equals(
+      exp = expected_details
+      act = actual_details
+      msg = 'Did not log system message properly' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = 'This is a test'
+      act = condense( actual_text )
+      msg = 'Did not log system message properly' ).
+  endmethod.
+
+  method can_log_bapi_order_return.
+    data: bapi_msg         type bapi_order_return,
+          msg_handle       type balmsghndl,
+          expected_details type bal_s_msg,
+          actual_details   type bal_s_msg,
+          actual_text      type char200.
+
+    expected_details-msgty = bapi_msg-type = 'W'.
+    expected_details-msgid = bapi_msg-id = 'BL'.
+    expected_details-msgno = bapi_msg-number = '001'.
+    expected_details-msgv1 = bapi_msg-message_v1 = 'This'.
+    expected_details-msgv2 = bapi_msg-message_v2 = 'is'.
+    expected_details-msgv3 = bapi_msg-message_v3 = 'a'.
+    expected_details-msgv4 = bapi_msg-message_v4 = 'test'.
+
+    anon_log->add( bapi_msg ).
+
+    msg_handle-log_handle = anon_log->handle.
+    msg_handle-msgnumber  = '000001'.
+
+    call function 'BAL_LOG_MSG_READ'
+      exporting
+        i_s_msg_handle = msg_handle
+      importing
+        e_s_msg        = actual_details
+        e_txt_msg      = actual_text.
+
+    cl_aunit_assert=>assert_not_initial(
+      act = actual_details-time_stmp
+      msg = 'Did not log system message properly' ).
+
+    expected_details-msg_count = 1.
+    clear actual_details-time_stmp.
+
+    cl_aunit_assert=>assert_equals(
+      exp = expected_details
+      act = actual_details
+      msg = 'Did not log system message properly' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = 'This is a test'
+      act = condense( actual_text )
+      msg = 'Did not log system message properly' ).
+  endmethod.
+
+  method can_log_rcomp.
+    data: rcomp_msg        type rcomp,
+          msg_handle       type balmsghndl,
+          expected_details type bal_s_msg,
+          actual_details   type bal_s_msg,
+          actual_text      type char200.
+
+    expected_details-msgty = rcomp_msg-msgty = 'W'.
+    expected_details-msgid = rcomp_msg-msgid = 'BL'.
+    expected_details-msgno = rcomp_msg-msgno = '001'.
+    expected_details-msgv1 = rcomp_msg-msgv1 = 'This'.
+    expected_details-msgv2 = rcomp_msg-msgv2 = 'is'.
+    expected_details-msgv3 = rcomp_msg-msgv3 = 'a'.
+    expected_details-msgv4 = rcomp_msg-msgv4 = 'test'.
+
+    anon_log->add( rcomp_msg ).
+
+    msg_handle-log_handle = anon_log->handle.
+    msg_handle-msgnumber  = '000001'.
+
+    call function 'BAL_LOG_MSG_READ'
+      exporting
+        i_s_msg_handle = msg_handle
+      importing
+        e_s_msg        = actual_details
+        e_txt_msg      = actual_text.
+
+    cl_aunit_assert=>assert_not_initial(
+      act = actual_details-time_stmp
+      msg = 'Did not log system message properly' ).
+
+    expected_details-msg_count = 1.
+    clear actual_details-time_stmp.
+
+    cl_aunit_assert=>assert_equals(
+      exp = expected_details
+      act = actual_details
+      msg = 'Did not log system message properly' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = 'This is a test'
+      act = condense( actual_text )
+      msg = 'Did not log system message properly' ).
+  endmethod.
+
 
   method can_log_bapirettab.
     data: bapi_messages type bapirettab,
@@ -387,6 +572,7 @@ class lcl_test implementation.
           err            type ref to cx_sy_zerodivide,
           act_txt        type char255,
           exp_txt        type char255,
+          long_text      type string,
           msg_handle     type balmsghndl.
 
     try.
@@ -394,7 +580,7 @@ class lcl_test implementation.
       catch cx_sy_zerodivide into err.
         anon_log->add( err ).
         exp_txt         = err->if_message~get_text( ).
-        data(long_text) = err->if_message~get_longtext( ).
+        long_text       = err->if_message~get_longtext( ).
     endtry.
 
     msg_handle-log_handle = anon_log->handle.
@@ -415,20 +601,21 @@ class lcl_test implementation.
   method can_log_chained_exceptions.
     data: main_exception     type ref to lcx_t100,
           previous_exception type ref to lcx_t100,
+          catched_exception  type ref to lcx_t100,
           msg_handle         type balmsghndl,
           act_texts          type table_of_strings,
           act_text           type string.
 
     define exceptions_are.
-      main_exception = new lcx_t100(
+      create object main_exception
+        exporting
           previous = previous_exception
           id       = &1
           no       = &2
           msgv1    = &3
           msgv2    = &4
           msgv3    = &5
-          msgv4    = &6
-      ).
+          msgv4    = &6.
       previous_exception = main_exception.
     end-of-definition.
 
@@ -442,7 +629,7 @@ class lcl_test implementation.
     "When
     try.
         raise exception main_exception.
-      catch lcx_t100 into data(catched_exception).
+      catch lcx_t100 into catched_exception.
         anon_log->add( catched_exception ).
     endtry.
 
@@ -464,7 +651,7 @@ class lcl_test implementation.
 
     read table act_texts index 3 into act_text.
     cl_aunit_assert=>assert_equals(
-      exp = format_message( id = 'SABP_UNIT' no = 000 v1 = 'This' v2 = 'is' v3 = 'test' v4 = 'message' )      " 'Message: This is test message'
+      exp = format_message( id = 'SABP_UNIT' no = 000 v1 = 'This' v2 = 'is' v3 = 'test' v4 = 'message' )       " 'Message: This is test message'
       act = act_text
       msg = 'Did not log chained exception correctly' ).
   endmethod.
@@ -510,7 +697,7 @@ class lcl_test implementation.
 
     read table act_texts index 3 into act_text.
     cl_aunit_assert=>assert_equals(
-      exp = format_message( id = 'SABP_UNIT' no = 000 v1 = 'This' v2 = 'is' v3 = 'test' v4 = 'message' )       " 'Message: This is test message'
+      exp = format_message( id = 'SABP_UNIT' no = 000 v1 = 'This' v2 = 'is' v3 = 'test' v4 = 'message' )        " 'Message: This is test message'
       act = act_text
       msg = 'Did not log BDC return messages correctly' ).
 
@@ -719,7 +906,7 @@ class lcl_test implementation.
     call function 'FORMAT_MESSAGE'
       exporting
         id        = id
-        lang      = lang
+        lang      = 'E'
         no        = no
         v1        = v1
         v2        = v2
