@@ -27,6 +27,12 @@ class zcl_logger_factory definition
       returning
         value(r_log)             type ref to zif_logger .
 
+    "! Creates a settings object which can be modified. It can be pass on
+    "! the creation of the logger to change its behavior.
+    class-methods create_settings
+      returning
+        value(r_settings) type ref to zif_logger_settings.
+
   protected section.
   private section.
 endclass.
@@ -164,6 +170,13 @@ class zcl_logger_factory implementation.
         e_s_log      = lo_log->header.
 
     r_log = lo_log.
+
+  endmethod.
+
+
+  method create_settings.
+
+    create object r_settings type zcl_logger_settings.
 
   endmethod.
 
