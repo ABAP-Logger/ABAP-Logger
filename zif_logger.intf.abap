@@ -3,6 +3,7 @@ interface zif_logger
   data handle type balloghndl read-only .
   data db_number type balognr read-only .
   data header type bal_s_log read-only .
+
   methods add
     importing
       obj_to_log    type any optional
@@ -15,6 +16,7 @@ interface zif_logger
         preferred parameter obj_to_log
     returning
       value(self)   type ref to zif_logger .
+
   methods a
     importing
       obj_to_log    type any optional
@@ -26,6 +28,7 @@ interface zif_logger
         preferred parameter obj_to_log
     returning
       value(self)   type ref to zif_logger .
+
   methods e
     importing
       obj_to_log    type any optional
@@ -37,6 +40,7 @@ interface zif_logger
         preferred parameter obj_to_log
     returning
       value(self)   type ref to zif_logger .
+
   methods w
     importing
       obj_to_log    type any optional
@@ -48,6 +52,7 @@ interface zif_logger
         preferred parameter obj_to_log
     returning
       value(self)   type ref to zif_logger .
+
   methods i
     importing
       obj_to_log    type any optional
@@ -59,6 +64,7 @@ interface zif_logger
         preferred parameter obj_to_log
     returning
       value(self)   type ref to zif_logger .
+
   methods s
     importing
       obj_to_log    type any optional
@@ -70,17 +76,21 @@ interface zif_logger
         preferred parameter obj_to_log
     returning
       value(self)   type ref to zif_logger .
+
+  "! Saves the log on demand. Intended to be called at the
+  "! end of the log processing so that logs can be saved depending
+  "! on other criteria, like the existence of error messages.
+  "! If there are no error messages, it may not be desirable to save
+  "! a log.
+  "! If auto save is enabled, save will do nothing.
   methods save .
-  methods get_autosave
-    returning
-      value(auto_save) type abap_bool .
-  methods set_autosave
-    importing
-      auto_save type abap_bool .
+
   methods export_to_table
     returning
       value(rt_bapiret) type bapirettab .
+
   methods fullscreen .
+
   methods popup .
 
 endinterface.

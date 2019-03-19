@@ -24,9 +24,9 @@ class lcl_test definition for testing
   private section.
 
     data:
-          anon_log     type ref to zif_logger,
-          named_log    type ref to zif_logger,
-          reopened_log type ref to zif_logger.
+      anon_log     type ref to zif_logger,
+      named_log    type ref to zif_logger,
+      reopened_log type ref to zif_logger.
 
     class-methods:
       class_setup.
@@ -58,6 +58,7 @@ class lcl_test definition for testing
       can_create_anon_log for testing,
       can_create_named_log for testing,
       can_reopen_log for testing,
+      can_create_expiring_log for testing,
       can_open_or_create for testing,
 
       can_add_log_context for testing,
@@ -121,6 +122,60 @@ class lcl_test implementation.
       msg = 'Cannot Instantiate Named Log' ).
   endmethod.
 
+  method can_create_expiring_log.
+    data expiring_log type ref to zif_logger.
+    data act_header type bal_s_log.
+    constants days_until_log_can_be_deleted type i value 365.
+
+    do 2 times.
+      clear expiring_log.
+      case sy-index.
+        when 1.     "Expiry in days from now
+          expiring_log = zcl_logger_factory=>create_log(
+            object    = 'ABAPUNIT'
+            subobject = 'LOGGER'
+            desc      = 'Log that is deletable and expiring'
+            settings  = zcl_logger_factory=>create_settings(
+              )->set_expiry_in_days( days_until_log_can_be_deleted
+              )->set_deletable_before_expiry( abap_true )
+          ).
+        when 2.     "Expiry with date
+          expiring_log = zcl_logger_factory=>create_log(
+            object    = 'ABAPUNIT'
+            subobject = 'LOGGER'
+            desc      = 'Log that is deletable and expiring'
+            settings  = zcl_logger_factory=>create_settings(
+              )->set_expiry_date( conv #( sy-datum + days_until_log_can_be_deleted )
+              )->set_deletable_before_expiry( abap_true )
+          ).
+      endcase.
+
+      cl_aunit_assert=>assert_bound(
+        act = expiring_log
+        msg = 'Cannot Instantiate Expiring Log' ).
+
+      call function 'BAL_LOG_HDR_READ'
+        exporting
+          i_log_handle = expiring_log->handle
+        importing
+          e_s_log      = act_header.
+
+      cl_aunit_assert=>assert_equals(
+        exporting
+          exp     = conv d( sy-datum + days_until_log_can_be_deleted )
+          act     = act_header-aldate_del
+          msg     = 'Log is not expiring in correct amount of days'
+      ).
+
+      cl_aunit_assert=>assert_equals(
+        exporting
+          exp     = abap_true
+          act     = act_header-del_before
+          msg     = 'Log is deletable before expiry date'
+      ).
+    enddo.
+  endmethod.
+
   method can_reopen_log.
     cl_aunit_assert=>assert_bound(
       act = reopened_log
@@ -130,7 +185,7 @@ class lcl_test implementation.
   method can_open_or_create.
     data: created_log type ref to zif_logger,
           handles     type bal_t_logh.
-    call function 'BAL_GLB_MEMORY_REFRESH'.                "Close Logs
+    call function 'BAL_GLB_MEMORY_REFRESH'. "Close Logs
     reopened_log = zcl_logger=>open( object = 'ABAPUNIT'
                                      subobject = 'LOGGER'
                                      desc = 'Log saved in database'
@@ -204,6 +259,7 @@ class lcl_test implementation.
       act = get_first_message( named_log->handle )
       msg = 'Did not write to named log' ).
   endmethod.
+
 
   method auto_saves_named_log.
     data: dummy       type c,
@@ -923,4 +979,6 @@ class lcl_test implementation.
   method teardown.
     call function 'BAL_GLB_MEMORY_REFRESH'.
   endmethod.
+
+
 endclass.       "lcl_Test

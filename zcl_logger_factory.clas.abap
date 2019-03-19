@@ -5,27 +5,27 @@ class zcl_logger_factory definition
 
   public section.
 
+    "! Starts a new log.
     class-methods create_log
       importing
-        !object                  type csequence optional
-        !subobject               type csequence optional
-        !desc                    type csequence optional
-        !context                 type simple optional
-        !auto_save               type abap_bool optional
-        !second_db_conn          type abap_bool default abap_true
-        max_exception_drill_down type i default 10
+        object       type csequence optional
+        subobject    type csequence optional
+        desc         type csequence optional
+        context      type simple optional
+        settings     type ref to zif_logger_settings optional
       returning
-        value(r_log)             type ref to zif_logger .
+        value(r_log) type ref to zif_logger .
 
+    "! Reopens an already existing log.
     class-methods open_log
       importing
-        !object                   type csequence
-        !subobject                type csequence
-        !desc                     type csequence optional
-        !create_if_does_not_exist type abap_bool default abap_false
-        !auto_save                type abap_bool optional
+        object                   type csequence
+        subobject                type csequence
+        desc                     type csequence optional
+        create_if_does_not_exist type abap_bool default abap_false
+        settings                 type ref to zif_logger_settings optional
       returning
-        value(r_log)              type ref to zif_logger .
+        value(r_log)             type ref to zif_logger .
 
   protected section.
   private section.
@@ -35,14 +35,8 @@ endclass.
 
 class zcl_logger_factory implementation.
 
-  method create_log.
 
-*-- Added AUTO_SAVE as a parameter.  There are times when
-*-- you do not want to save the log unless certain kinds
-*-- of messages are put in the log.  By allowing the explicit
-*-- setting of the AUTO_SAVE value, this can be done
-*-- The SAVE method must be called at the end processing
-*-- to save all of the log data
+  method create_log.
 
     data: lo_log type ref to zcl_logger.
     field-symbols <context_val> type c.
@@ -52,25 +46,28 @@ class zcl_logger_factory implementation.
     lo_log->header-subobject = subobject.
     lo_log->header-extnumber = desc.
 
-*-- If AUTO_SAVE is not passed in, then use the old logic
-*-- This is to ensure backwards compatiblilty
-    if auto_save is supplied.
-      lo_log->auto_save = auto_save.
+    if settings is bound.
+      lo_log->settings = settings.
     else.
-      if object is not initial and subobject is not initial.
-        lo_log->auto_save = abap_true.
-      endif.
+      create object lo_log->settings type zcl_logger_settings.
+    endif.
+
+* Special case: Logger can work without object - but then
+* the data cannot be written to the database.
+    if object is initial.
+      lo_log->settings->set_autosave( abap_false ).
     endif.
 
 * Use secondary database connection to write data to database even if
 * main program does a rollback (e. g. during a dump).
-    if second_db_conn = abap_true.
+    if lo_log->settings->get_usage_of_secondary_db_conn( ) = abap_true.
       lo_log->sec_connection     = abap_true.
       lo_log->sec_connect_commit = abap_true.
     endif.
 
-* Safety limit for previous exception drill down
-    lo_log->max_exception_drill_down = max_exception_drill_down.
+* Set deletion date and set if log can be deleted before deletion date is reached.
+    lo_log->header-aldate_del = lo_log->settings->get_expiry_date( ).
+    lo_log->header-del_before = lo_log->settings->get_deletable_before_expiry( ).
 
     if context is supplied and context is not initial.
       lo_log->header-context-tabname =
@@ -100,17 +97,10 @@ class zcl_logger_factory implementation.
 
   method open_log.
 
-*-- Added AUTO_SAVE as a parameter.  There are times when
-*-- you do not want to save the log unless certain kinds
-*-- of messages are put in the log.  By allowing the explicit
-*-- setting of the AUTO_SAVE value, this can be done
-*-- The SAVE method must be called at the end processing
-*-- to save all of the log data
-
-    data: filter        type bal_s_lfil,
-          desc_filter   type bal_s_extn,
-          obj_filter    type bal_s_obj,
-          subobj_filter type bal_s_sub,
+    data: filter             type bal_s_lfil,
+          desc_filter        type bal_s_extn,
+          obj_filter         type bal_s_obj,
+          subobj_filter      type bal_s_sub,
 
           found_headers      type balhdr_t,
           most_recent_header type balhdr,
@@ -154,16 +144,14 @@ class zcl_logger_factory implementation.
     read table found_headers index 1 into most_recent_header.
 
     create object lo_log.
-*-- If AUTO_SAVE is not passed in, then use the old logic
-*-- This is to ensure backwards compatiblilty
-    if auto_save is not supplied.
-      lo_log->auto_save = abap_true.
-    else.
-      lo_log->auto_save = auto_save.
-    endif.
-
     lo_log->db_number = most_recent_header-lognumber.
     lo_log->handle    = most_recent_header-log_handle.
+
+    if settings is bound.
+      lo_log->settings = settings.
+    else.
+      create object lo_log->settings type zcl_logger_settings.
+    endif.
 
     call function 'BAL_DB_LOAD'
       exporting
