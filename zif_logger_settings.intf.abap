@@ -1,19 +1,12 @@
 interface zif_logger_settings public .
 
   "! Is the log automatically saved when adding messages?
-  "!
-  "! If auto save is disabled, the save() method has to be called manually
-  "! to write the data to the database (it commits the LUW).
-  "! If auto save is enabled, the save() method has no effect.
-  "! By default, auto save is enabled.
-  "!
-  "! Be careful with enabled auto save when processing mass data because it
-  "! can decrease system performance significantly.
+  "! See setter for more details.
   methods get_autosave
     returning
       value(r_auto_save) type abap_bool.
 
-  "! Sets if the log is automatically saved when adding messages.
+  "! Set to true if the log is automatically saved when adding messages.
   "!
   "! If auto save is disabled, the save() method has to be called manually
   "! to write the data to the database (it commits the LUW).
@@ -29,9 +22,7 @@ interface zif_logger_settings public .
       value(r_self) type ref to zif_logger_settings.
 
   "! Get the earliest date on which the log can be deleted.
-  "! By default the log does not expire.
-  "!
-  "! Further information: https://launchpad.support.sap.com/#/notes/195157
+  "! See setter for more details.
   methods get_expiry_date
     returning
       value(r_expiry_date) type aldate_del.
@@ -56,23 +47,22 @@ interface zif_logger_settings public .
     returning
       value(r_self) type ref to zif_logger_settings.
 
-  "! Can the log be deleted before the expiry date is reached?
-  "! The default is true.
-  "!
-  "! Further information: https://launchpad.support.sap.com/#/notes/195157
-  methods get_deletable_before_expiry
+  "! Does the log have to be kept until the expiry date is reached?
+  "! See setter for more details.
+  methods get_must_be_kept_until_expiry
     returning
-      value(r_can_be_deleted) type del_before.
+      value(r_must_be_kept_until_expiry) type del_before.
 
-  "! Set if log should be deletable before expiry date is reached.
-  "! The default is true.
+  "! Set to true if log must be kept until the expiry date is reached. It
+  "! cannot be deleted before (in transaction SLG2).
+  "! The default is false.
   "!
   "! Further information: https://launchpad.support.sap.com/#/notes/195157
-  methods set_deletable_before_expiry
+  methods set_must_be_kept_until_expiry
     importing
-      i_can_be_deleted type del_before
+      i_must_be_kept_until_expiry type del_before
     returning
-      value(r_self)    type ref to zif_logger_settings.
+      value(r_self)               type ref to zif_logger_settings.
 
   methods get_max_exception_drill_down
     returning
@@ -85,7 +75,7 @@ interface zif_logger_settings public .
       value(r_self) type ref to zif_logger_settings.
 
   "! Is a secondary database connection used to write the log entries to the database?
-  "! This is important if main program does a rollback (on purpose or after a dump).
+  "! See setter for more details.
   methods get_usage_of_secondary_db_conn
     returning
       value(r_2nd_db_connection_enabled) type flag.

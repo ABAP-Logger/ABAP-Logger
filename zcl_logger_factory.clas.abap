@@ -73,7 +73,7 @@ class zcl_logger_factory implementation.
 
 * Set deletion date and set if log can be deleted before deletion date is reached.
     lo_log->header-aldate_del = lo_log->settings->get_expiry_date( ).
-    lo_log->header-del_before = lo_log->settings->get_deletable_before_expiry( ).
+    lo_log->header-del_before = lo_log->settings->get_must_be_kept_until_expiry( ).
 
     if context is supplied and context is not initial.
       lo_log->header-context-tabname =
@@ -179,5 +179,6 @@ class zcl_logger_factory implementation.
     create object r_settings type zcl_logger_settings.
 
   endmethod.
+
 
 endclass.

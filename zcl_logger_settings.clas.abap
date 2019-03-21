@@ -11,7 +11,7 @@ class zcl_logger_settings definition
   private section.
     data auto_save type abap_bool.
     data expiry_date type aldate_del .
-    data can_be_deleted_before_expiry type del_before.
+    data must_be_kept_until_expiry type del_before.
     data max_exception_drill_down type i.
     data use_2nd_db_connection type flag.
 endclass.
@@ -21,7 +21,7 @@ endclass.
 class zcl_logger_settings implementation.
 
   method constructor.
-    can_be_deleted_before_expiry = abap_true.
+    must_be_kept_until_expiry = abap_false.
     max_exception_drill_down = 10.
     use_2nd_db_connection = abap_true.
     auto_save = abap_true.
@@ -52,12 +52,12 @@ class zcl_logger_settings implementation.
     r_self = me.
   endmethod.
 
-  method zif_logger_settings~get_deletable_before_expiry.
-    r_can_be_deleted = can_be_deleted_before_expiry.
+  method zif_logger_settings~get_must_be_kept_until_expiry.
+    r_must_be_kept_until_expiry = must_be_kept_until_expiry.
   endmethod.
 
-  method zif_logger_settings~set_deletable_before_expiry.
-    can_be_deleted_before_expiry = i_can_be_deleted.
+  method zif_logger_settings~set_must_be_kept_until_expiry.
+    must_be_kept_until_expiry = i_must_be_kept_until_expiry.
     r_self = me.
   endmethod.
 
