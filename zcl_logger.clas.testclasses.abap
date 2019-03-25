@@ -137,7 +137,7 @@ class lcl_test implementation.
             desc      = 'Log that is deletable and expiring'
             settings  = zcl_logger_factory=>create_settings(
               )->set_expiry_in_days( days_until_log_can_be_deleted
-              )->set_deletable_before_expiry( abap_true )
+              )->set_must_be_kept_until_expiry( abap_false )
           ).
         when 2.     "Expiry with date
           expiring_log = zcl_logger_factory=>create_log(
@@ -146,7 +146,7 @@ class lcl_test implementation.
             desc      = 'Log that is deletable and expiring'
             settings  = zcl_logger_factory=>create_settings(
               )->set_expiry_date( conv #( sy-datum + days_until_log_can_be_deleted )
-              )->set_deletable_before_expiry( abap_true )
+              )->set_must_be_kept_until_expiry( abap_true )
           ).
       endcase.
 
