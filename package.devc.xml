@@ -4,6 +4,8 @@
   <asx:values>
    <DEVC>
     <CTEXT>ABAP-Logger</CTEXT>
+    <COMP_POSID>BC</COMP_POSID>
+    <COMPONENT>HLB0009009</COMPONENT>
    </DEVC>
   </asx:values>
  </asx:abap>
