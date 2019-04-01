@@ -22,6 +22,8 @@ class lcl_test definition for testing
 *?</asx:values>
 *?</asx:abap>
   private section.
+    constants c_bal_object type string value 'ABAPUNIT' ##no_text.
+    constants c_bal_subobject type string value 'ZCL_LOGGER' ##no_text.
 
     data:
           anon_log     type ref to zif_logger,
@@ -94,18 +96,18 @@ class lcl_test implementation.
 
   method class_setup.
     zcl_logger=>new(
-      object = 'ABAPUNIT'
-      subobject = 'LOGGER'
+      object = c_bal_object
+      subobject = c_bal_subobject
       desc = 'Log saved in database' )->add( 'This message is in the database' ).
   endmethod.
 
   method setup.
     anon_log  = zcl_logger=>new( ).
-    named_log = zcl_logger=>new( object = 'ABAPUNIT'
-                                 subobject = 'LOGGER'
+    named_log = zcl_logger=>new( object = c_bal_object
+                                 subobject = c_bal_subobject
                                  desc = `Hey it's a log` ).
-    reopened_log = zcl_logger=>open( object = 'ABAPUNIT'
-                                     subobject = 'LOGGER'
+    reopened_log = zcl_logger=>open( object = c_bal_object
+                                     subobject = c_bal_subobject
                                      desc = 'Log saved in database' ).
   endmethod.
 
@@ -131,12 +133,12 @@ class lcl_test implementation.
     data: created_log type ref to zif_logger,
           handles     type bal_t_logh.
     call function 'BAL_GLB_MEMORY_REFRESH'.                "Close Logs
-    reopened_log = zcl_logger=>open( object = 'ABAPUNIT'
-                                     subobject = 'LOGGER'
+    reopened_log = zcl_logger=>open( object = c_bal_object
+                                     subobject = c_bal_subobject
                                      desc = 'Log saved in database'
                                      create_if_does_not_exist = abap_true ).
-    created_log = zcl_logger=>open( object = 'ABAPUNIT'
-                                    subobject = 'LOGGER'
+    created_log = zcl_logger=>open( object = c_bal_object
+                                    subobject = c_bal_subobject
                                     desc = 'Log not in database'
                                     create_if_does_not_exist = abap_true ).
     call function 'BAL_GLB_SEARCH_LOG'

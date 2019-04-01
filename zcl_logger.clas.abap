@@ -90,8 +90,8 @@ ENDCLASS.
 CLASS ZCL_LOGGER IMPLEMENTATION.
 
 
-  method a.
-    self = add(
+  method zif_logger~a.
+    self = zif_logger~add(
       obj_to_log    = obj_to_log
       context       = context
       callback_form = callback_form
@@ -102,7 +102,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   endmethod.
 
 
-  method add.
+  method zif_logger~add.
 
     data: detailed_msg         type bal_s_msg,
           exception_data_table type tty_exception_data,
@@ -326,8 +326,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   endmethod.
 
 
-  method e.
-    self = add(
+  method zif_logger~e.
+    self = zif_logger~add(
       obj_to_log    = obj_to_log
       context       = context
       callback_form = callback_form
@@ -338,7 +338,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   endmethod.
 
 
-  method export_to_table.
+  method zif_logger~export_to_table.
     data: log_handle      type bal_t_logh,
           message_handles type bal_t_msgh,
           message         type bal_s_msg,
@@ -388,7 +388,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   endmethod.
 
 
-  method fullscreen.
+  method zif_logger~fullscreen.
 
     data:
           profile        type bal_s_prof,
@@ -408,15 +408,15 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   endmethod.
 
 
-  method get_autosave.
+  method zif_logger~get_autosave.
 
     auto_save = me->auto_save.
 
   endmethod.
 
 
-  method i.
-    self = add(
+  method zif_logger~i.
+    self = zif_logger~add(
       obj_to_log    = obj_to_log
       context       = context
       callback_form = callback_form
@@ -473,7 +473,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   endmethod.
 
 
-  method popup.
+  method zif_logger~popup.
 * See SBAL_DEMO_04_POPUP for ideas
 
     data:
@@ -494,8 +494,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   endmethod.
 
 
-  method s.
-    self = add(
+  method zif_logger~s.
+    self = zif_logger~add(
       obj_to_log    = obj_to_log
       context       = context
       callback_form = callback_form
@@ -506,7 +506,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   endmethod.
 
 
-  method save.
+  method zif_logger~save.
 *--------------------------------------------------------------------*
 * Method to save the log on demand.  Intended to be called at the    *
 *  end of the log processing so that logs can be saved depending     *
@@ -539,15 +539,15 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   endmethod.
 
 
-  method set_autosave.
+  method zif_logger~set_autosave.
 
     me->auto_save = auto_save.
 
   endmethod.
 
 
-  method w.
-    self = add(
+  method zif_logger~w.
+    self = zif_logger~add(
       obj_to_log    = obj_to_log
       context       = context
       callback_form = callback_form

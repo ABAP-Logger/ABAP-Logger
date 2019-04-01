@@ -1,4 +1,4 @@
-"#autoformat (Pretty Print class automatically with abapCI plug-in (indent + all lower case)
+"#autoformat (Pretty Print class automatically with abapCI plug-in) setting: indent and all lower case
 "! <p class="shorttext synchronized" lang="en">Logger for XPRA reports - add messages to transport log</p>
 class zcl_logger_xpra definition
   public
