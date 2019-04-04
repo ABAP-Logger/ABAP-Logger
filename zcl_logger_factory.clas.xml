@@ -11,6 +11,20 @@
     <FIXPT>X</FIXPT>
     <UNICODE>X</UNICODE>
    </VSEOCLASS>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_LOGGER_FACTORY</CLSNAME>
+     <CMPNAME>C_XPRA_JOB_NAME</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Name of background job which executes XPRA reports</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_LOGGER_FACTORY</CLSNAME>
+     <CMPNAME>EXECUTING_AS_XPRA</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Currently executing as an XPRA report?</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
   </asx:values>
  </asx:abap>
 </abapGit>

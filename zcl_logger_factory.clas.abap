@@ -28,7 +28,16 @@ class zcl_logger_factory definition
         value(r_log)              type ref to zif_logger .
 
   protected section.
+    "! <p class="shorttext synchronized" lang="en">Currently executing as an XPRA report?</p>
+    "!
+    "! @parameter r_xpra_execution | <p class="shorttext synchronized" lang="en">true if executing as XPRA</p>
+    class-methods executing_as_xpra
+      returning
+        value(r_xpra_execution) type abap_bool.
+
   private section.
+    "! <p class="shorttext synchronized" lang="en">Name of background job which executes XPRA reports</p>
+    constants c_xpra_job_name type btcjob value 'RDDEXECL' ##no_text.
 endclass.
 
 
@@ -44,6 +53,20 @@ class zcl_logger_factory implementation.
 *-- The SAVE method must be called at the end processing
 *-- to save all of the log data
 
+    if executing_as_xpra(  ) = abap_true.
+      data(lo_xpra_logger) = new zcl_logger_xpra( ).
+
+      if auto_save is supplied.
+        lo_xpra_logger->auto_save = auto_save.
+      else.
+        lo_xpra_logger->auto_save = abap_true.
+      endif.
+
+      r_log = lo_xpra_logger.
+      return.
+    endif.
+
+* Standard (application) log
     data: lo_log type ref to zcl_logger.
     field-symbols <context_val> type c.
 
@@ -179,4 +202,27 @@ class zcl_logger_factory implementation.
 
   endmethod.
 
+
+  method executing_as_xpra.
+* XPRA executes in client 000 in a specific job
+    data current_job_name type btcjob.
+
+    r_xpra_execution = abap_false.
+    if sy-mandt <> '000'.
+      return.
+    endif.
+
+    call function 'GET_JOB_RUNTIME_INFO'
+      importing
+        jobname         = current_job_name
+      exceptions
+        no_runtime_info = 1.
+    if sy-subrc <> 0.
+      return.
+    endif.
+
+    if current_job_name = c_xpra_job_name.
+      r_xpra_execution = abap_true.
+    endif.
+  endmethod.
 endclass.
