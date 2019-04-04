@@ -170,6 +170,11 @@ CALL FUNCTION 'BAL_LOG_MSG_CUMULATE'
     i_compare_attributes = abap_true.
 ```
 
+## Logging in XPRA reports
+If your report is executed as an XPRA report you can still use this logger. 
+The logger factory will create an object that adds messages to the transport log if called during an XPRA execution.
+Restrictions: The XPRA logger does not store context information, and callback information is not relevant.
+
 ## Installation
 
 1. Install this project via [ABAPGit](http://abapgit.org).
