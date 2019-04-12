@@ -21,8 +21,6 @@ class zcl_logger definition
              i for zif_logger~i,
              s for zif_logger~s,
              save for zif_logger~save,
-             get_autosave for zif_logger~get_autosave,
-             set_autosave for zif_logger~set_autosave,
              export_to_table for zif_logger~export_to_table,
              fullscreen for zif_logger~fullscreen,
              popup for zif_logger~popup,
@@ -30,7 +28,8 @@ class zcl_logger definition
              db_number for zif_logger~db_number,
              header for zif_logger~header.
 
-    " backwards compatibility only -> use zcl_logger_factory instead
+    "! Starts a new log.
+    "! For backwards compatibility only! Use ZCL_LOGGER_FACTORY instead.
     class-methods new
       importing
         !object         type csequence optional
@@ -42,7 +41,8 @@ class zcl_logger definition
       returning
         value(r_log)    type ref to zcl_logger .
 
-    " backwards compatibility only -> use zcl_logger_factory instead
+    "! Reopens an already existing log.
+    "! For backwards compatibility only! Use ZCL_LOGGER_FACTORY instead.
     class-methods open
       importing
         !object                   type csequence
@@ -72,22 +72,22 @@ class zcl_logger definition
 
 *"* private components of class ZCL_LOGGER
 *"* do not include other source files here!!!
-    data  auto_save                type abap_bool .
     data  sec_connection           type abap_bool .
     data  sec_connect_commit       type abap_bool .
-    data: max_exception_drill_down type i.
+    data  settings                 type ref to zif_logger_settings.
 
     methods:
+      "! Safety limit for previous exception drill down
       drill_down_into_exception importing exception                      type ref to cx_root
                                           type                           type symsgty optional
                                           importance                     type balprobcl optional
                                 returning value(rt_exception_data_table) type tty_exception_data.
 
-ENDCLASS.
+endclass.
 
 
 
-CLASS ZCL_LOGGER IMPLEMENTATION.
+class zcl_logger implementation.
 
 
   method a.
@@ -271,7 +271,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
           i_s_msg      = detailed_msg.
     endif.
 
-    if auto_save = abap_true.
+    if me->settings->get_autosave( ) = abap_true.
       append me->handle to log_handles.
       call function 'BAL_DB_SAVE'
         exporting
@@ -302,7 +302,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 
     previous_exception = exception.
 
-    while i <= max_exception_drill_down.
+    while i <= settings->get_max_exception_drill_down( ).
       if previous_exception->previous is not bound.
         exit.
       endif.
@@ -391,8 +391,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   method fullscreen.
 
     data:
-          profile        type bal_s_prof,
-          lt_log_handles type bal_t_logh.
+      profile        type bal_s_prof,
+      lt_log_handles type bal_t_logh.
 
     append me->handle to lt_log_handles.
 
@@ -404,13 +404,6 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       exporting
         i_s_display_profile = profile
         i_t_log_handle      = lt_log_handles.
-
-  endmethod.
-
-
-  method get_autosave.
-
-    auto_save = me->auto_save.
 
   endmethod.
 
@@ -431,20 +424,22 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 
     if auto_save is supplied.
       r_log ?= zcl_logger_factory=>create_log(
-        !object = object
-        !subobject = subobject
-        !desc = desc
-        !context = context
-        !auto_save = auto_save
-        !second_db_conn = second_db_conn
+        object = object
+        subobject = subobject
+        desc = desc
+        context = context
+        settings = zcl_logger_factory=>create_settings(
+          )->set_usage_of_secondary_db_conn( second_db_conn
+          )->set_autosave( auto_save )
       ).
     else.
       r_log ?= zcl_logger_factory=>create_log(
-        !object = object
-        !subobject = subobject
-        !desc = desc
-        !context = context
-        !second_db_conn = second_db_conn
+        object = object
+        subobject = subobject
+        desc = desc
+        context = context
+        settings = zcl_logger_factory=>create_settings(
+          )->set_usage_of_secondary_db_conn( second_db_conn )
       ).
     endif.
 
@@ -455,18 +450,19 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 
     if auto_save is supplied.
       r_log ?= zcl_logger_factory=>open_log(
-        !object = object
-        !subobject = subobject
-        !desc = desc
-        !create_if_does_not_exist = create_if_does_not_exist
-        !auto_save = auto_save
+        object = object
+        subobject = subobject
+        desc = desc
+        create_if_does_not_exist = create_if_does_not_exist
+        settings = zcl_logger_factory=>create_settings(
+          )->set_autosave( auto_save )
       ).
     else.
       r_log ?= zcl_logger_factory=>open_log(
-        !object = object
-        !subobject = subobject
-        !desc = desc
-        !create_if_does_not_exist = create_if_does_not_exist
+        object = object
+        subobject = subobject
+        desc = desc
+        create_if_does_not_exist = create_if_does_not_exist
       ).
     endif.
 
@@ -477,8 +473,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 * See SBAL_DEMO_04_POPUP for ideas
 
     data:
-          profile        type bal_s_prof,
-          lt_log_handles type bal_t_logh.
+      profile        type bal_s_prof,
+      lt_log_handles type bal_t_logh.
 
     append me->handle to lt_log_handles.
 
@@ -507,21 +503,13 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 
 
   method save.
-*--------------------------------------------------------------------*
-* Method to save the log on demand.  Intended to be called at the    *
-*  end of the log processing so that logs can be saved depending     *
-*  on other criteria, like the existance of error messages.          *
-*  If there are no error messages, it may not be desireable to save  *
-*  a log                                                             *
-*--------------------------------------------------------------------*
-
 
     data:
-          log_handles type bal_t_logh,
-          log_numbers type bal_t_lgnm,
-          log_number  type bal_s_lgnm.
+      log_handles type bal_t_logh,
+      log_numbers type bal_t_lgnm,
+      log_number  type bal_s_lgnm.
 
-    check auto_save = abap_false.
+    check me->settings->get_autosave( ) = abap_false.
 
     append me->handle to log_handles.
     call function 'BAL_DB_SAVE'
@@ -539,13 +527,6 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   endmethod.
 
 
-  method set_autosave.
-
-    me->auto_save = auto_save.
-
-  endmethod.
-
-
   method w.
     self = add(
       obj_to_log    = obj_to_log
@@ -556,4 +537,4 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       type          = 'W'
       importance    = importance ).
   endmethod.
-ENDCLASS.
+endclass.
