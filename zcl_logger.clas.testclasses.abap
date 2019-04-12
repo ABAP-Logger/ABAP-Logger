@@ -58,7 +58,8 @@ class lcl_test definition for testing
       can_create_anon_log for testing,
       can_create_named_log for testing,
       can_reopen_log for testing,
-      can_create_expiring_log for testing,
+      can_create_expiring_log_days for testing,
+      can_create_expiring_log_date for testing,
       can_open_or_create for testing,
 
       can_add_log_context for testing,
@@ -122,58 +123,82 @@ class lcl_test implementation.
       msg = 'Cannot Instantiate Named Log' ).
   endmethod.
 
-  method can_create_expiring_log.
+  method can_create_expiring_log_days.
     data expiring_log type ref to zif_logger.
     data act_header type bal_s_log.
     constants days_until_log_can_be_deleted type i value 365.
 
-    do 2 times.
-      clear expiring_log.
-      case sy-index.
-        when 1.     "Expiry in days from now
-          expiring_log = zcl_logger_factory=>create_log(
-            object    = 'ABAPUNIT'
-            subobject = 'LOGGER'
-            desc      = 'Log that is deletable and expiring'
-            settings  = zcl_logger_factory=>create_settings(
-              )->set_expiry_in_days( days_until_log_can_be_deleted
-              )->set_must_be_kept_until_expiry( abap_false )
-          ).
-        when 2.     "Expiry with date
-          expiring_log = zcl_logger_factory=>create_log(
-            object    = 'ABAPUNIT'
-            subobject = 'LOGGER'
-            desc      = 'Log that is deletable and expiring'
-            settings  = zcl_logger_factory=>create_settings(
-              )->set_expiry_date( conv #( sy-datum + days_until_log_can_be_deleted )
-              )->set_must_be_kept_until_expiry( abap_true )
-          ).
-      endcase.
+    expiring_log = zcl_logger_factory=>create_log(
+      object    = 'ABAPUNIT'
+      subobject = 'LOGGER'
+      desc      = 'Log that is not deletable and expiring'
+      settings  = zcl_logger_factory=>create_settings(
+        )->set_expiry_in_days( days_until_log_can_be_deleted
+        )->set_must_be_kept_until_expiry( abap_true )
+    ).
 
-      cl_aunit_assert=>assert_bound(
-        act = expiring_log
-        msg = 'Cannot Instantiate Expiring Log' ).
+    cl_aunit_assert=>assert_bound(
+      act = expiring_log
+      msg = 'Cannot Instantiate Expiring Log' ).
 
-      call function 'BAL_LOG_HDR_READ'
-        exporting
-          i_log_handle = expiring_log->handle
-        importing
-          e_s_log      = act_header.
+    call function 'BAL_LOG_HDR_READ'
+      exporting
+        i_log_handle = expiring_log->handle
+      importing
+        e_s_log      = act_header.
 
-      cl_aunit_assert=>assert_equals(
-        exporting
-          exp     = conv d( sy-datum + days_until_log_can_be_deleted )
-          act     = act_header-aldate_del
-          msg     = 'Log is not expiring in correct amount of days'
-      ).
+    cl_aunit_assert=>assert_equals(
+      exporting
+        exp     = conv d( sy-datum + days_until_log_can_be_deleted )
+        act     = act_header-aldate_del
+        msg     = 'Log is not expiring in correct amount of days'
+    ).
 
-      cl_aunit_assert=>assert_equals(
-        exporting
-          exp     = abap_true
-          act     = act_header-del_before
-          msg     = 'Log is deletable before expiry date'
-      ).
-    enddo.
+    cl_aunit_assert=>assert_equals(
+      exporting
+        exp     = abap_true
+        act     = act_header-del_before
+        msg     = 'Log should not be deletable before expiry date'
+    ).
+  endmethod.
+
+  method can_create_expiring_log_date.
+    data expiring_log type ref to zif_logger.
+    data act_header type bal_s_log.
+    constants days_until_log_can_be_deleted type i value 365.
+
+    expiring_log = zcl_logger_factory=>create_log(
+      object    = 'ABAPUNIT'
+      subobject = 'LOGGER'
+      desc      = 'Log that is not deletable and expiring'
+      settings  = zcl_logger_factory=>create_settings(
+        )->set_expiry_date( conv #( sy-datum + days_until_log_can_be_deleted )
+        )->set_must_be_kept_until_expiry( abap_true )
+    ).
+
+    cl_aunit_assert=>assert_bound(
+      act = expiring_log
+      msg = 'Cannot Instantiate Expiring Log' ).
+
+    call function 'BAL_LOG_HDR_READ'
+      exporting
+        i_log_handle = expiring_log->handle
+      importing
+        e_s_log      = act_header.
+
+    cl_aunit_assert=>assert_equals(
+      exporting
+        exp     = conv d( sy-datum + days_until_log_can_be_deleted )
+        act     = act_header-aldate_del
+        msg     = 'Log is not expiring on correct date'
+    ).
+
+    cl_aunit_assert=>assert_equals(
+      exporting
+        exp     = abap_true
+        act     = act_header-del_before
+        msg     = 'Log should not be deletable before expiry date'
+    ).
   endmethod.
 
   method can_reopen_log.
