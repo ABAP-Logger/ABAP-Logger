@@ -1,4 +1,3 @@
-*"* use this source file for your ABAP unit test classes
 class lcl_logger_settings_should definition deferred.
 class zcl_logger_settings definition local friends lcl_logger_settings_should.
 

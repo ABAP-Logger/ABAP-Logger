@@ -1,26 +1,6 @@
-*"* use this source file for your ABAP unit test classes
-
-
 class lcl_test definition for testing
   duration short
   risk level harmless.
-*??<asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
-*?<asx:values>
-*?<TESTCLASS_OPTIONS>
-*?<TEST_CLASS>lcl_Test
-*?</TEST_CLASS>
-*?<TEST_MEMBER>f_Cut
-*?</TEST_MEMBER>
-*?<OBJECT_UNDER_TEST>ZCL_LOGGER
-*?</OBJECT_UNDER_TEST>
-*?<OBJECT_IS_LOCAL/>
-*?<GENERATE_FIXTURE/>
-*?<GENERATE_CLASS_FIXTURE/>
-*?<GENERATE_INVOCATION/>
-*?<GENERATE_ASSERT_EQUAL/>
-*?</TESTCLASS_OPTIONS>
-*?</asx:values>
-*?</asx:abap>
   private section.
 
     data:
@@ -30,7 +10,6 @@ class lcl_test definition for testing
 
     class-methods:
       class_setup.
-*      class_teardown.
 
     methods:
       setup,
