@@ -67,7 +67,10 @@ class lcl_test definition for testing
 
       must_use_factory for testing,
 
-      can_use_and_chain_aliases for testing.
+      can_use_and_chain_aliases for testing,
+
+      return_proper_status for testing,
+      return_proper_length for testing.
 
 endclass.       "lcl_Test
 
@@ -990,5 +993,56 @@ class lcl_test implementation.
     call function 'BAL_GLB_MEMORY_REFRESH'.
   endmethod.
 
+  method return_proper_status.
+
+    cl_aunit_assert=>assert_not_initial(
+      act = anon_log->is_empty( )
+      msg = 'Not empty at start' ).
+
+    anon_log->s( 'success' ).
+    anon_log->i( 'info' ).
+
+    cl_aunit_assert=>assert_initial(
+      act = anon_log->is_empty( )
+      msg = 'Empty after add' ).
+
+    cl_aunit_assert=>assert_initial(
+      act = anon_log->has_errors( )
+      msg = 'Has errors when there were no errors' ).
+
+    cl_aunit_assert=>assert_initial(
+      act = anon_log->has_warnings( )
+      msg = 'Has warnings when there were no warnings' ).
+
+    anon_log->e( 'error' ).
+    anon_log->w( 'warning' ).
+
+    cl_aunit_assert=>assert_not_initial(
+      act = anon_log->has_errors( )
+      msg = 'Has no errors when there were errors' ).
+
+    cl_aunit_assert=>assert_not_initial(
+      act = anon_log->has_warnings( )
+      msg = 'Has no warnings when there were warnings' ).
+
+  endmethod.
+
+  method return_proper_length.
+
+    cl_aunit_assert=>assert_equals(
+      exp = 0
+      act = anon_log->length( )
+      msg = 'Did not return 0 length at start' ).
+
+    anon_log->s( 'success' ).
+    anon_log->i( 'info' ).
+    anon_log->w( 'warning' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = 3
+      act = anon_log->length( )
+      msg = 'Did not return right length after add' ).
+
+  endmethod.
 
 endclass.       "lcl_Test
