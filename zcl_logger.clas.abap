@@ -83,11 +83,96 @@ class zcl_logger definition
                                           importance                     type balprobcl optional
                                 returning value(rt_exception_data_table) type tty_exception_data.
 
-endclass.
+ENDCLASS.
 
 
 
-class zcl_logger implementation.
+CLASS ZCL_LOGGER IMPLEMENTATION.
+
+
+  method drill_down_into_exception.
+    data: i                  type i value 2,
+          previous_exception type ref to cx_root,
+          exceptions         type tty_exception.
+
+    field-symbols <ex> like line of exceptions.
+    append initial line to exceptions assigning <ex>.
+    <ex>-level = 1.
+    <ex>-exception = exception.
+
+    previous_exception = exception.
+
+    while i <= settings->get_max_exception_drill_down( ).
+      if previous_exception->previous is not bound.
+        exit.
+      endif.
+
+      previous_exception ?= previous_exception->previous.
+
+      append initial line to exceptions assigning <ex>.
+      <ex>-level = i.
+      <ex>-exception = previous_exception.
+      i = i + 1.
+    endwhile.
+
+    field-symbols <ret> like line of rt_exception_data_table.
+    sort exceptions by level descending.                   "Display the deepest exception first
+    loop at exceptions assigning <ex>.
+      append initial line to rt_exception_data_table assigning <ret>.
+      <ret>-exception = <ex>-exception.
+      <ret>-msgty     = type.
+      <ret>-probclass = importance.
+    endloop.
+  endmethod.
+
+
+  method new.
+
+    if auto_save is supplied.
+      r_log ?= zcl_logger_factory=>create_log(
+        object = object
+        subobject = subobject
+        desc = desc
+        context = context
+        settings = zcl_logger_factory=>create_settings(
+          )->set_usage_of_secondary_db_conn( second_db_conn
+          )->set_autosave( auto_save )
+      ).
+    else.
+      r_log ?= zcl_logger_factory=>create_log(
+        object = object
+        subobject = subobject
+        desc = desc
+        context = context
+        settings = zcl_logger_factory=>create_settings(
+          )->set_usage_of_secondary_db_conn( second_db_conn )
+      ).
+    endif.
+
+  endmethod.
+
+
+  method open.
+
+    if auto_save is supplied.
+      r_log ?= zcl_logger_factory=>open_log(
+        object = object
+        subobject = subobject
+        desc = desc
+        create_if_does_not_exist = create_if_does_not_exist
+        settings = zcl_logger_factory=>create_settings(
+          )->set_autosave( auto_save )
+      ).
+    else.
+      r_log ?= zcl_logger_factory=>open_log(
+        object = object
+        subobject = subobject
+        desc = desc
+        create_if_does_not_exist = create_if_does_not_exist
+      ).
+    endif.
+
+  endmethod.
 
 
   method a.
@@ -290,42 +375,6 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method drill_down_into_exception.
-    data: i                  type i value 2,
-          previous_exception type ref to cx_root,
-          exceptions         type tty_exception.
-
-    field-symbols <ex> like line of exceptions.
-    append initial line to exceptions assigning <ex>.
-    <ex>-level = 1.
-    <ex>-exception = exception.
-
-    previous_exception = exception.
-
-    while i <= settings->get_max_exception_drill_down( ).
-      if previous_exception->previous is not bound.
-        exit.
-      endif.
-
-      previous_exception ?= previous_exception->previous.
-
-      append initial line to exceptions assigning <ex>.
-      <ex>-level = i.
-      <ex>-exception = previous_exception.
-      i = i + 1.
-    endwhile.
-
-    field-symbols <ret> like line of rt_exception_data_table.
-    sort exceptions by level descending.                   "Display the deepest exception first
-    loop at exceptions assigning <ex>.
-      append initial line to rt_exception_data_table assigning <ret>.
-      <ret>-exception = <ex>-exception.
-      <ret>-msgty     = type.
-      <ret>-probclass = importance.
-    endloop.
-  endmethod.
-
-
   method e.
     self = add(
       obj_to_log    = obj_to_log
@@ -420,55 +469,6 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method new.
-
-    if auto_save is supplied.
-      r_log ?= zcl_logger_factory=>create_log(
-        object = object
-        subobject = subobject
-        desc = desc
-        context = context
-        settings = zcl_logger_factory=>create_settings(
-          )->set_usage_of_secondary_db_conn( second_db_conn
-          )->set_autosave( auto_save )
-      ).
-    else.
-      r_log ?= zcl_logger_factory=>create_log(
-        object = object
-        subobject = subobject
-        desc = desc
-        context = context
-        settings = zcl_logger_factory=>create_settings(
-          )->set_usage_of_secondary_db_conn( second_db_conn )
-      ).
-    endif.
-
-  endmethod.
-
-
-  method open.
-
-    if auto_save is supplied.
-      r_log ?= zcl_logger_factory=>open_log(
-        object = object
-        subobject = subobject
-        desc = desc
-        create_if_does_not_exist = create_if_does_not_exist
-        settings = zcl_logger_factory=>create_settings(
-          )->set_autosave( auto_save )
-      ).
-    else.
-      r_log ?= zcl_logger_factory=>open_log(
-        object = object
-        subobject = subobject
-        desc = desc
-        create_if_does_not_exist = create_if_does_not_exist
-      ).
-    endif.
-
-  endmethod.
-
-
   method popup.
 * See SBAL_DEMO_04_POPUP for ideas
 
@@ -537,4 +537,4 @@ class zcl_logger implementation.
       type          = 'W'
       importance    = importance ).
   endmethod.
-endclass.
+ENDCLASS.

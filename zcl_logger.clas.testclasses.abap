@@ -147,9 +147,12 @@ class lcl_test implementation.
       importing
         e_s_log      = act_header.
 
+    data lv_exp type d.
+    lv_exp = sy-datum + days_until_log_can_be_deleted.
+
     cl_aunit_assert=>assert_equals(
       exporting
-        exp     = conv d( sy-datum + days_until_log_can_be_deleted )
+        exp     = lv_exp
         act     = act_header-aldate_del
         msg     = 'Log is not expiring in correct amount of days'
     ).
@@ -167,12 +170,15 @@ class lcl_test implementation.
     data act_header type bal_s_log.
     constants days_until_log_can_be_deleted type i value 365.
 
+    data lv_expire type d.
+    lv_expire = sy-datum + days_until_log_can_be_deleted.
+
     expiring_log = zcl_logger_factory=>create_log(
       object    = 'ABAPUNIT'
       subobject = 'LOGGER'
       desc      = 'Log that is not deletable and expiring'
       settings  = zcl_logger_factory=>create_settings(
-        )->set_expiry_date( conv #( sy-datum + days_until_log_can_be_deleted )
+        )->set_expiry_date( lv_expire
         )->set_must_be_kept_until_expiry( abap_true )
     ).
 
@@ -188,7 +194,7 @@ class lcl_test implementation.
 
     cl_aunit_assert=>assert_equals(
       exporting
-        exp     = conv d( sy-datum + days_until_log_can_be_deleted )
+        exp     = lv_expire
         act     = act_header-aldate_del
         msg     = 'Log is not expiring on correct date'
     ).
