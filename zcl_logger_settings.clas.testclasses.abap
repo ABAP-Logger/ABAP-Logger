@@ -21,7 +21,7 @@ endclass.
 class lcl_logger_settings_should implementation.
 
   method setup.
-    cut = new #( ).
+    create object cut.
   endmethod.
 
   method have_correct_defaults.
@@ -85,9 +85,13 @@ class lcl_logger_settings_should implementation.
     ).
 
     cut->zif_logger_settings~set_expiry_in_days( 10 ).
+
+    data lv_exp type d.
+    lv_exp = sy-datum + 10.
+
     cl_aunit_assert=>assert_equals(
       exporting
-        exp     = conv d( sy-datum + 10 )
+        exp     = lv_exp
         act     = cut->zif_logger_settings~get_expiry_date( )
         msg     = |Expiry in days was not set correctly.|
     ).

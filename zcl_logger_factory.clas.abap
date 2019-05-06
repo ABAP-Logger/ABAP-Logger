@@ -35,11 +35,11 @@ class zcl_logger_factory definition
 
   protected section.
   private section.
-endclass.
+ENDCLASS.
 
 
 
-class zcl_logger_factory implementation.
+CLASS ZCL_LOGGER_FACTORY IMPLEMENTATION.
 
 
   method create_log.
@@ -97,6 +97,13 @@ class zcl_logger_factory implementation.
         e_s_log      = lo_log->header.
 
     r_log = lo_log.
+
+  endmethod.
+
+
+  method create_settings.
+
+    create object r_settings type zcl_logger_settings.
 
   endmethod.
 
@@ -172,13 +179,4 @@ class zcl_logger_factory implementation.
     r_log = lo_log.
 
   endmethod.
-
-
-  method create_settings.
-
-    create object r_settings type zcl_logger_settings.
-
-  endmethod.
-
-
-endclass.
+ENDCLASS.
