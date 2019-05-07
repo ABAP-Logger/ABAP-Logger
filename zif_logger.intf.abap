@@ -77,6 +77,22 @@ interface zif_logger
     returning
       value(self)   type ref to zif_logger .
 
+  methods has_errors
+    returning
+      value(rv_yes) type abap_bool .
+
+  methods has_warnings
+    returning
+      value(rv_yes) type abap_bool .
+
+  methods is_empty
+    returning
+      value(rv_yes) type abap_bool .
+
+  methods length
+    returning
+      value(rv_length) type i .
+
   "! Saves the log on demand. Intended to be called at the
   "! end of the log processing so that logs can be saved depending
   "! on other criteria, like the existence of error messages.

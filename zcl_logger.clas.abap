@@ -20,6 +20,10 @@ class zcl_logger definition
              w for zif_logger~w,
              i for zif_logger~i,
              s for zif_logger~s,
+             has_errors for zif_logger~has_errors,
+             has_warnings for zif_logger~has_warnings,
+             is_empty for zif_logger~is_empty,
+             length for zif_logger~length,
              save for zif_logger~save,
              export_to_table for zif_logger~export_to_table,
              fullscreen for zif_logger~fullscreen,
@@ -78,10 +82,19 @@ class zcl_logger definition
 
     methods:
       "! Safety limit for previous exception drill down
-      drill_down_into_exception importing exception                      type ref to cx_root
-                                          type                           type symsgty optional
-                                          importance                     type balprobcl optional
-                                returning value(rt_exception_data_table) type tty_exception_data.
+      drill_down_into_exception
+        importing
+          exception                      type ref to cx_root
+          type                           type symsgty optional
+          importance                     type balprobcl optional
+        returning
+          value(rt_exception_data_table) type tty_exception_data,
+
+      get_message_handles
+        importing
+          msgtype                   type symsgty optional
+        returning
+          value(rt_message_handles) type bal_t_msgh .
 
 ENDCLASS.
 
@@ -123,6 +136,34 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       <ret>-msgty     = type.
       <ret>-probclass = importance.
     endloop.
+  endmethod.
+
+
+  method get_message_handles.
+
+    data: log_handle      type bal_t_logh,
+          filter          type bal_s_mfil.
+
+    field-symbols <f> like line of filter-msgty.
+
+    insert handle into table log_handle.
+
+    if msgtype is not initial.
+      append initial line to filter-msgty assigning <f>.
+      <f>-sign   = 'I'.
+      <f>-option = 'EQ'.
+      <f>-low    = 'E'.
+    endif.
+
+    call function 'BAL_GLB_SEARCH_MSG'
+      exporting
+        i_t_log_handle = log_handle
+        i_s_msg_filter = filter
+      importing
+        e_t_msg_handle = rt_message_handles
+      exceptions
+        msg_not_found  = 0.
+
   endmethod.
 
 
@@ -388,22 +429,13 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 
 
   method export_to_table.
-    data: log_handle      type bal_t_logh,
-          message_handles type bal_t_msgh,
+    data: message_handles type bal_t_msgh,
           message         type bal_s_msg,
           bapiret2        type bapiret2.
 
     field-symbols <msg_handle> type balmsghndl.
 
-    insert handle into table log_handle.
-
-    call function 'BAL_GLB_SEARCH_MSG'
-      exporting
-        i_t_log_handle = log_handle
-      importing
-        e_t_msg_handle = message_handles
-      exceptions
-        msg_not_found  = 0.
+    message_handles = get_message_handles( ).
 
     loop at message_handles assigning <msg_handle>.
       call function 'BAL_LOG_MSG_READ'
@@ -457,6 +489,20 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   endmethod.
 
 
+  method has_errors.
+
+    rv_yes = boolc( lines( get_message_handles( msgtype = 'E' ) ) > 0 ).
+
+  endmethod.
+
+
+  method has_warnings.
+
+    rv_yes = boolc( lines( get_message_handles( msgtype = 'W' ) ) > 0 ).
+
+  endmethod.
+
+
   method i.
     self = add(
       obj_to_log    = obj_to_log
@@ -466,6 +512,20 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       callback_fm   = callback_fm
       type          = 'I'
       importance    = importance ).
+  endmethod.
+
+
+  method is_empty.
+
+    rv_yes = boolc( length( ) = 0 ).
+
+  endmethod.
+
+
+  method length.
+
+    rv_length = lines( get_message_handles( ) ).
+
   endmethod.
 
 
