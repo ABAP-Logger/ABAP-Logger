@@ -152,7 +152,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       append initial line to filter-msgty assigning <f>.
       <f>-sign   = 'I'.
       <f>-option = 'EQ'.
-      <f>-low    = 'E'.
+      <f>-low    = msgtype.
     endif.
 
     call function 'BAL_GLB_SEARCH_MSG'
