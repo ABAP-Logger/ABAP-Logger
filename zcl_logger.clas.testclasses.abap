@@ -60,6 +60,8 @@ class lcl_test definition for testing
       can_log_err for testing,
       can_log_chained_exceptions for testing,
       can_log_batch_msgs for testing,
+      can_log_any_simple_structure for testing,
+      can_log_any_deep_structure for testing,
 
       can_add_msg_context for testing,
       can_add_callback_sub for testing,
@@ -390,6 +392,13 @@ class lcl_test implementation.
       exp = 'This is a test'
       act = condense( actual_text )
       msg = 'Did not log system message properly' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = abap_true
+      act = anon_log->has_warnings( )
+      msg = 'Did not log or fetch system message properly'
+    ).
+
   endmethod.
 
   method can_log_bapiret2.
@@ -435,6 +444,12 @@ class lcl_test implementation.
       exp = 'This is a test'
       act = condense( actual_text )
       msg = 'Did not log system message properly' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = abap_true
+      act = anon_log->has_warnings( )
+      msg = 'Did not log or fetch system message properly'
+    ).
   endmethod.
 
   method can_log_bapi_coru_return.
@@ -480,6 +495,12 @@ class lcl_test implementation.
       exp = 'This is a test'
       act = condense( actual_text )
       msg = 'Did not log system message properly' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = abap_true
+      act = anon_log->has_warnings( )
+      msg = 'Did not log or fetch system message properly'
+    ).
   endmethod.
 
   method can_log_bapi_order_return.
@@ -489,7 +510,7 @@ class lcl_test implementation.
           actual_details   type bal_s_msg,
           actual_text      type char200.
 
-    expected_details-msgty = bapi_msg-type = 'W'.
+    expected_details-msgty = bapi_msg-type = 'E'.
     expected_details-msgid = bapi_msg-id = 'BL'.
     expected_details-msgno = bapi_msg-number = '001'.
     expected_details-msgv1 = bapi_msg-message_v1 = 'This'.
@@ -525,6 +546,12 @@ class lcl_test implementation.
       exp = 'This is a test'
       act = condense( actual_text )
       msg = 'Did not log system message properly' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = abap_true
+      act = anon_log->has_errors( )
+      msg = 'Did not log or fetch system message properly'
+    ).
   endmethod.
 
   method can_log_rcomp.
@@ -534,7 +561,7 @@ class lcl_test implementation.
           actual_details   type bal_s_msg,
           actual_text      type char200.
 
-    expected_details-msgty = rcomp_msg-msgty = 'W'.
+    expected_details-msgty = rcomp_msg-msgty = 'E'.
     expected_details-msgid = rcomp_msg-msgid = 'BL'.
     expected_details-msgno = rcomp_msg-msgno = '001'.
     expected_details-msgv1 = rcomp_msg-msgv1 = 'This'.
@@ -570,6 +597,12 @@ class lcl_test implementation.
       exp = 'This is a test'
       act = condense( actual_text )
       msg = 'Did not log system message properly' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = abap_true
+      act = anon_log->has_errors( )
+      msg = 'Did not log or fetch system message properly'
+    ).
   endmethod.
 
 
@@ -771,6 +804,89 @@ class lcl_test implementation.
       msg = 'Did not log BDC return messages correctly' ).
 
   endmethod.
+
+  method can_log_any_simple_structure.
+    types: begin of ty_struct,
+             comp1 type string,
+             comp2 type i,
+           end of ty_struct.
+    data: struct      type ty_struct,
+          act_table   type table_of_strings,
+          exp_table   type table_of_strings,
+          exp_line    like line of exp_table,
+          msg_details type bal_tt_msg.
+
+    struct-comp1 = 'Demo'.
+    struct-comp2 = 5.
+    anon_log->e( struct ).
+
+    get_messages( exporting log_handle  = anon_log->handle
+                  importing texts       = act_table
+                            msg_details = msg_details ).
+
+    exp_line = '--- Begin of structure ---'.
+    append exp_line to exp_table.
+    exp_line = 'comp1 = Demo'.
+    append exp_line to exp_table.
+    exp_line = 'comp2 = 5'.
+    append exp_line to exp_table.
+    exp_line = '--- End of structure ---'.
+    append exp_line to exp_table.
+
+    cl_aunit_assert=>assert_equals(
+      exp = exp_table
+      act = act_table
+      msg = 'Simple structure was not logged correctly'
+    ).
+  endmethod.
+
+
+  method can_log_any_deep_structure.
+    types: begin of ty_struct,
+             comp1 type string,
+             comp2 type i,
+           end of ty_struct,
+           begin of ty_deep_struct,
+             comp1 type string,
+             deep  type ty_struct,
+           end of ty_deep_struct.
+    data: struct      type ty_deep_struct,
+          act_table   type table_of_strings,
+          exp_table   type table_of_strings,
+          exp_line    like line of exp_table,
+          msg_details type bal_tt_msg.
+
+    struct-comp1 = 'Demo'.
+    struct-deep-comp1 = 'Inner component'.
+    struct-deep-comp2 = 10.
+    anon_log->e( struct ).
+
+    get_messages( exporting log_handle  = anon_log->handle
+                  importing texts       = act_table
+                            msg_details = msg_details ).
+
+    exp_line = '--- Begin of structure ---'.
+    append exp_line to exp_table.
+    exp_line = 'comp1 = Demo'.
+    append exp_line to exp_table.
+    exp_line = '--- Begin of structure ---'.
+    append exp_line to exp_table.
+    exp_line = 'comp1 = Inner component'.
+    append exp_line to exp_table.
+    exp_line = 'comp2 = 10'.
+    append exp_line to exp_table.
+    exp_line = '--- End of structure ---'.
+    append exp_line to exp_table.
+    exp_line = '--- End of structure ---'.
+    append exp_line to exp_table.
+
+    cl_aunit_assert=>assert_equals(
+      exp = exp_table
+      act = act_table
+      msg = 'Deep structure was not logged correctly'
+    ).
+  endmethod.
+
 
   method can_add_msg_context.
     data: addl_context type bezei20 value 'Berlin',        "data element from dictionary!

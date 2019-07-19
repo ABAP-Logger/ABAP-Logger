@@ -94,13 +94,26 @@ class zcl_logger definition
         importing
           msgtype                   type symsgty optional
         returning
-          value(rt_message_handles) type bal_t_msgh .
+          value(rt_message_handles) type bal_t_msgh ,
 
-ENDCLASS.
+      add_structure
+        importing
+          obj_to_log    type any optional
+          context       type simple optional
+          callback_form type csequence optional
+          callback_prog type csequence optional
+          callback_fm   type csequence optional
+          type          type symsgty optional
+          importance    type balprobcl optional
+            preferred parameter obj_to_log
+        returning
+          value(self)   type ref to zif_logger .
+
+endclass.
 
 
 
-CLASS ZCL_LOGGER IMPLEMENTATION.
+class zcl_logger implementation.
 
 
   method drill_down_into_exception.
@@ -141,8 +154,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 
   method get_message_handles.
 
-    data: log_handle      type bal_t_logh,
-          filter          type bal_s_mfil.
+    data: log_handle type bal_t_logh,
+          filter     type bal_s_mfil.
 
     field-symbols <f> like line of filter-msgty.
 
@@ -291,18 +304,6 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       detailed_msg-msgv2 = sy-msgv2.
       detailed_msg-msgv3 = sy-msgv3.
       detailed_msg-msgv4 = sy-msgv4.
-    elseif msg_type->type_kind = cl_abap_typedescr=>typekind_oref.
-      exception_data_table = me->drill_down_into_exception(
-          exception   = obj_to_log
-          type        = type
-          importance  = importance
-          ).
-    elseif msg_type->type_kind = cl_abap_typedescr=>typekind_table.
-      assign obj_to_log to <table_of_messages>.
-      loop at <table_of_messages> assigning <message_line>.
-        add( <message_line> ).
-      endloop.
-      return.
     elseif msg_type->absolute_name = '\TYPE=BAPIRET1'.
       assign obj_to_log to <bapiret1_msg>.
       detailed_msg-msgty = <bapiret1_msg>-type.
@@ -366,6 +367,32 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       detailed_msg-msgv2 = <rcomp_msg>-msgv2.
       detailed_msg-msgv3 = <rcomp_msg>-msgv3.
       detailed_msg-msgv4 = <rcomp_msg>-msgv4.
+    elseif msg_type->type_kind = cl_abap_typedescr=>typekind_oref.
+      exception_data_table = me->drill_down_into_exception(
+          exception   = obj_to_log
+          type        = type
+          importance  = importance
+          ).
+    elseif msg_type->type_kind = cl_abap_typedescr=>typekind_table.
+      assign obj_to_log to <table_of_messages>.
+      loop at <table_of_messages> assigning <message_line>.
+        add( <message_line> ).
+      endloop.
+      return.
+    elseif msg_type->type_kind = cl_abap_typedescr=>typekind_struct1   "flat structure
+        or msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.  "deep structure (already when string is used)
+      add_structure(
+        exporting
+          obj_to_log    = obj_to_log
+          context       = context
+          callback_form = callback_form
+          callback_prog = callback_prog
+          callback_fm   = callback_fm
+          type          = type
+          importance    = importance
+        receiving
+          self          = self
+      ).
     else.
       free_text_msg = obj_to_log.
     endif.
@@ -413,6 +440,44 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     endif.
 
     self = me.
+  endmethod.
+
+
+  method add_structure.
+    data: msg_type        type ref to cl_abap_typedescr,
+          msg_struct_type type ref to cl_abap_structdescr,
+          components      type cl_abap_structdescr=>component_table,
+          component       like line of components,
+          string_to_log   type string.
+    field-symbols: <component>   type any.
+
+    msg_struct_type ?= cl_abap_typedescr=>describe_by_data( obj_to_log ).
+    components = msg_struct_type->get_components( ).
+    add( '--- Begin of structure ---' ).
+    loop at components into component.
+      assign component component-name of structure obj_to_log to <component>.
+      if sy-subrc = 0.
+        msg_type = cl_abap_typedescr=>describe_by_data( <component> ).
+        if msg_type->kind = cl_abap_typedescr=>kind_elem.
+          string_to_log = |{ to_lower( component-name ) } = { <component> }|.
+          add( string_to_log ).
+        elseif msg_type->kind = cl_abap_typedescr=>kind_struct.
+          add_structure(
+            exporting
+              obj_to_log    = <component>
+              context       = context
+              callback_form = callback_form
+              callback_prog = callback_prog
+              callback_fm   = callback_fm
+              type          = type
+              importance    = importance
+            receiving
+              self          = self
+          ).
+        endif.
+      endif.
+    endloop.
+    add( '--- End of structure ---' ).
   endmethod.
 
 
@@ -597,4 +662,4 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       type          = 'W'
       importance    = importance ).
   endmethod.
-ENDCLASS.
+endclass.
