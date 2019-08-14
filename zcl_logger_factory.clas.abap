@@ -34,7 +34,25 @@ class zcl_logger_factory definition
         value(r_settings) type ref to zif_logger_settings.
 
   protected section.
+
   private section.
+    "! <p class="shorttext synchronized" lang="en">Name of background job which executes XPRA reports</p>
+    constants xpra_job_name type btcjob value 'RDDEXECL'.
+
+    "! True if current execution environment is as an XPRA report
+    class-methods is_executing_as_xpra returning value(result) type abap_bool.
+
+    "! Create application log logger
+    class-methods create_sbal_logger importing object        type csequence optional
+                                               subobject     type csequence optional
+                                               desc          type csequence optional
+                                               context       type simple optional
+                                               settings      type ref to zif_logger_settings
+                                     returning value(result) type ref to zif_logger.
+
+    "! Create XPRA logger
+    class-methods create_xpra_logger importing settings      type ref to zif_logger_settings
+                                     returning value(result) type ref to zif_logger.
 ENDCLASS.
 
 
@@ -43,7 +61,27 @@ CLASS ZCL_LOGGER_FACTORY IMPLEMENTATION.
 
 
   method create_log.
+    data logger_settings type ref to zif_logger_settings.
 
+    if settings is bound and settings is not initial.
+      logger_settings = settings.
+    else.
+      logger_settings = create_settings( ).
+    endif.
+
+    if is_executing_as_xpra( ) = abap_true.
+      r_log = create_xpra_logger( settings = logger_settings ).
+    else.
+      r_log = create_sbal_logger( object    = object
+                                  subobject = subobject
+                                  desc      = desc
+                                  context   = context
+                                  settings  = logger_settings ).
+    endif.
+  endmethod.
+
+
+  method create_sbal_logger.
     data: lo_log type ref to zcl_logger.
     field-symbols <context_val> type c.
 
@@ -52,11 +90,7 @@ CLASS ZCL_LOGGER_FACTORY IMPLEMENTATION.
     lo_log->header-subobject = subobject.
     lo_log->header-extnumber = desc.
 
-    if settings is bound.
-      lo_log->settings = settings.
-    else.
-      create object lo_log->settings type zcl_logger_settings.
-    endif.
+    lo_log->settings = settings.
 
 * Special case: Logger can work without object - but then
 * the data cannot be written to the database.
@@ -96,8 +130,7 @@ CLASS ZCL_LOGGER_FACTORY IMPLEMENTATION.
       importing
         e_s_log      = lo_log->header.
 
-    r_log = lo_log.
-
+    result = lo_log.
   endmethod.
 
 
@@ -142,9 +175,10 @@ CLASS ZCL_LOGGER_FACTORY IMPLEMENTATION.
 
     if sy-subrc = 1.
       if create_if_does_not_exist = abap_true.
-        r_log = zcl_logger=>new( object    = object
-                                 subobject = subobject
-                                 desc      = desc ).
+        r_log = create_log( object    = object
+                            subobject = subobject
+                            desc      = desc
+                            settings  = settings ).
       endif.
       return.
     endif.
@@ -179,4 +213,38 @@ CLASS ZCL_LOGGER_FACTORY IMPLEMENTATION.
     r_log = lo_log.
 
   endmethod.
+
+
+  method create_xpra_logger.
+    data(logger) = new zcl_logger_xpra( ).
+
+*   Always autosave XPRA logs
+    settings->set_autosave( abap_true ).
+    logger->settings = settings.
+
+    result = logger.
+  endmethod.
+
+
+  method is_executing_as_xpra.
+*   XPRA executes in client 000 in a specific job
+    data current_job_name type btcjob.
+
+    result = abap_false.
+    if sy-mandt <> '000'.
+      return.
+    endif.
+
+    call function 'GET_JOB_RUNTIME_INFO'
+      importing
+        jobname         = current_job_name
+      exceptions
+        no_runtime_info = 1.
+    if sy-subrc <> 0.
+      return.
+    elseif current_job_name = xpra_job_name.
+      result = abap_true.
+    endif.
+  endmethod.
+
 ENDCLASS.

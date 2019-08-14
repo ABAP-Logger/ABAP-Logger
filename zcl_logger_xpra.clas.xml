@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_CLAS" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <VSEOCLASS>
+    <CLSNAME>ZCL_LOGGER_XPRA</CLSNAME>
+    <LANGU>E</LANGU>
+    <DESCRIPT>Logger for XPRA reports - add messages to transport log</DESCRIPT>
+    <STATE>1</STATE>
+    <CLSCCINCL>X</CLSCCINCL>
+    <FIXPT>X</FIXPT>
+    <UNICODE>X</UNICODE>
+   </VSEOCLASS>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_LOGGER_XPRA</CLSNAME>
+     <CMPNAME>BAL_CLASS_ADDITIONAL_INFORMATN</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Application Log problem class: Additional information</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_LOGGER_XPRA</CLSNAME>
+     <CMPNAME>BAL_CLASS_IMPORTANT</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Application Log problem class: Important</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_LOGGER_XPRA</CLSNAME>
+     <CMPNAME>BAL_CLASS_MEDIUM</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Application Log problem class: Medium</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_LOGGER_XPRA</CLSNAME>
+     <CMPNAME>BAL_CLASS_OTHER</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Application Log problem class: Other</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_LOGGER_XPRA</CLSNAME>
+     <CMPNAME>BAL_CLASS_VERY_IMPORTANT</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Application Log problem class: Very important</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_LOGGER_XPRA</CLSNAME>
+     <CMPNAME>BAL_TYPE_ABORT</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Application Log message type: Abort</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_LOGGER_XPRA</CLSNAME>
+     <CMPNAME>BAL_TYPE_ERROR</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Application Log message type: Error</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_LOGGER_XPRA</CLSNAME>
+     <CMPNAME>BAL_TYPE_INFORMATION</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Application Log message type: Information</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_LOGGER_XPRA</CLSNAME>
+     <CMPNAME>BAL_TYPE_SUCCESS</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Application Log message type: Success</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_LOGGER_XPRA</CLSNAME>
+     <CMPNAME>BAL_TYPE_WARNING</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Application Log message type: Warning</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_LOGGER_XPRA</CLSNAME>
+     <CMPNAME>GET_MESSAGE_LEVEL</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Determine message level from application log message</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_LOGGER_XPRA</CLSNAME>
+     <CMPNAME>GET_MESSAGE_SEVERITY</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Determine message severity from application log message</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_LOGGER_XPRA</CLSNAME>
+     <CMPNAME>MAP_FROM_APPLICATION_LOG_MESSG</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Reformat message from application log for transport log</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

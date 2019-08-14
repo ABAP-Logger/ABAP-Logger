@@ -5,7 +5,7 @@
 *----------------------------------------------------------------------*
 class zcl_logger definition
   public
-  create private
+  create protected
   global friends zcl_logger_factory .
 
   public section.
@@ -60,6 +60,17 @@ class zcl_logger definition
   protected section.
 *"* protected components of class ZCL_LOGGER
 *"* do not include other source files here!!!
+    methods:
+      get_message_handles
+        importing
+          msgtype                   type symsgty optional
+        returning
+          value(rt_message_handles) type bal_t_msgh.
+
+    methods save_log.
+
+    data settings type ref to zif_logger_settings.
+
   private section.
 * Local type for hrpad_message as it is not available in an ABAP Development System
     types: begin of hrpad_message_field_list_alike,
@@ -78,7 +89,6 @@ class zcl_logger definition
 *"* do not include other source files here!!!
     data  sec_connection           type abap_bool .
     data  sec_connect_commit       type abap_bool .
-    data  settings                 type ref to zif_logger_settings.
 
     methods:
       "! Safety limit for previous exception drill down
@@ -89,12 +99,6 @@ class zcl_logger definition
           importance                     type balprobcl optional
         returning
           value(rt_exception_data_table) type tty_exception_data,
-
-      get_message_handles
-        importing
-          msgtype                   type symsgty optional
-        returning
-          value(rt_message_handles) type bal_t_msgh ,
 
       add_structure
         importing
@@ -250,9 +254,6 @@ class zcl_logger implementation.
           ctx_ddic_header      type x030l,
           msg_type             type ref to cl_abap_typedescr,
           msg_table_type       type ref to cl_abap_tabledescr,
-          log_numbers          type bal_t_lgnm,
-          log_handles          type bal_t_logh,
-          log_number           type bal_s_lgnm,
           formatted_context    type bal_s_cont,
           formatted_params     type bal_s_parm.
 
@@ -425,18 +426,7 @@ class zcl_logger implementation.
     endif.
 
     if me->settings->get_autosave( ) = abap_true.
-      append me->handle to log_handles.
-      call function 'BAL_DB_SAVE'
-        exporting
-          i_t_log_handle       = log_handles
-          i_2th_connection     = me->sec_connection
-          i_2th_connect_commit = me->sec_connect_commit
-        importing
-          e_new_lognumbers     = log_numbers.
-      if me->db_number is initial.
-        read table log_numbers index 1 into log_number.
-        me->db_number = log_number-lognumber.
-      endif.
+      save_log( ).
     endif.
 
     self = me.
@@ -628,13 +618,15 @@ class zcl_logger implementation.
 
 
   method save.
-
-    data:
-      log_handles type bal_t_logh,
-      log_numbers type bal_t_lgnm,
-      log_number  type bal_s_lgnm.
-
     check me->settings->get_autosave( ) = abap_false.
+    save_log( ).
+  endmethod.
+
+
+  method save_log.
+    data log_handles type bal_t_logh.
+    data log_numbers type bal_t_lgnm.
+    data log_number type bal_s_lgnm.
 
     append me->handle to log_handles.
     call function 'BAL_DB_SAVE'
@@ -648,7 +640,6 @@ class zcl_logger implementation.
       read table log_numbers index 1 into log_number.
       me->db_number = log_number-lognumber.
     endif.
-
   endmethod.
 
 
@@ -662,4 +653,5 @@ class zcl_logger implementation.
       type          = 'W'
       importance    = importance ).
   endmethod.
+
 endclass.
