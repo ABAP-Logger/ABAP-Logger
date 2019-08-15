@@ -530,7 +530,7 @@ class zcl_logger implementation.
       profile        type bal_s_prof,
       lt_log_handles type bal_t_logh.
 
-    append me->handle to lt_log_handles.
+    insert me->handle into table lt_log_handles.
 
     call function 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
       importing
@@ -591,7 +591,7 @@ class zcl_logger implementation.
       profile        type bal_s_prof,
       lt_log_handles type bal_t_logh.
 
-    append me->handle to lt_log_handles.
+    insert me->handle into table lt_log_handles.
 
     call function 'BAL_DSP_PROFILE_POPUP_GET'
       importing
@@ -628,7 +628,7 @@ class zcl_logger implementation.
     data log_numbers type bal_t_lgnm.
     data log_number type bal_s_lgnm.
 
-    append me->handle to log_handles.
+    insert me->handle into table log_handles.
     call function 'BAL_DB_SAVE'
       exporting
         i_t_log_handle       = log_handles
