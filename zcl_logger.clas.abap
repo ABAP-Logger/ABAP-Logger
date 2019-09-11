@@ -379,6 +379,7 @@ class zcl_logger implementation.
       loop at <table_of_messages> assigning <message_line>.
         add( <message_line> ).
       endloop.
+      self = me.
       return.
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_struct1   "flat structure
         or msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.  "deep structure (already when string is used)
