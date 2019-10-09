@@ -36,9 +36,6 @@ class zcl_logger_factory definition
 
   protected section.
   private section.
-    methods create_null_device_logger
-      returning 
-        value(result) type ref to zif_logger.
 ENDCLASS.
 
 
@@ -51,7 +48,7 @@ CLASS ZCL_LOGGER_FACTORY IMPLEMENTATION.
     field-symbols <context_val> type c.
     
     if log_to_null_device = abap_true.
-      r_log = create_null_device_logger( ).
+      create object r_log type zcl_logger_null_device.
       return.
     endif.
 
@@ -186,10 +183,5 @@ CLASS ZCL_LOGGER_FACTORY IMPLEMENTATION.
 
     r_log = lo_log.
 
-  endmethod.
-  
-  
-  method create_null_device_logger.
-    result = new zcl_logger_null_device( ).
   endmethod.
 ENDCLASS.
