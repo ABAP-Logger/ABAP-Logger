@@ -8,11 +8,12 @@ class zcl_logger_factory definition
     "! Starts a new log.
     class-methods create_log
       importing
-        object       type csequence optional
-        subobject    type csequence optional
-        desc         type csequence optional
-        context      type simple optional
-        settings     type ref to zif_logger_settings optional
+        !object             type csequence optional
+        !subobject          type csequence optional
+        !desc               type csequence optional
+        !context            type simple optional
+        !settings           type ref to zif_logger_settings optional
+        !log_to_null_device type abap_bool default abap_false
       returning
         value(r_log) type ref to zif_logger .
 
@@ -35,6 +36,9 @@ class zcl_logger_factory definition
 
   protected section.
   private section.
+    methods create_null_device_logger
+      returning 
+        value(result) type ref to zif_logger.
 ENDCLASS.
 
 
@@ -43,9 +47,13 @@ CLASS ZCL_LOGGER_FACTORY IMPLEMENTATION.
 
 
   method create_log.
-
     data: lo_log type ref to zcl_logger.
     field-symbols <context_val> type c.
+    
+    if log_to_null_device = abap_true.
+      r_log = create_null_device_logger( ).
+      return.
+    endif.
 
     create object lo_log.
     lo_log->header-object    = object.
@@ -178,5 +186,10 @@ CLASS ZCL_LOGGER_FACTORY IMPLEMENTATION.
 
     r_log = lo_log.
 
+  endmethod.
+  
+  
+  method create_null_device_logger.
+    result = new zcl_logger_null_device( ).
   endmethod.
 ENDCLASS.
