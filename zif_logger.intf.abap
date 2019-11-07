@@ -107,6 +107,8 @@ interface zif_logger
 
   methods fullscreen .
 
-  methods popup .
+  methods popup
+    importing
+      log_profile type bal_s_prof optional.
 
 endinterface.
