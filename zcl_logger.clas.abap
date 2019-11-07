@@ -602,10 +602,14 @@ class zcl_logger implementation.
       lt_log_handles type bal_t_logh.
 
     append me->handle to lt_log_handles.
-
-    call function 'BAL_DSP_PROFILE_POPUP_GET'
-      importing
-        e_s_display_profile = profile.
+    
+    if log_profile is supplied.
+      profile = log_profile.
+    else.
+      call function 'BAL_DSP_PROFILE_POPUP_GET'
+        importing
+          e_s_display_profile = profile.
+    endif.
 
     call function 'BAL_DSP_LOG_DISPLAY'
       exporting
