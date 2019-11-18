@@ -109,6 +109,7 @@ class zcl_logger definition
         returning
           value(self)   type ref to zif_logger .
 
+    methods save_log.
 endclass.
 
 
@@ -378,7 +379,6 @@ class zcl_logger implementation.
       loop at <table_of_messages> assigning <message_line>.
         add( <message_line> ).
       endloop.
-      return.
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_struct1   "flat structure
         or msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.  "deep structure (already when string is used)
       add_structure(
@@ -425,20 +425,8 @@ class zcl_logger implementation.
     endif.
 
     if me->settings->get_autosave( ) = abap_true.
-      append me->handle to log_handles.
-      call function 'BAL_DB_SAVE'
-        exporting
-          i_t_log_handle       = log_handles
-          i_2th_connection     = me->sec_connection
-          i_2th_connect_commit = me->sec_connect_commit
-        importing
-          e_new_lognumbers     = log_numbers.
-      if me->db_number is initial.
-        read table log_numbers index 1 into log_number.
-        me->db_number = log_number-lognumber.
-      endif.
+      save_log( ).
     endif.
-
     self = me.
   endmethod.
 
@@ -628,27 +616,8 @@ class zcl_logger implementation.
 
 
   method save.
-
-    data:
-      log_handles type bal_t_logh,
-      log_numbers type bal_t_lgnm,
-      log_number  type bal_s_lgnm.
-
     check me->settings->get_autosave( ) = abap_false.
-
-    append me->handle to log_handles.
-    call function 'BAL_DB_SAVE'
-      exporting
-        i_t_log_handle       = log_handles
-        i_2th_connection     = me->sec_connection
-        i_2th_connect_commit = me->sec_connect_commit
-      importing
-        e_new_lognumbers     = log_numbers.
-    if me->db_number is initial.
-      read table log_numbers index 1 into log_number.
-      me->db_number = log_number-lognumber.
-    endif.
-
+    save_log( ).
   endmethod.
 
 
@@ -661,5 +630,25 @@ class zcl_logger implementation.
       callback_fm   = callback_fm
       type          = 'W'
       importance    = importance ).
+  endmethod.
+  
+  
+  method save_log.
+    data log_handles type bal_t_logh.
+    data log_numbers type bal_t_lgnm.
+    data log_number type bal_s_lgnm.
+
+    insert me->handle into table log_handles.
+    call function 'BAL_DB_SAVE'
+      exporting
+        i_t_log_handle       = log_handles
+        i_2th_connection     = me->sec_connection
+        i_2th_connect_commit = me->sec_connect_commit
+      importing
+        e_new_lognumbers     = log_numbers.
+    if me->db_number is initial.
+      read table log_numbers index 1 into log_number.
+      me->db_number = log_number-lognumber.
+    endif.
   endmethod.
 endclass.
