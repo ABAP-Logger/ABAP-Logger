@@ -377,7 +377,10 @@ class zcl_logger implementation.
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_table.
       assign obj_to_log to <table_of_messages>.
       loop at <table_of_messages> assigning <message_line>.
-        add( <message_line> ).
+        add(
+          EXPORTING
+            obj_to_log    = <message_line>
+            context       = context
       endloop.
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_struct1   "flat structure
         or msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.  "deep structure (already when string is used)
