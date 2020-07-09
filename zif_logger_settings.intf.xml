@@ -3,9 +3,9 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <VSEOINTERF>
-    <CLSNAME>ZIF_LOGGER</CLSNAME>
+    <CLSNAME>ZIF_LOGGER_SETTINGS</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>Logger Interface</DESCRIPT>
+    <DESCRIPT>Interface for logger settings</DESCRIPT>
     <EXPOSURE>2</EXPOSURE>
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>

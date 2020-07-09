@@ -20,9 +20,11 @@ class zcl_logger definition
              w for zif_logger~w,
              i for zif_logger~i,
              s for zif_logger~s,
+             has_errors for zif_logger~has_errors,
+             has_warnings for zif_logger~has_warnings,
+             is_empty for zif_logger~is_empty,
+             length for zif_logger~length,
              save for zif_logger~save,
-             get_autosave for zif_logger~get_autosave,
-             set_autosave for zif_logger~set_autosave,
              export_to_table for zif_logger~export_to_table,
              fullscreen for zif_logger~fullscreen,
              popup for zif_logger~popup,
@@ -30,7 +32,8 @@ class zcl_logger definition
              db_number for zif_logger~db_number,
              header for zif_logger~header.
 
-    " backwards compatibility only -> use zcl_logger_factory instead
+    "! Starts a new log.
+    "! For backwards compatibility only! Use ZCL_LOGGER_FACTORY instead.
     class-methods new
       importing
         !object         type csequence optional
@@ -42,7 +45,8 @@ class zcl_logger definition
       returning
         value(r_log)    type ref to zcl_logger .
 
-    " backwards compatibility only -> use zcl_logger_factory instead
+    "! Reopens an already existing log.
+    "! For backwards compatibility only! Use ZCL_LOGGER_FACTORY instead.
     class-methods open
       importing
         !object                   type csequence
@@ -72,22 +76,158 @@ class zcl_logger definition
 
 *"* private components of class ZCL_LOGGER
 *"* do not include other source files here!!!
-    data  auto_save                type abap_bool .
     data  sec_connection           type abap_bool .
     data  sec_connect_commit       type abap_bool .
-    data: max_exception_drill_down type i.
+    data  settings                 type ref to zif_logger_settings.
 
     methods:
-      drill_down_into_exception importing exception                      type ref to cx_root
-                                          type                           type symsgty optional
-                                          importance                     type balprobcl optional
-                                returning value(rt_exception_data_table) type tty_exception_data.
+      "! Safety limit for previous exception drill down
+      drill_down_into_exception
+        importing
+          exception                      type ref to cx_root
+          type                           type symsgty optional
+          importance                     type balprobcl optional
+        returning
+          value(rt_exception_data_table) type tty_exception_data,
 
-ENDCLASS.
+      get_message_handles
+        importing
+          msgtype                   type symsgty optional
+        returning
+          value(rt_message_handles) type bal_t_msgh ,
+
+      add_structure
+        importing
+          obj_to_log    type any optional
+          context       type simple optional
+          callback_form type csequence optional
+          callback_prog type csequence optional
+          callback_fm   type csequence optional
+          type          type symsgty optional
+          importance    type balprobcl optional
+            preferred parameter obj_to_log
+        returning
+          value(self)   type ref to zif_logger .
+
+    methods save_log.
+endclass.
 
 
 
-CLASS ZCL_LOGGER IMPLEMENTATION.
+class zcl_logger implementation.
+
+
+  method drill_down_into_exception.
+    data: i                  type i value 2,
+          previous_exception type ref to cx_root,
+          exceptions         type tty_exception.
+
+    field-symbols <ex> like line of exceptions.
+    append initial line to exceptions assigning <ex>.
+    <ex>-level = 1.
+    <ex>-exception = exception.
+
+    previous_exception = exception.
+
+    while i <= settings->get_max_exception_drill_down( ).
+      if previous_exception->previous is not bound.
+        exit.
+      endif.
+
+      previous_exception ?= previous_exception->previous.
+
+      append initial line to exceptions assigning <ex>.
+      <ex>-level = i.
+      <ex>-exception = previous_exception.
+      i = i + 1.
+    endwhile.
+
+    field-symbols <ret> like line of rt_exception_data_table.
+    sort exceptions by level descending.                   "Display the deepest exception first
+    loop at exceptions assigning <ex>.
+      append initial line to rt_exception_data_table assigning <ret>.
+      <ret>-exception = <ex>-exception.
+      <ret>-msgty     = type.
+      <ret>-probclass = importance.
+    endloop.
+  endmethod.
+
+
+  method get_message_handles.
+
+    data: log_handle type bal_t_logh,
+          filter     type bal_s_mfil.
+
+    field-symbols <f> like line of filter-msgty.
+
+    insert handle into table log_handle.
+
+    if msgtype is not initial.
+      append initial line to filter-msgty assigning <f>.
+      <f>-sign   = 'I'.
+      <f>-option = 'EQ'.
+      <f>-low    = msgtype.
+    endif.
+
+    call function 'BAL_GLB_SEARCH_MSG'
+      exporting
+        i_t_log_handle = log_handle
+        i_s_msg_filter = filter
+      importing
+        e_t_msg_handle = rt_message_handles
+      exceptions
+        msg_not_found  = 0.
+
+  endmethod.
+
+
+  method new.
+
+    if auto_save is supplied.
+      r_log ?= zcl_logger_factory=>create_log(
+        object = object
+        subobject = subobject
+        desc = desc
+        context = context
+        settings = zcl_logger_factory=>create_settings(
+          )->set_usage_of_secondary_db_conn( second_db_conn
+          )->set_autosave( auto_save )
+      ).
+    else.
+      r_log ?= zcl_logger_factory=>create_log(
+        object = object
+        subobject = subobject
+        desc = desc
+        context = context
+        settings = zcl_logger_factory=>create_settings(
+          )->set_usage_of_secondary_db_conn( second_db_conn )
+      ).
+    endif.
+
+  endmethod.
+
+
+  method open.
+
+    if auto_save is supplied.
+      r_log ?= zcl_logger_factory=>open_log(
+        object = object
+        subobject = subobject
+        desc = desc
+        create_if_does_not_exist = create_if_does_not_exist
+        settings = zcl_logger_factory=>create_settings(
+          )->set_autosave( auto_save )
+      ).
+    else.
+      r_log ?= zcl_logger_factory=>open_log(
+        object = object
+        subobject = subobject
+        desc = desc
+        create_if_does_not_exist = create_if_does_not_exist
+      ).
+    endif.
+
+  endmethod.
 
 
   method a.
@@ -165,18 +305,6 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       detailed_msg-msgv2 = sy-msgv2.
       detailed_msg-msgv3 = sy-msgv3.
       detailed_msg-msgv4 = sy-msgv4.
-    elseif msg_type->type_kind = cl_abap_typedescr=>typekind_oref.
-      exception_data_table = me->drill_down_into_exception(
-          exception   = obj_to_log
-          type        = type
-          importance  = importance
-          ).
-    elseif msg_type->type_kind = cl_abap_typedescr=>typekind_table.
-      assign obj_to_log to <table_of_messages>.
-      loop at <table_of_messages> assigning <message_line>.
-        add( <message_line> ).
-      endloop.
-      return.
     elseif msg_type->absolute_name = '\TYPE=BAPIRET1'.
       assign obj_to_log to <bapiret1_msg>.
       detailed_msg-msgty = <bapiret1_msg>-type.
@@ -240,6 +368,31 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       detailed_msg-msgv2 = <rcomp_msg>-msgv2.
       detailed_msg-msgv3 = <rcomp_msg>-msgv3.
       detailed_msg-msgv4 = <rcomp_msg>-msgv4.
+    elseif msg_type->type_kind = cl_abap_typedescr=>typekind_oref.
+      exception_data_table = me->drill_down_into_exception(
+          exception   = obj_to_log
+          type        = type
+          importance  = importance
+          ).
+    elseif msg_type->type_kind = cl_abap_typedescr=>typekind_table.
+      assign obj_to_log to <table_of_messages>.
+      loop at <table_of_messages> assigning <message_line>.
+        add( <message_line> ).
+      endloop.
+    elseif msg_type->type_kind = cl_abap_typedescr=>typekind_struct1   "flat structure
+        or msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.  "deep structure (already when string is used)
+      add_structure(
+        exporting
+          obj_to_log    = obj_to_log
+          context       = context
+          callback_form = callback_form
+          callback_prog = callback_prog
+          callback_fm   = callback_fm
+          type          = type
+          importance    = importance
+        receiving
+          self          = self
+      ).
     else.
       free_text_msg = obj_to_log.
     endif.
@@ -271,58 +424,48 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
           i_s_msg      = detailed_msg.
     endif.
 
-    if auto_save = abap_true.
-      append me->handle to log_handles.
-      call function 'BAL_DB_SAVE'
-        exporting
-          i_t_log_handle       = log_handles
-          i_2th_connection     = me->sec_connection
-          i_2th_connect_commit = me->sec_connect_commit
-        importing
-          e_new_lognumbers     = log_numbers.
-      if me->db_number is initial.
-        read table log_numbers index 1 into log_number.
-        me->db_number = log_number-lognumber.
-      endif.
+    if me->settings->get_autosave( ) = abap_true.
+      save_log( ).
     endif.
-
     self = me.
   endmethod.
 
 
-  method drill_down_into_exception.
-    data: i                  type i value 2,
-          previous_exception type ref to cx_root,
-          exceptions         type tty_exception.
+  method add_structure.
+    data: msg_type        type ref to cl_abap_typedescr,
+          msg_struct_type type ref to cl_abap_structdescr,
+          components      type cl_abap_structdescr=>component_table,
+          component       like line of components,
+          string_to_log   type string.
+    field-symbols: <component>   type any.
 
-    field-symbols <ex> like line of exceptions.
-    append initial line to exceptions assigning <ex>.
-    <ex>-level = 1.
-    <ex>-exception = exception.
-
-    previous_exception = exception.
-
-    while i <= max_exception_drill_down.
-      if previous_exception->previous is not bound.
-        exit.
+    msg_struct_type ?= cl_abap_typedescr=>describe_by_data( obj_to_log ).
+    components = msg_struct_type->get_components( ).
+    add( '--- Begin of structure ---' ).
+    loop at components into component.
+      assign component component-name of structure obj_to_log to <component>.
+      if sy-subrc = 0.
+        msg_type = cl_abap_typedescr=>describe_by_data( <component> ).
+        if msg_type->kind = cl_abap_typedescr=>kind_elem.
+          string_to_log = |{ to_lower( component-name ) } = { <component> }|.
+          add( string_to_log ).
+        elseif msg_type->kind = cl_abap_typedescr=>kind_struct.
+          add_structure(
+            exporting
+              obj_to_log    = <component>
+              context       = context
+              callback_form = callback_form
+              callback_prog = callback_prog
+              callback_fm   = callback_fm
+              type          = type
+              importance    = importance
+            receiving
+              self          = self
+          ).
+        endif.
       endif.
-
-      previous_exception ?= previous_exception->previous.
-
-      append initial line to exceptions assigning <ex>.
-      <ex>-level = i.
-      <ex>-exception = previous_exception.
-      i = i + 1.
-    endwhile.
-
-    field-symbols <ret> like line of rt_exception_data_table.
-    sort exceptions by level descending.                   "Display the deepest exception first
-    loop at exceptions assigning <ex>.
-      append initial line to rt_exception_data_table assigning <ret>.
-      <ret>-exception = <ex>-exception.
-      <ret>-msgty     = type.
-      <ret>-probclass = importance.
     endloop.
+    add( '--- End of structure ---' ).
   endmethod.
 
 
@@ -339,22 +482,13 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 
 
   method export_to_table.
-    data: log_handle      type bal_t_logh,
-          message_handles type bal_t_msgh,
+    data: message_handles type bal_t_msgh,
           message         type bal_s_msg,
           bapiret2        type bapiret2.
 
     field-symbols <msg_handle> type balmsghndl.
 
-    insert handle into table log_handle.
-
-    call function 'BAL_GLB_SEARCH_MSG'
-      exporting
-        i_t_log_handle = log_handle
-      importing
-        e_t_msg_handle = message_handles
-      exceptions
-        msg_not_found  = 0.
+    message_handles = get_message_handles( ).
 
     loop at message_handles assigning <msg_handle>.
       call function 'BAL_LOG_MSG_READ'
@@ -391,8 +525,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   method fullscreen.
 
     data:
-          profile        type bal_s_prof,
-          lt_log_handles type bal_t_logh.
+      profile        type bal_s_prof,
+      lt_log_handles type bal_t_logh.
 
     append me->handle to lt_log_handles.
 
@@ -408,9 +542,16 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   endmethod.
 
 
-  method get_autosave.
+  method has_errors.
 
-    auto_save = me->auto_save.
+    rv_yes = boolc( lines( get_message_handles( msgtype = 'E' ) ) > 0 ).
+
+  endmethod.
+
+
+  method has_warnings.
+
+    rv_yes = boolc( lines( get_message_handles( msgtype = 'W' ) ) > 0 ).
 
   endmethod.
 
@@ -427,48 +568,16 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   endmethod.
 
 
-  method new.
+  method is_empty.
 
-    if auto_save is supplied.
-      r_log ?= zcl_logger_factory=>create_log(
-        !object = object
-        !subobject = subobject
-        !desc = desc
-        !context = context
-        !auto_save = auto_save
-        !second_db_conn = second_db_conn
-      ).
-    else.
-      r_log ?= zcl_logger_factory=>create_log(
-        !object = object
-        !subobject = subobject
-        !desc = desc
-        !context = context
-        !second_db_conn = second_db_conn
-      ).
-    endif.
+    rv_yes = boolc( length( ) = 0 ).
 
   endmethod.
 
 
-  method open.
+  method length.
 
-    if auto_save is supplied.
-      r_log ?= zcl_logger_factory=>open_log(
-        !object = object
-        !subobject = subobject
-        !desc = desc
-        !create_if_does_not_exist = create_if_does_not_exist
-        !auto_save = auto_save
-      ).
-    else.
-      r_log ?= zcl_logger_factory=>open_log(
-        !object = object
-        !subobject = subobject
-        !desc = desc
-        !create_if_does_not_exist = create_if_does_not_exist
-      ).
-    endif.
+    rv_length = lines( get_message_handles( ) ).
 
   endmethod.
 
@@ -477,8 +586,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 * See SBAL_DEMO_04_POPUP for ideas
 
     data:
-          profile        type bal_s_prof,
-          lt_log_handles type bal_t_logh.
+      profile        type bal_s_prof,
+      lt_log_handles type bal_t_logh.
 
     append me->handle to lt_log_handles.
 
@@ -507,42 +616,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 
 
   method save.
-*--------------------------------------------------------------------*
-* Method to save the log on demand.  Intended to be called at the    *
-*  end of the log processing so that logs can be saved depending     *
-*  on other criteria, like the existance of error messages.          *
-*  If there are no error messages, it may not be desireable to save  *
-*  a log                                                             *
-*--------------------------------------------------------------------*
-
-
-    data:
-          log_handles type bal_t_logh,
-          log_numbers type bal_t_lgnm,
-          log_number  type bal_s_lgnm.
-
-    check auto_save = abap_false.
-
-    append me->handle to log_handles.
-    call function 'BAL_DB_SAVE'
-      exporting
-        i_t_log_handle       = log_handles
-        i_2th_connection     = me->sec_connection
-        i_2th_connect_commit = me->sec_connect_commit
-      importing
-        e_new_lognumbers     = log_numbers.
-    if me->db_number is initial.
-      read table log_numbers index 1 into log_number.
-      me->db_number = log_number-lognumber.
-    endif.
-
-  endmethod.
-
-
-  method set_autosave.
-
-    me->auto_save = auto_save.
-
+    check me->settings->get_autosave( ) = abap_false.
+    save_log( ).
   endmethod.
 
 
@@ -556,4 +631,24 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       type          = 'W'
       importance    = importance ).
   endmethod.
-ENDCLASS.
+  
+  
+  method save_log.
+    data log_handles type bal_t_logh.
+    data log_numbers type bal_t_lgnm.
+    data log_number type bal_s_lgnm.
+
+    insert me->handle into table log_handles.
+    call function 'BAL_DB_SAVE'
+      exporting
+        i_t_log_handle       = log_handles
+        i_2th_connection     = me->sec_connection
+        i_2th_connect_commit = me->sec_connect_commit
+      importing
+        e_new_lognumbers     = log_numbers.
+    if me->db_number is initial.
+      read table log_numbers index 1 into log_number.
+      me->db_number = log_number-lognumber.
+    endif.
+  endmethod.
+endclass.

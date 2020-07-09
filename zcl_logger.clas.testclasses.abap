@@ -1,36 +1,15 @@
-*"* use this source file for your ABAP unit test classes
-
-
 class lcl_test definition for testing
   duration short
   risk level harmless.
-*??<asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
-*?<asx:values>
-*?<TESTCLASS_OPTIONS>
-*?<TEST_CLASS>lcl_Test
-*?</TEST_CLASS>
-*?<TEST_MEMBER>f_Cut
-*?</TEST_MEMBER>
-*?<OBJECT_UNDER_TEST>ZCL_LOGGER
-*?</OBJECT_UNDER_TEST>
-*?<OBJECT_IS_LOCAL/>
-*?<GENERATE_FIXTURE/>
-*?<GENERATE_CLASS_FIXTURE/>
-*?<GENERATE_INVOCATION/>
-*?<GENERATE_ASSERT_EQUAL/>
-*?</TESTCLASS_OPTIONS>
-*?</asx:values>
-*?</asx:abap>
   private section.
 
     data:
-          anon_log     type ref to zif_logger,
-          named_log    type ref to zif_logger,
-          reopened_log type ref to zif_logger.
+      anon_log     type ref to zif_logger,
+      named_log    type ref to zif_logger,
+      reopened_log type ref to zif_logger.
 
     class-methods:
       class_setup.
-*      class_teardown.
 
     methods:
       setup,
@@ -58,6 +37,8 @@ class lcl_test definition for testing
       can_create_anon_log for testing,
       can_create_named_log for testing,
       can_reopen_log for testing,
+      can_create_expiring_log_days for testing,
+      can_create_expiring_log_date for testing,
       can_open_or_create for testing,
 
       can_add_log_context for testing,
@@ -79,6 +60,8 @@ class lcl_test definition for testing
       can_log_err for testing,
       can_log_chained_exceptions for testing,
       can_log_batch_msgs for testing,
+      can_log_any_simple_structure for testing,
+      can_log_any_deep_structure for testing,
 
       can_add_msg_context for testing,
       can_add_callback_sub for testing,
@@ -86,7 +69,10 @@ class lcl_test definition for testing
 
       must_use_factory for testing,
 
-      can_use_and_chain_aliases for testing.
+      can_use_and_chain_aliases for testing,
+
+      return_proper_status for testing,
+      return_proper_length for testing.
 
 endclass.       "lcl_Test
 
@@ -121,6 +107,90 @@ class lcl_test implementation.
       msg = 'Cannot Instantiate Named Log' ).
   endmethod.
 
+  method can_create_expiring_log_days.
+    data expiring_log type ref to zif_logger.
+    data act_header type bal_s_log.
+    constants days_until_log_can_be_deleted type i value 365.
+
+    expiring_log = zcl_logger_factory=>create_log(
+      object    = 'ABAPUNIT'
+      subobject = 'LOGGER'
+      desc      = 'Log that is not deletable and expiring'
+      settings  = zcl_logger_factory=>create_settings(
+        )->set_expiry_in_days( days_until_log_can_be_deleted
+        )->set_must_be_kept_until_expiry( abap_true )
+    ).
+
+    cl_aunit_assert=>assert_bound(
+      act = expiring_log
+      msg = 'Cannot Instantiate Expiring Log' ).
+
+    call function 'BAL_LOG_HDR_READ'
+      exporting
+        i_log_handle = expiring_log->handle
+      importing
+        e_s_log      = act_header.
+
+    data lv_exp type d.
+    lv_exp = sy-datum + days_until_log_can_be_deleted.
+
+    cl_aunit_assert=>assert_equals(
+      exporting
+        exp     = lv_exp
+        act     = act_header-aldate_del
+        msg     = 'Log is not expiring in correct amount of days'
+    ).
+
+    cl_aunit_assert=>assert_equals(
+      exporting
+        exp     = abap_true
+        act     = act_header-del_before
+        msg     = 'Log should not be deletable before expiry date'
+    ).
+  endmethod.
+
+  method can_create_expiring_log_date.
+    data expiring_log type ref to zif_logger.
+    data act_header type bal_s_log.
+    constants days_until_log_can_be_deleted type i value 365.
+
+    data lv_expire type d.
+    lv_expire = sy-datum + days_until_log_can_be_deleted.
+
+    expiring_log = zcl_logger_factory=>create_log(
+      object    = 'ABAPUNIT'
+      subobject = 'LOGGER'
+      desc      = 'Log that is not deletable and expiring'
+      settings  = zcl_logger_factory=>create_settings(
+        )->set_expiry_date( lv_expire
+        )->set_must_be_kept_until_expiry( abap_true )
+    ).
+
+    cl_aunit_assert=>assert_bound(
+      act = expiring_log
+      msg = 'Cannot Instantiate Expiring Log' ).
+
+    call function 'BAL_LOG_HDR_READ'
+      exporting
+        i_log_handle = expiring_log->handle
+      importing
+        e_s_log      = act_header.
+
+    cl_aunit_assert=>assert_equals(
+      exporting
+        exp     = lv_expire
+        act     = act_header-aldate_del
+        msg     = 'Log is not expiring on correct date'
+    ).
+
+    cl_aunit_assert=>assert_equals(
+      exporting
+        exp     = abap_true
+        act     = act_header-del_before
+        msg     = 'Log should not be deletable before expiry date'
+    ).
+  endmethod.
+
   method can_reopen_log.
     cl_aunit_assert=>assert_bound(
       act = reopened_log
@@ -130,7 +200,7 @@ class lcl_test implementation.
   method can_open_or_create.
     data: created_log type ref to zif_logger,
           handles     type bal_t_logh.
-    call function 'BAL_GLB_MEMORY_REFRESH'.                "Close Logs
+    call function 'BAL_GLB_MEMORY_REFRESH'. "Close Logs
     reopened_log = zcl_logger=>open( object = 'ABAPUNIT'
                                      subobject = 'LOGGER'
                                      desc = 'Log saved in database'
@@ -204,6 +274,7 @@ class lcl_test implementation.
       act = get_first_message( named_log->handle )
       msg = 'Did not write to named log' ).
   endmethod.
+
 
   method auto_saves_named_log.
     data: dummy       type c,
@@ -321,6 +392,13 @@ class lcl_test implementation.
       exp = 'This is a test'
       act = condense( actual_text )
       msg = 'Did not log system message properly' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = abap_true
+      act = anon_log->has_warnings( )
+      msg = 'Did not log or fetch system message properly'
+    ).
+
   endmethod.
 
   method can_log_bapiret2.
@@ -366,6 +444,12 @@ class lcl_test implementation.
       exp = 'This is a test'
       act = condense( actual_text )
       msg = 'Did not log system message properly' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = abap_true
+      act = anon_log->has_warnings( )
+      msg = 'Did not log or fetch system message properly'
+    ).
   endmethod.
 
   method can_log_bapi_coru_return.
@@ -411,6 +495,12 @@ class lcl_test implementation.
       exp = 'This is a test'
       act = condense( actual_text )
       msg = 'Did not log system message properly' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = abap_true
+      act = anon_log->has_warnings( )
+      msg = 'Did not log or fetch system message properly'
+    ).
   endmethod.
 
   method can_log_bapi_order_return.
@@ -420,7 +510,7 @@ class lcl_test implementation.
           actual_details   type bal_s_msg,
           actual_text      type char200.
 
-    expected_details-msgty = bapi_msg-type = 'W'.
+    expected_details-msgty = bapi_msg-type = 'E'.
     expected_details-msgid = bapi_msg-id = 'BL'.
     expected_details-msgno = bapi_msg-number = '001'.
     expected_details-msgv1 = bapi_msg-message_v1 = 'This'.
@@ -456,6 +546,12 @@ class lcl_test implementation.
       exp = 'This is a test'
       act = condense( actual_text )
       msg = 'Did not log system message properly' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = abap_true
+      act = anon_log->has_errors( )
+      msg = 'Did not log or fetch system message properly'
+    ).
   endmethod.
 
   method can_log_rcomp.
@@ -465,7 +561,7 @@ class lcl_test implementation.
           actual_details   type bal_s_msg,
           actual_text      type char200.
 
-    expected_details-msgty = rcomp_msg-msgty = 'W'.
+    expected_details-msgty = rcomp_msg-msgty = 'E'.
     expected_details-msgid = rcomp_msg-msgid = 'BL'.
     expected_details-msgno = rcomp_msg-msgno = '001'.
     expected_details-msgv1 = rcomp_msg-msgv1 = 'This'.
@@ -501,6 +597,12 @@ class lcl_test implementation.
       exp = 'This is a test'
       act = condense( actual_text )
       msg = 'Did not log system message properly' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = abap_true
+      act = anon_log->has_errors( )
+      msg = 'Did not log or fetch system message properly'
+    ).
   endmethod.
 
 
@@ -702,6 +804,89 @@ class lcl_test implementation.
       msg = 'Did not log BDC return messages correctly' ).
 
   endmethod.
+
+  method can_log_any_simple_structure.
+    types: begin of ty_struct,
+             comp1 type string,
+             comp2 type i,
+           end of ty_struct.
+    data: struct      type ty_struct,
+          act_table   type table_of_strings,
+          exp_table   type table_of_strings,
+          exp_line    like line of exp_table,
+          msg_details type bal_tt_msg.
+
+    struct-comp1 = 'Demo'.
+    struct-comp2 = 5.
+    anon_log->e( struct ).
+
+    get_messages( exporting log_handle  = anon_log->handle
+                  importing texts       = act_table
+                            msg_details = msg_details ).
+
+    exp_line = '--- Begin of structure ---'.
+    append exp_line to exp_table.
+    exp_line = 'comp1 = Demo'.
+    append exp_line to exp_table.
+    exp_line = 'comp2 = 5'.
+    append exp_line to exp_table.
+    exp_line = '--- End of structure ---'.
+    append exp_line to exp_table.
+
+    cl_aunit_assert=>assert_equals(
+      exp = exp_table
+      act = act_table
+      msg = 'Simple structure was not logged correctly'
+    ).
+  endmethod.
+
+
+  method can_log_any_deep_structure.
+    types: begin of ty_struct,
+             comp1 type string,
+             comp2 type i,
+           end of ty_struct,
+           begin of ty_deep_struct,
+             comp1 type string,
+             deep  type ty_struct,
+           end of ty_deep_struct.
+    data: struct      type ty_deep_struct,
+          act_table   type table_of_strings,
+          exp_table   type table_of_strings,
+          exp_line    like line of exp_table,
+          msg_details type bal_tt_msg.
+
+    struct-comp1 = 'Demo'.
+    struct-deep-comp1 = 'Inner component'.
+    struct-deep-comp2 = 10.
+    anon_log->e( struct ).
+
+    get_messages( exporting log_handle  = anon_log->handle
+                  importing texts       = act_table
+                            msg_details = msg_details ).
+
+    exp_line = '--- Begin of structure ---'.
+    append exp_line to exp_table.
+    exp_line = 'comp1 = Demo'.
+    append exp_line to exp_table.
+    exp_line = '--- Begin of structure ---'.
+    append exp_line to exp_table.
+    exp_line = 'comp1 = Inner component'.
+    append exp_line to exp_table.
+    exp_line = 'comp2 = 10'.
+    append exp_line to exp_table.
+    exp_line = '--- End of structure ---'.
+    append exp_line to exp_table.
+    exp_line = '--- End of structure ---'.
+    append exp_line to exp_table.
+
+    cl_aunit_assert=>assert_equals(
+      exp = exp_table
+      act = act_table
+      msg = 'Deep structure was not logged correctly'
+    ).
+  endmethod.
+
 
   method can_add_msg_context.
     data: addl_context type bezei20 value 'Berlin',        "data element from dictionary!
@@ -923,4 +1108,57 @@ class lcl_test implementation.
   method teardown.
     call function 'BAL_GLB_MEMORY_REFRESH'.
   endmethod.
+
+  method return_proper_status.
+
+    cl_aunit_assert=>assert_not_initial(
+      act = anon_log->is_empty( )
+      msg = 'Not empty at start' ).
+
+    anon_log->s( 'success' ).
+    anon_log->i( 'info' ).
+
+    cl_aunit_assert=>assert_initial(
+      act = anon_log->is_empty( )
+      msg = 'Empty after add' ).
+
+    cl_aunit_assert=>assert_initial(
+      act = anon_log->has_errors( )
+      msg = 'Has errors when there were no errors' ).
+
+    cl_aunit_assert=>assert_initial(
+      act = anon_log->has_warnings( )
+      msg = 'Has warnings when there were no warnings' ).
+
+    anon_log->e( 'error' ).
+    anon_log->w( 'warning' ).
+
+    cl_aunit_assert=>assert_not_initial(
+      act = anon_log->has_errors( )
+      msg = 'Has no errors when there were errors' ).
+
+    cl_aunit_assert=>assert_not_initial(
+      act = anon_log->has_warnings( )
+      msg = 'Has no warnings when there were warnings' ).
+
+  endmethod.
+
+  method return_proper_length.
+
+    cl_aunit_assert=>assert_equals(
+      exp = 0
+      act = anon_log->length( )
+      msg = 'Did not return 0 length at start' ).
+
+    anon_log->s( 'success' ).
+    anon_log->i( 'info' ).
+    anon_log->w( 'warning' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = 3
+      act = anon_log->length( )
+      msg = 'Did not return right length after add' ).
+
+  endmethod.
+
 endclass.       "lcl_Test
