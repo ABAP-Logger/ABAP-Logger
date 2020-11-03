@@ -266,6 +266,7 @@ class zcl_logger implementation.
                    <bdc_msg>           type bdcmsgcoll,
                    <hrpad_msg>         type hrpad_message_alike,
                    <rcomp_msg>         type rcomp,
+                   <prott_msg>         type prott,
                    <context_val>       type any.
 
     if context is not initial.
@@ -368,6 +369,15 @@ class zcl_logger implementation.
       detailed_msg-msgv2 = <rcomp_msg>-msgv2.
       detailed_msg-msgv3 = <rcomp_msg>-msgv3.
       detailed_msg-msgv4 = <rcomp_msg>-msgv4.
+    elseif msg_type->absolute_name = '\TYPE=PROTT'.
+      assign obj_to_log to <prott_msg>.
+      detailed_msg-msgty = <prott_msg>-msgty.
+      detailed_msg-msgid = <prott_msg>-msgid.
+      detailed_msg-msgno = <prott_msg>-msgno.
+      detailed_msg-msgv1 = <prott_msg>-msgv1.
+      detailed_msg-msgv2 = <prott_msg>-msgv2.
+      detailed_msg-msgv3 = <prott_msg>-msgv3.
+      detailed_msg-msgv4 = <prott_msg>-msgv4.
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_oref.
       exception_data_table = me->drill_down_into_exception(
           exception   = obj_to_log
