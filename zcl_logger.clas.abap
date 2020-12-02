@@ -230,7 +230,7 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method a.
+  method zif_logger~a.
     self = add(
       obj_to_log    = obj_to_log
       context       = context
@@ -242,7 +242,7 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method add.
+  method zif_logger~add.
 
     data: detailed_msg         type bal_s_msg,
           exception_data_table type tty_exception_data,
@@ -479,7 +479,7 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method e.
+  method zif_logger~e.
     self = add(
       obj_to_log    = obj_to_log
       context       = context
@@ -491,7 +491,7 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method export_to_table.
+  method zif_logger~export_to_table.
     data: message_handles type bal_t_msgh,
           message         type bal_s_msg,
           bapiret2        type bapiret2.
@@ -532,7 +532,7 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method fullscreen.
+  method zif_logger~fullscreen.
 
     data:
       profile        type bal_s_prof,
@@ -552,21 +552,21 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method has_errors.
+  method zif_logger~has_errors.
 
     rv_yes = boolc( lines( get_message_handles( msgtype = 'E' ) ) > 0 ).
 
   endmethod.
 
 
-  method has_warnings.
+  method zif_logger~has_warnings.
 
     rv_yes = boolc( lines( get_message_handles( msgtype = 'W' ) ) > 0 ).
 
   endmethod.
 
 
-  method i.
+  method zif_logger~i.
     self = add(
       obj_to_log    = obj_to_log
       context       = context
@@ -578,21 +578,21 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method is_empty.
+  method zif_logger~is_empty.
 
     rv_yes = boolc( length( ) = 0 ).
 
   endmethod.
 
 
-  method length.
+  method zif_logger~length.
 
     rv_length = lines( get_message_handles( ) ).
 
   endmethod.
 
 
-  method popup.
+  method zif_logger~popup.
 * See SBAL_DEMO_04_POPUP for ideas
 
     data:
@@ -613,7 +613,7 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method s.
+  method zif_logger~s.
     self = add(
       obj_to_log    = obj_to_log
       context       = context
@@ -625,13 +625,13 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method save.
+  method zif_logger~save.
     check me->settings->get_autosave( ) = abap_false.
     save_log( ).
   endmethod.
 
 
-  method w.
+  method zif_logger~w.
     self = add(
       obj_to_log    = obj_to_log
       context       = context
@@ -641,8 +641,8 @@ class zcl_logger implementation.
       type          = 'W'
       importance    = importance ).
   endmethod.
-  
-  
+
+
   method save_log.
     data log_handles type bal_t_logh.
     data log_numbers type bal_t_lgnm.
