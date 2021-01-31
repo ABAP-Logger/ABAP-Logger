@@ -116,8 +116,7 @@ CLASS ZCL_LOGGER_FACTORY IMPLEMENTATION.
           subobj_filter      type bal_s_sub,
 
           found_headers      type balhdr_t,
-          most_recent_header type balhdr,
-          handles_loaded     type bal_t_logh.
+          most_recent_header type balhdr.
     data: lo_log             type ref to zcl_logger.
 
     desc_filter-option = subobj_filter-option = obj_filter-option = 'EQ'.
