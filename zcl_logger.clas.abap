@@ -230,7 +230,7 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method a.
+  method zif_logger~a.
     self = add(
       obj_to_log    = obj_to_log
       context       = context
@@ -242,7 +242,7 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method add.
+  method zif_logger~add.
 
     data: detailed_msg         type bal_s_msg,
           exception_data_table type tty_exception_data,
@@ -266,6 +266,7 @@ class zcl_logger implementation.
                    <bdc_msg>           type bdcmsgcoll,
                    <hrpad_msg>         type hrpad_message_alike,
                    <rcomp_msg>         type rcomp,
+                   <prott_msg>         type prott,
                    <context_val>       type any.
 
     if context is not initial.
@@ -368,6 +369,15 @@ class zcl_logger implementation.
       detailed_msg-msgv2 = <rcomp_msg>-msgv2.
       detailed_msg-msgv3 = <rcomp_msg>-msgv3.
       detailed_msg-msgv4 = <rcomp_msg>-msgv4.
+    elseif msg_type->absolute_name = '\TYPE=PROTT'.
+      assign obj_to_log to <prott_msg>.
+      detailed_msg-msgty = <prott_msg>-msgty.
+      detailed_msg-msgid = <prott_msg>-msgid.
+      detailed_msg-msgno = <prott_msg>-msgno.
+      detailed_msg-msgv1 = <prott_msg>-msgv1.
+      detailed_msg-msgv2 = <prott_msg>-msgv2.
+      detailed_msg-msgv3 = <prott_msg>-msgv3.
+      detailed_msg-msgv4 = <prott_msg>-msgv4.
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_oref.
       exception_data_table = me->drill_down_into_exception(
           exception   = obj_to_log
@@ -377,7 +387,10 @@ class zcl_logger implementation.
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_table.
       assign obj_to_log to <table_of_messages>.
       loop at <table_of_messages> assigning <message_line>.
-        add( <message_line> ).
+        add(
+          EXPORTING
+            obj_to_log    = <message_line>
+            context       = context
       endloop.
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_struct1   "flat structure
         or msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.  "deep structure (already when string is used)
@@ -469,7 +482,7 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method e.
+  method zif_logger~e.
     self = add(
       obj_to_log    = obj_to_log
       context       = context
@@ -481,7 +494,7 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method export_to_table.
+  method zif_logger~export_to_table.
     data: message_handles type bal_t_msgh,
           message         type bal_s_msg,
           bapiret2        type bapiret2.
@@ -522,7 +535,7 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method fullscreen.
+  method zif_logger~fullscreen.
 
     data:
       profile        type bal_s_prof,
@@ -542,21 +555,21 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method has_errors.
+  method zif_logger~has_errors.
 
     rv_yes = boolc( lines( get_message_handles( msgtype = 'E' ) ) > 0 ).
 
   endmethod.
 
 
-  method has_warnings.
+  method zif_logger~has_warnings.
 
     rv_yes = boolc( lines( get_message_handles( msgtype = 'W' ) ) > 0 ).
 
   endmethod.
 
 
-  method i.
+  method zif_logger~i.
     self = add(
       obj_to_log    = obj_to_log
       context       = context
@@ -568,21 +581,21 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method is_empty.
+  method zif_logger~is_empty.
 
     rv_yes = boolc( length( ) = 0 ).
 
   endmethod.
 
 
-  method length.
+  method zif_logger~length.
 
     rv_length = lines( get_message_handles( ) ).
 
   endmethod.
 
 
-  method popup.
+  method zif_logger~popup.
 * See SBAL_DEMO_04_POPUP for ideas
 
     data:
@@ -603,7 +616,7 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method s.
+  method zif_logger~s.
     self = add(
       obj_to_log    = obj_to_log
       context       = context
@@ -615,13 +628,13 @@ class zcl_logger implementation.
   endmethod.
 
 
-  method save.
+  method zif_logger~save.
     check me->settings->get_autosave( ) = abap_false.
     save_log( ).
   endmethod.
 
 
-  method w.
+  method zif_logger~w.
     self = add(
       obj_to_log    = obj_to_log
       context       = context
@@ -631,8 +644,8 @@ class zcl_logger implementation.
       type          = 'W'
       importance    = importance ).
   endmethod.
-  
-  
+
+
   method save_log.
     data log_handles type bal_t_logh.
     data log_numbers type bal_t_lgnm.
