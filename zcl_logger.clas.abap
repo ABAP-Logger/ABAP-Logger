@@ -69,9 +69,9 @@ class zcl_logger definition
     types: begin of hrpad_message_alike,
              cause(32)    type c,                          "original: hrpad_message_cause
              detail_level type ballevel.
-            include type symsg .
-    types: field_list type standard table of hrpad_message_field_list_alike
-           with non-unique key scrrprfd.
+             include type symsg .
+             types: field_list   type standard table of hrpad_message_field_list_alike
+               with non-unique key scrrprfd.
     types: end of hrpad_message_alike.
 
 *"* private components of class ZCL_LOGGER
@@ -387,10 +387,13 @@ class zcl_logger implementation.
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_table.
       assign obj_to_log to <table_of_messages>.
       loop at <table_of_messages> assigning <message_line>.
-        add(
-          EXPORTING
-            obj_to_log    = <message_line>
-            context       = context
+        if sy-tabix = 1.
+          zif_logger~add(
+              obj_to_log    = <message_line>
+              context       = context ).
+        else.
+          zif_logger~add( obj_to_log = <message_line> ).
+        endif.
       endloop.
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_struct1   "flat structure
         or msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.  "deep structure (already when string is used)
@@ -598,21 +601,19 @@ class zcl_logger implementation.
   method zif_logger~popup.
 * See SBAL_DEMO_04_POPUP for ideas
 
-    data:
-      profile        type bal_s_prof,
-      lt_log_handles type bal_t_logh.
+    data default_profile type bal_s_prof.
+    data lt_log_handles type bal_t_logh.
 
     append me->handle to lt_log_handles.
 
     call function 'BAL_DSP_PROFILE_POPUP_GET'
       importing
-        e_s_display_profile = profile.
+        e_s_display_profile = default_profile.
 
     call function 'BAL_DSP_LOG_DISPLAY'
       exporting
-        i_s_display_profile = profile
+        i_s_display_profile = default_profile
         i_t_log_handle      = lt_log_handles.
-
   endmethod.
 
 
