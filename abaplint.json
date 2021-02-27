@@ -14,7 +14,7 @@
     }
   ],
   "syntax": {
-    "version": "v755",
+    "version": "v702",
     "errorNamespace": "^(Z|Y|LCL_|TY_|LIF_)",
     "globalConstants": [],
     "globalMacros": []
