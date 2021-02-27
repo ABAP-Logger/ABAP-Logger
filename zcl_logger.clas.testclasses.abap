@@ -56,6 +56,7 @@ class lcl_test definition for testing
       can_log_bapi_coru_return for testing,
       can_log_bapi_order_return for testing,
       can_log_rcomp     for testing,
+      can_log_prott for testing,
       can_log_bapirettab for testing,
       can_log_err for testing,
       can_log_chained_exceptions for testing,
@@ -72,7 +73,8 @@ class lcl_test definition for testing
       can_use_and_chain_aliases for testing,
 
       return_proper_status for testing,
-      return_proper_length for testing.
+      return_proper_length for testing,
+      can_add_table_msg_context FOR TESTING RAISING cx_static_check.
 
 endclass.       "lcl_Test
 
@@ -605,6 +607,56 @@ class lcl_test implementation.
     ).
   endmethod.
 
+ METHOD can_log_prott.
+        data: prott_msg        type prott,
+              msg_handle       type balmsghndl,
+              expected_details type bal_s_msg,
+              actual_details   type bal_s_msg,
+              actual_text      type char200.
+
+    expected_details-msgty = prott_msg-msgty = 'W'.
+    expected_details-msgid = prott_msg-msgid = 'BL'.
+    expected_details-msgno = prott_msg-MSGNO = '001'.
+    expected_details-msgv1 = prott_msg-msgv1 = 'This'.
+    expected_details-msgv2 = prott_msg-msgv2 = 'is'.
+    expected_details-msgv3 = prott_msg-msgv3 = 'a'.
+    expected_details-msgv4 = prott_msg-msgv4 = 'test'.
+
+    anon_log->add( prott_msg ).
+
+    msg_handle-log_handle = anon_log->handle.
+    msg_handle-msgnumber  = '000001'.
+
+    call function 'BAL_LOG_MSG_READ'
+      exporting
+        i_s_msg_handle = msg_handle
+      importing
+        e_s_msg        = actual_details
+        e_txt_msg      = actual_text.
+
+    cl_aunit_assert=>assert_not_initial(
+      act = actual_details-time_stmp
+      msg = 'Did not log system message properly' ).
+
+    expected_details-msg_count = 1.
+    clear actual_details-time_stmp.
+
+    cl_aunit_assert=>assert_equals(
+      exp = expected_details
+      act = actual_details
+      msg = 'Did not log system message properly' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = 'This is a test'
+      act = condense( actual_text )
+      msg = 'Did not log system message properly' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = abap_true
+      act = anon_log->has_warnings( )
+      msg = 'Did not log or fetch system message properly'
+    ).
+  ENDMETHOD.
 
   method can_log_bapirettab.
     data: bapi_messages type bapirettab,
@@ -913,6 +965,54 @@ class lcl_test implementation.
       act = act_details-context-tabname
       msg = 'Did not add context correctly' ).
 
+  endmethod.
+
+
+  method can_add_table_msg_context.
+    data: addl_context type bezei20 value 'Berlin',        "data element from dictionary!
+          msg_handle   type balmsghndl,
+          act_details  type bal_s_msg.
+    data msg_table type table_of_strings.
+
+    append `Here is some text` to msg_table.
+    append `Here is some other text` to msg_table.
+
+
+    anon_log->add( obj_to_log = msg_table
+                   context    = addl_context ).
+
+    msg_handle-log_handle = anon_log->handle.
+    msg_handle-msgnumber  = '000001'.
+    call function 'BAL_LOG_MSG_READ'
+      exporting
+        i_s_msg_handle = msg_handle
+      importing
+        e_s_msg        = act_details.
+
+    cl_aunit_assert=>assert_equals(
+      exp = addl_context
+      act = act_details-context-value
+      msg = 'Did not add context correctly' ).
+    cl_aunit_assert=>assert_equals(
+      exp = 'BEZEI20'
+      act = act_details-context-tabname
+      msg = 'Did not add context correctly' ).
+
+
+    msg_handle-msgnumber  = '000002'.
+    call function 'BAL_LOG_MSG_READ'
+      exporting
+        i_s_msg_handle = msg_handle
+      importing
+        e_s_msg        = act_details.
+
+    cl_aunit_assert=>assert_initial(
+        act = act_details-context-value
+        msg = 'Context should only be added to first line'  ).
+
+    cl_aunit_assert=>assert_initial(
+        act = act_details-context-tabname
+        msg = 'Context should only be added to first line'  ).
   endmethod.
 
   method can_add_callback_sub.
