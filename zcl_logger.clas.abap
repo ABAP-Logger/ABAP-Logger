@@ -600,19 +600,22 @@ class zcl_logger implementation.
 
   method zif_logger~popup.
 * See SBAL_DEMO_04_POPUP for ideas
-
-    data default_profile type bal_s_prof.
+    data relevant_profile type bal_s_prof.
     data lt_log_handles type bal_t_logh.
 
     append me->handle to lt_log_handles.
 
-    call function 'BAL_DSP_PROFILE_POPUP_GET'
-      importing
-        e_s_display_profile = default_profile.
+    if profile is supplied and profile is not initial.
+      relevant_profile = profile.
+    else.
+      call function 'BAL_DSP_PROFILE_POPUP_GET'
+        importing
+          e_s_display_profile = relevant_profile.
+    endif.
 
     call function 'BAL_DSP_LOG_DISPLAY'
       exporting
-        i_s_display_profile = default_profile
+        i_s_display_profile = relevant_profile
         i_t_log_handle      = lt_log_handles.
   endmethod.
 
