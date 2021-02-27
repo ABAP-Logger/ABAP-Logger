@@ -109,6 +109,6 @@ interface zif_logger
 
   methods popup
     importing
-      log_profile type bal_s_prof optional.
+      profile type bal_s_prof optional.
 
 endinterface.
