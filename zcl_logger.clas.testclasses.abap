@@ -670,7 +670,7 @@ class lcl_test implementation.
           act_details   type bal_tt_msg,
           act_detail    type bal_s_msg.
 
-    define messages_are.
+    define bapiret_messages_are.
       exp_detail-msgty = bapi_msg-type = &1.
       exp_detail-msgid = bapi_msg-id   = &2.
       exp_detail-msgno = bapi_msg-number = &3.
@@ -685,7 +685,7 @@ class lcl_test implementation.
       APPEND exp_text TO exp_texts.
     end-of-definition.
 
-    messages_are: 'S' 'BL' '001' 'This' 'is' 'happy' 'message',
+    bapiret_messages_are: 'S' 'BL' '001' 'This' 'is' 'happy' 'message',
                   'W' 'BL' '001' 'This' 'is' 'warning' 'message',
                   'E' 'BL' '001' 'This' 'is' 'angry' 'message'.
 
@@ -816,7 +816,7 @@ class lcl_test implementation.
           act_texts  type table_of_strings,
           act_text   type string.
 
-    define messages_are.
+    define batch_messages_are.
       batch_msg-msgtyp = &1.
       batch_msg-msgid = &2.
       batch_msg-msgnr = &3.
@@ -827,7 +827,7 @@ class lcl_test implementation.
       APPEND batch_msg TO batch_msgs.
     end-of-definition.
 
-    messages_are:
+    batch_messages_are:
       'S' 'SABP_UNIT' '010' ''     ''   ''     '',
       'S' 'SABP_UNIT' '030' ''     ''   ''     '',
       'S' 'SABP_UNIT' '000' 'This' 'is' 'test' 'message'.

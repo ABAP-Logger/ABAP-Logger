@@ -6,7 +6,7 @@
 class zcl_logger definition
   public
   create private
-  global friends zcl_logger_factory .
+  global friends zcl_logger_factory.
 
   public section.
 *"* public components of class ZCL_LOGGER

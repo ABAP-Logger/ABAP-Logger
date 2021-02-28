@@ -8,4 +8,4 @@ types: begin of ty_exception,
        end of ty_exception,
        tty_exception type standard table of ty_exception.
 
-types: tty_exception_data    type standard table of bal_s_exc with empty key.
+types tty_exception_data type standard table of bal_s_exc with default key.
