@@ -16,7 +16,7 @@ See the [mission statement](docs/MISSION.md)
 
 **:warning: Migration Required :warning:**
 
-On 2021, February 28 the folder logic was changed, and the abapGit is not able to perform this migration automatically. Therefore, please, follow the following steps:
+On 2021, February 28 the folder logic was changed, and the abapGit may not able to perform this migration automatically. Therefore, you may need to follow the following steps:
 1. Uninstall Repository (see [Uninstall repository](https://docs.abapgit.org/guide-online-uninstall.html)).
 2. Reinstall ABAP-Logger (see:
    - online: see  [Install Online Repo](https://docs.abapgit.org/guide-online-install.html).
