@@ -4,6 +4,8 @@ SAP Logging as painless as any other language.
 
 ABAP Version: 702 or higher
 
+See the [mission statement](docs/MISSION.md) 
+
 ## Features
   * Record message in [Application Log(BC-SRV-BAL)](https://help.sap.com/viewer/10a06f346c531014a346f3874a7621fd/7.0.38/en-US/4e21012c35d44180e10000000a15822b.html)
   * Display message
