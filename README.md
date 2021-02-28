@@ -16,7 +16,9 @@ ABAP Version: 702 or higher
 
 On 2021, February 28 the folder logic was changed, and the abapGit is not able to perform this migration automatically. Therefore, please, follow the following steps:
 1. Uninstall Repository (see [Uninstall repository](https://docs.abapgit.org/guide-online-uninstall.html)).
-2. Reinstall ABAP-Logger (see [How to Install](../how-to-install.md)).
+2. Reinstall ABAP-Logger (see:
+   - online: see  [Install Online Repo](https://docs.abapgit.org/guide-online-install.html).
+   - offline: see  [Install Offline Repo](https://docs.abapgit.org/guide-offline-install.html).
 
 ## Run Unit Tests
 1. In transaction code SLG0, create the Subobject `LOGGER` for Object `ABAPUNIT`. 
