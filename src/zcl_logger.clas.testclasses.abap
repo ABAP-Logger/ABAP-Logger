@@ -506,21 +506,51 @@ class lcl_test implementation.
   endmethod.
 
   method can_log_bapi_order_return.
-    data: bapi_msg         type bapi_order_return,
-          msg_handle       type balmsghndl,
+    data: msg_handle       type balmsghndl,
           expected_details type bal_s_msg,
           actual_details   type bal_s_msg,
           actual_text      type char200.
 
-    expected_details-msgty = bapi_msg-type = 'E'.
-    expected_details-msgid = bapi_msg-id = 'BL'.
-    expected_details-msgno = bapi_msg-number = '001'.
-    expected_details-msgv1 = bapi_msg-message_v1 = 'This'.
-    expected_details-msgv2 = bapi_msg-message_v2 = 'is'.
-    expected_details-msgv3 = bapi_msg-message_v3 = 'a'.
-    expected_details-msgv4 = bapi_msg-message_v4 = 'test'.
+"Solution manager doens't have PROTT. Therefore avoid using the concrete type
+    DATA bapi_order_return_data_ref TYPE REF TO DATA.
+    FIELD-SYMBOLS <message_generic_field> TYPE ANY.
+    FIELD-SYMBOLS <bapi_order_return_structure> TYPE ANY.
+    TRY.
+        CREATE DATA bapi_order_return_data_ref TYPE ('BAPI_ORDER_RETURN').
+    CATCH CX_SY_CREATE_DATA_ERROR.
+      RETURN."Non ECC System such as SolutionManager
+    ENDTRY.
+    ASSIGN bapi_order_return_data_ref->* TO <bapi_order_return_structure>.
 
-    anon_log->add( bapi_msg ).
+    ASSIGN COMPONENT 'TYPE' OF STRUCTURE <bapi_order_return_structure> TO <message_generic_field>.
+    ASSERT sy-subrc = 0.
+    expected_details-msgty = <message_generic_field> = 'E'.
+
+    ASSIGN COMPONENT 'ID' OF STRUCTURE <bapi_order_return_structure> TO <message_generic_field>.
+    ASSERT sy-subrc = 0.
+    expected_details-msgid = <message_generic_field> = 'BL'.
+
+    ASSIGN COMPONENT 'NUMBER' OF STRUCTURE <bapi_order_return_structure> TO <message_generic_field>.
+    ASSERT sy-subrc = 0.
+    expected_details-msgno = <message_generic_field> = '001'.
+
+    ASSIGN COMPONENT 'MESSAGE_V1' OF STRUCTURE <bapi_order_return_structure> TO <message_generic_field>.
+    ASSERT sy-subrc = 0.
+    expected_details-msgv1 = <message_generic_field> = 'This'.
+
+    ASSIGN COMPONENT 'MESSAGE_V2' OF STRUCTURE <bapi_order_return_structure> TO <message_generic_field>.
+    ASSERT sy-subrc = 0.
+    expected_details-msgv2 = <message_generic_field> = 'is'.
+
+    ASSIGN COMPONENT 'MESSAGE_V3' OF STRUCTURE <bapi_order_return_structure> TO <message_generic_field>.
+    ASSERT sy-subrc = 0.
+    expected_details-msgv3 = <message_generic_field> = 'a'.
+
+    ASSIGN COMPONENT 'MESSAGE_V4' OF STRUCTURE <bapi_order_return_structure> TO <message_generic_field>.
+    ASSERT sy-subrc = 0.
+    expected_details-msgv4 = <message_generic_field> = 'test'.
+
+    anon_log->add( <bapi_order_return_structure> ).
 
     msg_handle-log_handle = anon_log->handle.
     msg_handle-msgnumber  = '000001'.
@@ -557,21 +587,33 @@ class lcl_test implementation.
   endmethod.
 
   method can_log_rcomp.
-    data: rcomp_msg        type rcomp,
+    data:
           msg_handle       type balmsghndl,
           expected_details type bal_s_msg,
           actual_details   type bal_s_msg,
           actual_text      type char200.
 
-    expected_details-msgty = rcomp_msg-msgty = 'E'.
-    expected_details-msgid = rcomp_msg-msgid = 'BL'.
-    expected_details-msgno = rcomp_msg-msgno = '001'.
-    expected_details-msgv1 = rcomp_msg-msgv1 = 'This'.
-    expected_details-msgv2 = rcomp_msg-msgv2 = 'is'.
-    expected_details-msgv3 = rcomp_msg-msgv3 = 'a'.
-    expected_details-msgv4 = rcomp_msg-msgv4 = 'test'.
+"Solution manager doens't have PROTT. Therefore avoid using the concrete type
+    DATA rcomp_data_ref TYPE REF TO DATA.
+    FIELD-SYMBOLS <rcomp_structure> TYPE ANY.
+    TRY.
+        CREATE DATA rcomp_data_ref TYPE ('RCOMP').
+    CATCH CX_SY_CREATE_DATA_ERROR.
+      RETURN."Non ECC System such as SolutionManager
+    ENDTRY.
+    ASSIGN rcomp_data_ref->* TO <rcomp_structure>.
 
-    anon_log->add( rcomp_msg ).
+    expected_details-msgty = 'E'.
+    expected_details-msgid = 'BL'.
+    expected_details-msgno = '001'.
+    expected_details-msgv1 = 'This'.
+    expected_details-msgv2 = 'is'.
+    expected_details-msgv3 = 'a'.
+    expected_details-msgv4 = 'test'.
+
+    MOVE-CORRESPONDING expected_details TO <rcomp_structure>.
+
+    anon_log->add( <rcomp_structure> ).
 
     msg_handle-log_handle = anon_log->handle.
     msg_handle-msgnumber  = '000001'.
@@ -608,21 +650,33 @@ class lcl_test implementation.
   endmethod.
 
  METHOD can_log_prott.
-        data: prott_msg        type prott,
-              msg_handle       type balmsghndl,
-              expected_details type bal_s_msg,
-              actual_details   type bal_s_msg,
-              actual_text      type char200.
 
-    expected_details-msgty = prott_msg-msgty = 'W'.
-    expected_details-msgid = prott_msg-msgid = 'BL'.
-    expected_details-msgno = prott_msg-MSGNO = '001'.
-    expected_details-msgv1 = prott_msg-msgv1 = 'This'.
-    expected_details-msgv2 = prott_msg-msgv2 = 'is'.
-    expected_details-msgv3 = prott_msg-msgv3 = 'a'.
-    expected_details-msgv4 = prott_msg-msgv4 = 'test'.
+    data: msg_handle       type balmsghndl,
+          expected_details type bal_s_msg,
+          actual_details   type bal_s_msg,
+          actual_text      type char200.
 
-    anon_log->add( prott_msg ).
+"Solution manager doens't have PROTT. Therefore avoid using the concrete type
+    DATA prott_data_ref TYPE REF TO DATA.
+    FIELD-SYMBOLS <prott_structure> TYPE ANY.
+    TRY.
+        CREATE DATA prott_data_ref TYPE ('PROTT').
+    CATCH CX_SY_CREATE_DATA_ERROR.
+      RETURN."Non ECC System such as SolutionManager
+    ENDTRY.
+    ASSIGN prott_data_ref->* TO <prott_structure>.
+
+    expected_details-msgty = 'W'.
+    expected_details-msgid = 'BL'.
+    expected_details-msgno = '001'.
+    expected_details-msgv1 = 'This'.
+    expected_details-msgv2 = 'is'.
+    expected_details-msgv3 = 'a'.
+    expected_details-msgv4 = 'test'.
+
+    MOVE-CORRESPONDING expected_details TO <prott_structure>.
+
+    anon_log->add( <prott_structure> ).
 
     msg_handle-log_handle = anon_log->handle.
     msg_handle-msgnumber  = '000001'.
