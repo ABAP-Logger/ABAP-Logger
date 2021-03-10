@@ -506,21 +506,31 @@ class lcl_test implementation.
   endmethod.
 
   method can_log_bapi_order_return.
-    data: bapi_msg         type bapi_order_return,
-          msg_handle       type balmsghndl,
+    data: msg_handle       type balmsghndl,
           expected_details type bal_s_msg,
           actual_details   type bal_s_msg,
           actual_text      type char200.
 
-    expected_details-msgty = bapi_msg-type = 'E'.
-    expected_details-msgid = bapi_msg-id = 'BL'.
-    expected_details-msgno = bapi_msg-number = '001'.
-    expected_details-msgv1 = bapi_msg-message_v1 = 'This'.
-    expected_details-msgv2 = bapi_msg-message_v2 = 'is'.
-    expected_details-msgv3 = bapi_msg-message_v3 = 'a'.
-    expected_details-msgv4 = bapi_msg-message_v4 = 'test'.
+"Solution manager doens't have BAPI_ORDER_RETURN. Therefore avoid using the concrete type
+    DATA bapi_order_return_data_ref TYPE REF TO DATA.
+    DATA bapi_return_temp TYPE bapiret2."these fields have the same name as BAPI_ORDER_RETURN
+    FIELD-SYMBOLS <bapi_order_return_structure> TYPE ANY.
+    TRY.
+        CREATE DATA bapi_order_return_data_ref TYPE ('BAPI_ORDER_RETURN').
+    CATCH CX_SY_CREATE_DATA_ERROR.
+      RETURN."Non ECC System such as SolutionManager
+    ENDTRY.
+    ASSIGN bapi_order_return_data_ref->* TO <bapi_order_return_structure>.
 
-    anon_log->add( bapi_msg ).
+    expected_details-msgty = bapi_return_temp-type = 'E'.
+    expected_details-msgid = bapi_return_temp-id = 'BL'.
+    expected_details-msgno = bapi_return_temp-number = '001'.
+    expected_details-msgv1 = bapi_return_temp-message_v1 = 'This'.
+    expected_details-msgv2 = bapi_return_temp-message_v2 = 'is'.
+    expected_details-msgv3 = bapi_return_temp-message_v3 = 'a'.
+    expected_details-msgv4 = bapi_return_temp-message_v4 = 'test'.
+    MOVE-CORRESPONDING bapi_return_temp TO <bapi_order_return_structure>.
+    anon_log->add( <bapi_order_return_structure> ).
 
     msg_handle-log_handle = anon_log->handle.
     msg_handle-msgnumber  = '000001'.
@@ -557,21 +567,33 @@ class lcl_test implementation.
   endmethod.
 
   method can_log_rcomp.
-    data: rcomp_msg        type rcomp,
+    data:
           msg_handle       type balmsghndl,
           expected_details type bal_s_msg,
           actual_details   type bal_s_msg,
           actual_text      type char200.
 
-    expected_details-msgty = rcomp_msg-msgty = 'E'.
-    expected_details-msgid = rcomp_msg-msgid = 'BL'.
-    expected_details-msgno = rcomp_msg-msgno = '001'.
-    expected_details-msgv1 = rcomp_msg-msgv1 = 'This'.
-    expected_details-msgv2 = rcomp_msg-msgv2 = 'is'.
-    expected_details-msgv3 = rcomp_msg-msgv3 = 'a'.
-    expected_details-msgv4 = rcomp_msg-msgv4 = 'test'.
+"Solution manager doens't have PROTT. Therefore avoid using the concrete type
+    DATA rcomp_data_ref TYPE REF TO DATA.
+    FIELD-SYMBOLS <rcomp_structure> TYPE ANY.
+    TRY.
+        CREATE DATA rcomp_data_ref TYPE ('RCOMP').
+    CATCH CX_SY_CREATE_DATA_ERROR.
+      RETURN."Non ECC System such as SolutionManager
+    ENDTRY.
+    ASSIGN rcomp_data_ref->* TO <rcomp_structure>.
 
-    anon_log->add( rcomp_msg ).
+    expected_details-msgty = 'E'.
+    expected_details-msgid = 'BL'.
+    expected_details-msgno = '001'.
+    expected_details-msgv1 = 'This'.
+    expected_details-msgv2 = 'is'.
+    expected_details-msgv3 = 'a'.
+    expected_details-msgv4 = 'test'.
+
+    MOVE-CORRESPONDING expected_details TO <rcomp_structure>.
+
+    anon_log->add( <rcomp_structure> ).
 
     msg_handle-log_handle = anon_log->handle.
     msg_handle-msgnumber  = '000001'.
@@ -608,21 +630,33 @@ class lcl_test implementation.
   endmethod.
 
  METHOD can_log_prott.
-        data: prott_msg        type prott,
-              msg_handle       type balmsghndl,
-              expected_details type bal_s_msg,
-              actual_details   type bal_s_msg,
-              actual_text      type char200.
 
-    expected_details-msgty = prott_msg-msgty = 'W'.
-    expected_details-msgid = prott_msg-msgid = 'BL'.
-    expected_details-msgno = prott_msg-MSGNO = '001'.
-    expected_details-msgv1 = prott_msg-msgv1 = 'This'.
-    expected_details-msgv2 = prott_msg-msgv2 = 'is'.
-    expected_details-msgv3 = prott_msg-msgv3 = 'a'.
-    expected_details-msgv4 = prott_msg-msgv4 = 'test'.
+    data: msg_handle       type balmsghndl,
+          expected_details type bal_s_msg,
+          actual_details   type bal_s_msg,
+          actual_text      type char200.
 
-    anon_log->add( prott_msg ).
+"Solution manager doens't have PROTT. Therefore avoid using the concrete type
+    DATA prott_data_ref TYPE REF TO DATA.
+    FIELD-SYMBOLS <prott_structure> TYPE ANY.
+    TRY.
+        CREATE DATA prott_data_ref TYPE ('PROTT').
+    CATCH CX_SY_CREATE_DATA_ERROR.
+      RETURN."Non ECC System such as SolutionManager
+    ENDTRY.
+    ASSIGN prott_data_ref->* TO <prott_structure>.
+
+    expected_details-msgty = 'W'.
+    expected_details-msgid = 'BL'.
+    expected_details-msgno = '001'.
+    expected_details-msgv1 = 'This'.
+    expected_details-msgv2 = 'is'.
+    expected_details-msgv3 = 'a'.
+    expected_details-msgv4 = 'test'.
+
+    MOVE-CORRESPONDING expected_details TO <prott_structure>.
+
+    anon_log->add( <prott_structure> ).
 
     msg_handle-log_handle = anon_log->handle.
     msg_handle-msgnumber  = '000001'.
