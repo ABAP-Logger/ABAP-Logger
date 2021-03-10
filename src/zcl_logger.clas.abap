@@ -264,12 +264,12 @@ class zcl_logger implementation.
                    <bapi_coru_msg>     type bapi_coru_return,
                    <bdc_msg>           type bdcmsgcoll,
                    <hrpad_msg>         type hrpad_message_alike,
-                   <context_val>       type any,
-      "Solution manager doens't have BAPI_ORDER_RETURN, rcomp, prott. Therefore avoid using these concrete types
-*                   <bapi_order_msg>    type bapi_order_return, ##TODO
-*                   <rcomp_msg>         type rcomp,##TODO
-*                   <prott_msg>         type prott,##TODO
-                   <message_generic_field> type any.
+                   <context_val>       type any.
+      "Solution manager doens't have BAPI_ORDER_RETURN, RCOMP, PROTT. Therefore avoid using these concrete types
+*                   <bapi_order_msg>    type bapi_order_return,
+*                   <rcomp_msg>         type rcomp,
+*                   <prott_msg>         type prott,
+    DATA replacement_bapi_order_return TYPE bapiret2.
 
     if context is not initial.
       assign context to <context_val>.
@@ -354,21 +354,15 @@ class zcl_logger implementation.
       detailed_msg-msgv3 = <hrpad_msg>-msgv3.
       detailed_msg-msgv4 = <hrpad_msg>-msgv4.
 elseif msg_type->absolute_name = '\TYPE=BAPI_ORDER_RETURN'.
-      "Solution manager doens't have BAPI_ORDER_RETURN. Therefore avoid using the concrete typessage_generic_field>.
-      ASSIGN COMPONENT 'TYPE' OF STRUCTURE obj_to_log TO <message_generic_field>.
-      detailed_msg-msgty = <message_generic_field>.
-      ASSIGN COMPONENT 'ID' OF STRUCTURE obj_to_log TO <message_generic_field>.
-      detailed_msg-msgid = <message_generic_field>.
-      ASSIGN COMPONENT 'NUMBER' OF STRUCTURE obj_to_log TO <message_generic_field>.
-      detailed_msg-msgno = <message_generic_field>.
-      ASSIGN COMPONENT 'MESSAGE_V1' OF STRUCTURE obj_to_log TO <message_generic_field>.
-      detailed_msg-msgv1 = <message_generic_field>.
-      ASSIGN COMPONENT 'MESSAGE_V2' OF STRUCTURE obj_to_log TO <message_generic_field>.
-      detailed_msg-msgv2 = <message_generic_field>.
-      ASSIGN COMPONENT 'MESSAGE_V3' OF STRUCTURE obj_to_log TO <message_generic_field>.
-      detailed_msg-msgv3 = <message_generic_field>.
-      ASSIGN COMPONENT 'MESSAGE_V4' OF STRUCTURE obj_to_log TO <message_generic_field>.
-      detailed_msg-msgv4 = <message_generic_field>.
+      "Solution manager doens't have BAPI_ORDER_RETURN. Therefore avoid using the concrete type
+      MOVE-CORRESPONDING obj_to_log TO replacement_bapi_order_return.
+      detailed_msg-msgty = replacement_bapi_order_return-type.
+      detailed_msg-msgid = replacement_bapi_order_return-id.
+      detailed_msg-msgno = replacement_bapi_order_return-number.
+      detailed_msg-msgv1 = replacement_bapi_order_return-message_v1.
+      detailed_msg-msgv2 = replacement_bapi_order_return-message_v2.
+      detailed_msg-msgv3 = replacement_bapi_order_return-message_v3.
+      detailed_msg-msgv4 = replacement_bapi_order_return-message_v4.
     elseif msg_type->absolute_name = '\TYPE=RCOMP'.
       "Solution manager doens't have RCOMP. Therefore avoid using the concrete type
       MOVE-CORRESPONDING obj_to_log TO detailed_msg.

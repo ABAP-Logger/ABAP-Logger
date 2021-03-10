@@ -511,9 +511,9 @@ class lcl_test implementation.
           actual_details   type bal_s_msg,
           actual_text      type char200.
 
-"Solution manager doens't have PROTT. Therefore avoid using the concrete type
+"Solution manager doens't have BAPI_ORDER_RETURN. Therefore avoid using the concrete type
     DATA bapi_order_return_data_ref TYPE REF TO DATA.
-    FIELD-SYMBOLS <message_generic_field> TYPE ANY.
+    DATA bapi_return_temp TYPE bapiret2."these fields have the same name as BAPI_ORDER_RETURN
     FIELD-SYMBOLS <bapi_order_return_structure> TYPE ANY.
     TRY.
         CREATE DATA bapi_order_return_data_ref TYPE ('BAPI_ORDER_RETURN').
@@ -522,34 +522,14 @@ class lcl_test implementation.
     ENDTRY.
     ASSIGN bapi_order_return_data_ref->* TO <bapi_order_return_structure>.
 
-    ASSIGN COMPONENT 'TYPE' OF STRUCTURE <bapi_order_return_structure> TO <message_generic_field>.
-    ASSERT sy-subrc = 0.
-    expected_details-msgty = <message_generic_field> = 'E'.
-
-    ASSIGN COMPONENT 'ID' OF STRUCTURE <bapi_order_return_structure> TO <message_generic_field>.
-    ASSERT sy-subrc = 0.
-    expected_details-msgid = <message_generic_field> = 'BL'.
-
-    ASSIGN COMPONENT 'NUMBER' OF STRUCTURE <bapi_order_return_structure> TO <message_generic_field>.
-    ASSERT sy-subrc = 0.
-    expected_details-msgno = <message_generic_field> = '001'.
-
-    ASSIGN COMPONENT 'MESSAGE_V1' OF STRUCTURE <bapi_order_return_structure> TO <message_generic_field>.
-    ASSERT sy-subrc = 0.
-    expected_details-msgv1 = <message_generic_field> = 'This'.
-
-    ASSIGN COMPONENT 'MESSAGE_V2' OF STRUCTURE <bapi_order_return_structure> TO <message_generic_field>.
-    ASSERT sy-subrc = 0.
-    expected_details-msgv2 = <message_generic_field> = 'is'.
-
-    ASSIGN COMPONENT 'MESSAGE_V3' OF STRUCTURE <bapi_order_return_structure> TO <message_generic_field>.
-    ASSERT sy-subrc = 0.
-    expected_details-msgv3 = <message_generic_field> = 'a'.
-
-    ASSIGN COMPONENT 'MESSAGE_V4' OF STRUCTURE <bapi_order_return_structure> TO <message_generic_field>.
-    ASSERT sy-subrc = 0.
-    expected_details-msgv4 = <message_generic_field> = 'test'.
-
+    expected_details-msgty = bapi_return_temp-type = 'E'.
+    expected_details-msgid = bapi_return_temp-id = 'BL'.
+    expected_details-msgno = bapi_return_temp-number = '001'.
+    expected_details-msgv1 = bapi_return_temp-message_v1 = 'This'.
+    expected_details-msgv2 = bapi_return_temp-message_v2 = 'is'.
+    expected_details-msgv3 = bapi_return_temp-message_v3 = 'a'.
+    expected_details-msgv4 = bapi_return_temp-message_v4 = 'test'.
+    MOVE-CORRESPONDING bapi_return_temp TO <bapi_order_return_structure>.
     anon_log->add( <bapi_order_return_structure> ).
 
     msg_handle-log_handle = anon_log->handle.
