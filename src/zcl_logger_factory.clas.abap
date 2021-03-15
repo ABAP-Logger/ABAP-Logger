@@ -111,25 +111,24 @@ CLASS ZCL_LOGGER_FACTORY IMPLEMENTATION.
   method open_log.
 
     data: filter             type bal_s_lfil,
-          desc_filter        type bal_s_extn,
-          obj_filter         type bal_s_obj,
-          subobj_filter      type bal_s_sub,
-
+          l_object           type balobj_d,
+          l_subobject        type balsubobj,
+          extnumber          type balnrext,
           found_headers      type balhdr_t,
           most_recent_header type balhdr.
     data: lo_log             type ref to zcl_logger.
 
-    desc_filter-option = subobj_filter-option = obj_filter-option = 'EQ'.
-    desc_filter-sign   = subobj_filter-sign = obj_filter-sign = 'I'.
+    l_object = object.
+    l_subobject = subobject.
+    extnumber = desc.
 
-    obj_filter-low = object.
-    append obj_filter to filter-object.
-    subobj_filter-low = subobject.
-    append subobj_filter to filter-subobject.
-    if desc is supplied.
-      desc_filter-low = desc.
-      append desc_filter to filter-extnumber.
-    endif.
+    call function 'BAL_FILTER_CREATE'
+      EXPORTING
+        i_object       = l_object
+        i_subobject    = l_subobject
+        i_extnumber    = extnumber
+      IMPORTING
+        e_s_log_filter = filter.
 
     call function 'BAL_DB_SEARCH'
       exporting
