@@ -10,7 +10,7 @@ CLASS zcl_logger_collection DEFINITION
   PROTECTED SECTION.
   PRIVATE SECTION.
     DATA:
-      loggers TYPE STANDARD TABLE OF REF TO zif_logger WITH EMPTY KEY.
+      loggers TYPE STANDARD TABLE OF REF TO zif_logger WITH DEFAULT KEY.
     METHODS get_log_handles
       RETURNING
         VALUE(r_return) TYPE bal_t_logh.
