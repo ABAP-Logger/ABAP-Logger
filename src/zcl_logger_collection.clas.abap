@@ -34,16 +34,17 @@ CLASS zcl_logger_collection IMPLEMENTATION.
 
 
   METHOD zif_logger_collection~display_logs.
-
+    DATA  l_display_profile  type bal_s_prof.
+    DATA  log_handles  type bal_t_logh  .
     IF display_profile IS NOT SUPPLIED.
-      DATA(l_display_profile) = get_display_profile(
+      l_display_profile = get_display_profile(
         display_profile_head_size = display_profile_head_size
         display_profile_tree_size = display_profile_tree_size ).
     ELSE.
       l_display_profile = display_profile.
     ENDIF.
 
-    DATA(log_handles) = get_log_handles( ).
+    log_handles = get_log_handles( ).
 
     CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
       EXPORTING
@@ -66,7 +67,10 @@ CLASS zcl_logger_collection IMPLEMENTATION.
   METHOD get_log_handles.
 
     DATA lot_handles TYPE bal_t_logh.
-    r_return = VALUE #( FOR logger IN loggers ( logger->handle ) ).
+    DATA logger TYPE REF TO zif_logger.
+    LOOP AT loggers INTO logger.
+      APPEND logger->handle TO r_return.
+    ENDLOOP.
 
   ENDMETHOD.
 
