@@ -66,7 +66,6 @@ CLASS zcl_logger_collection IMPLEMENTATION.
 
   METHOD get_log_handles.
 
-    DATA lot_handles TYPE bal_t_logh.
     DATA logger TYPE REF TO zif_logger.
     LOOP AT loggers INTO logger.
       APPEND logger->handle TO r_return.

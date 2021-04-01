@@ -182,7 +182,7 @@ CLASS ZCL_LOGGER_FACTORY IMPLEMENTATION.
   endmethod.
 
   METHOD CREATE_COLLECTION.
-    r_collection = new zcl_logger_collection( ).
+    CREATE OBJECT r_collection TYPE zcl_logger_collection.
   ENDMETHOD.
 
 ENDCLASS.
