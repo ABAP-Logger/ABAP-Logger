@@ -180,6 +180,7 @@ CLASS ZCL_LOGGER_FACTORY IMPLEMENTATION.
     r_log = lo_log.
 
   endmethod.
+
   METHOD CREATE_COLLECTION.
     r_collection = new zcl_logger_collection( ).
   ENDMETHOD.
