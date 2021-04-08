@@ -21,6 +21,7 @@ CLASS zcl_logger_collection DEFINITION
       RETURNING
         VALUE(r_return)           TYPE bal_s_prof.
 
+
 ENDCLASS.
 
 
@@ -34,21 +35,22 @@ CLASS zcl_logger_collection IMPLEMENTATION.
 
 
   METHOD zif_logger_collection~display_logs.
-    DATA  l_display_profile  type bal_s_prof.
-    DATA  log_handles  type bal_t_logh  .
-    IF display_profile IS NOT SUPPLIED.
-      l_display_profile = get_display_profile(
-        display_profile_head_size = display_profile_head_size
-        display_profile_tree_size = display_profile_tree_size ).
-    ELSE.
-      l_display_profile = display_profile.
-    ENDIF.
+    DATA  display_profile  TYPE bal_s_prof.
+    display_profile = get_display_profile(
+      display_profile_head_size = display_profile_head_size
+      display_profile_tree_size = display_profile_tree_size ).
 
+    zif_logger_collection~display_logs_using_profile( display_profile ).
+  ENDMETHOD.
+
+  METHOD zif_logger_collection~display_logs_using_profile.
+
+    DATA  log_handles  TYPE bal_t_logh  .
     log_handles = get_log_handles( ).
 
     CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
       EXPORTING
-        i_s_display_profile  = l_display_profile
+        i_s_display_profile  = display_profile
         i_t_log_handle       = log_handles
       EXCEPTIONS
         profile_inconsistent = 1
@@ -61,7 +63,10 @@ CLASS zcl_logger_collection IMPLEMENTATION.
       MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno
         WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 DISPLAY LIKE sy-msgty.
     ENDIF .
+
   ENDMETHOD.
+
+
 
 
   METHOD get_log_handles.
