@@ -21,18 +21,13 @@ CLASS zcl_logger_collection DEFINITION
       RETURNING
         VALUE(r_return)           TYPE bal_s_prof.
 
-
 ENDCLASS.
 
-
-
 CLASS zcl_logger_collection IMPLEMENTATION.
-
 
   METHOD zif_logger_collection~add_logger.
     APPEND logger TO loggers.
   ENDMETHOD.
-
 
   METHOD zif_logger_collection~display_logs.
     DATA  display_profile  TYPE bal_s_prof.
@@ -66,9 +61,6 @@ CLASS zcl_logger_collection IMPLEMENTATION.
 
   ENDMETHOD.
 
-
-
-
   METHOD get_log_handles.
 
     DATA logger TYPE REF TO zif_logger.
@@ -92,7 +84,5 @@ CLASS zcl_logger_collection IMPLEMENTATION.
     ENDIF.
 
   ENDMETHOD.
-
-
 
 ENDCLASS.
