@@ -33,6 +33,9 @@ class zcl_logger_factory definition
       returning
         value(r_settings) type ref to zif_logger_settings.
 
+    class-methods create_collection
+      returning
+        value(r_collection) type ref to zif_logger_collection .
   protected section.
   private section.
 ENDCLASS.
@@ -177,4 +180,9 @@ CLASS ZCL_LOGGER_FACTORY IMPLEMENTATION.
     r_log = lo_log.
 
   endmethod.
+
+  METHOD CREATE_COLLECTION.
+    CREATE OBJECT r_collection TYPE zcl_logger_collection.
+  ENDMETHOD.
+
 ENDCLASS.
