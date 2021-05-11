@@ -372,7 +372,7 @@ elseif msg_type->absolute_name = '\TYPE=BAPI_ORDER_RETURN'.
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_oref.
       exception_data_table = me->drill_down_into_exception(
           exception   = obj_to_log
-          type        = type
+          type        = if_msg_output=>msgtype_error
           importance  = importance
           ).
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_table.
