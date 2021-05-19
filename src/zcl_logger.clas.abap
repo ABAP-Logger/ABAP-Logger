@@ -256,7 +256,7 @@ class zcl_logger implementation.
           log_number           type bal_s_lgnm,
           formatted_context    type bal_s_cont,
           formatted_params     type bal_s_parm,
-          message_type         type symsgty,
+          message_type         type symsgty.
 
     field-symbols: <table_of_messages> type any table,
                    <message_line>      type any,
@@ -371,9 +371,9 @@ elseif msg_type->absolute_name = '\TYPE=BAPI_ORDER_RETURN'.
       "Solution manager doens't have PROTT. Therefore avoid using the concrete type
       MOVE-CORRESPONDING obj_to_log TO detailed_msg.
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_oref.
-      if i_type is initial. message_type
+      if i_type is initial.
         message_type = if_msg_output=>msgtype_error.
-        else.
+      else.
         message_type = i_type.
       endif.
       exception_data_table = me->drill_down_into_exception(
