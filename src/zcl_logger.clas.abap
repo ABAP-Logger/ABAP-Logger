@@ -371,10 +371,10 @@ elseif msg_type->absolute_name = '\TYPE=BAPI_ORDER_RETURN'.
       "Solution manager doens't have PROTT. Therefore avoid using the concrete type
       MOVE-CORRESPONDING obj_to_log TO detailed_msg.
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_oref.
-      if i_type is initial.
+      if type is initial.
         message_type = if_msg_output=>msgtype_error.
       else.
-        message_type = i_type.
+        message_type = type.
       endif.
       exception_data_table = me->drill_down_into_exception(
           exception   = obj_to_log
