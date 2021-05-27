@@ -65,7 +65,7 @@ CLASS zcl_logger_collection IMPLEMENTATION.
 
     DATA logger TYPE REF TO zif_logger.
     LOOP AT loggers INTO logger.
-      APPEND logger->handle TO r_return.
+      INSERT logger->handle INTO TABLE r_return.
     ENDLOOP.
 
   ENDMETHOD.
