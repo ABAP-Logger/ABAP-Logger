@@ -260,6 +260,7 @@ class zcl_logger implementation.
 
     field-symbols: <table_of_messages> type any table,
                    <message_line>      type any,
+                   <symsg>             TYPE symsg,
                    <bapiret1_msg>      type bapiret1,
                    <bapi_msg>          type bapiret2,
                    <bapi_coru_msg>     type bapi_coru_return,
@@ -309,6 +310,15 @@ class zcl_logger implementation.
       detailed_msg-msgv2 = sy-msgv2.
       detailed_msg-msgv3 = sy-msgv3.
       detailed_msg-msgv4 = sy-msgv4.
+    elseif msg_type->absolute_name = '\TYPE=SYMSG'.
+      assign obj_to_log to <symsg>.
+      detailed_msg-msgty = <symsg>-msgty.
+      detailed_msg-msgid = <symsg>-msgid.
+      detailed_msg-msgno = <symsg>-msgno.
+      detailed_msg-msgv1 = <symsg>-msgv1.
+      detailed_msg-msgv2 = <symsg>-msgv2.
+      detailed_msg-msgv3 = <symsg>-msgv3.
+      detailed_msg-msgv4 = <symsg>-msgv4.
     elseif msg_type->absolute_name = '\TYPE=BAPIRET1'.
       assign obj_to_log to <bapiret1_msg>.
       detailed_msg-msgty = <bapiret1_msg>-type.
@@ -378,7 +388,7 @@ elseif msg_type->absolute_name = '\TYPE=BAPI_ORDER_RETURN'.
       endif.
       exception_data_table = me->drill_down_into_exception(
           exception   = obj_to_log
-          type        = message_type       
+          type        = message_type
           importance  = importance
           ).
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_table.
