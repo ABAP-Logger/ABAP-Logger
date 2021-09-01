@@ -11,7 +11,6 @@ class zcl_logger definition
   public section.
 *"* public components of class ZCL_LOGGER
 *"* do not include other source files here!!!
-
     type-pools abap .
 
     interfaces zif_logger.
