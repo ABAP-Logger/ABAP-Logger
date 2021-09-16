@@ -256,7 +256,9 @@ class zcl_logger implementation.
           log_number           type bal_s_lgnm,
           formatted_context    type bal_s_cont,
           formatted_params     type bal_s_parm,
-          message_type         type symsgty.
+          message_type         type symsgty,
+          loggable             TYPE REF TO zif_loggable_object,
+          loggable_object_messages TYPE bapiret2_t.
 
     field-symbols: <table_of_messages> type any table,
                    <message_line>      type any,
@@ -381,16 +383,35 @@ elseif msg_type->absolute_name = '\TYPE=BAPI_ORDER_RETURN'.
       "Solution manager doens't have PROTT. Therefore avoid using the concrete type
       MOVE-CORRESPONDING obj_to_log TO detailed_msg.
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_oref.
-      if type is initial.
-        message_type = if_msg_output=>msgtype_error.
-      else.
-        message_type = type.
-      endif.
-      exception_data_table = me->drill_down_into_exception(
-          exception   = obj_to_log
-          type        = message_type
-          importance  = importance
-          ).
+         TRY.
+          loggable ?= obj_to_log.
+          loggable_object_messages = loggable->get_message_table( ) .
+          "this is a copy of adt://S4H/sap/bc/adt/oo/classes/zcl_logger/source/main#start=414,6;end=422,14
+          "I think there should be a private method for handling tables
+          "But I'll leave the decision to the ABAP Logger Project Owners
+          LOOP AT loggable_object_messages ASSIGNING <message_line>.
+            IF sy-tabix = 1.
+              zif_logger~add(
+                  obj_to_log    = <message_line>
+                  context       = context ).
+            ELSE.
+              zif_logger~add( obj_to_log = <message_line> ).
+            ENDIF.
+          ENDLOOP.
+
+        CATCH cx_sy_move_cast_error.
+          IF type IS INITIAL.
+            message_type = if_msg_output=>msgtype_error.
+          ELSE.
+            message_type = type.
+          ENDIF.
+          exception_data_table = me->drill_down_into_exception(
+              exception   = obj_to_log
+              type        = message_type
+              importance  = importance
+              ).
+
+      ENDTRY.
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_table.
       assign obj_to_log to <table_of_messages>.
       loop at <table_of_messages> assigning <message_line>.
