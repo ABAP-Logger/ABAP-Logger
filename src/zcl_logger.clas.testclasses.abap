@@ -847,8 +847,6 @@ class lcl_test implementation.
           previous_exception type ref to lcx_t100,
           caught_exception   type ref to lcx_t100,
           msg_handle         type balmsghndl,
-          act_texts          type table_of_strings,
-          act_text           type string,
           msg_count          type i,
           bal_msgs           type bal_tt_msg,
           bal_msg            type bal_s_msg.
@@ -882,8 +880,7 @@ class lcl_test implementation.
 
     "Then
     get_messages( exporting log_handle = anon_log->handle
-                  importing texts      = act_texts
-                            msg_details = bal_msgs ).
+                  importing msg_details = bal_msgs ).
 
     describe table bal_msgs lines msg_count.
     cl_abap_unit_assert=>assert_equals(
@@ -918,8 +915,6 @@ class lcl_test implementation.
 
     data: batch_msgs type table of bdcmsgcoll,
           batch_msg  type bdcmsgcoll,
-          act_texts  type table_of_strings,
-          act_text   type string,
           bal_msgs   type bal_tt_msg,
           bal_msg    type bal_s_msg,
           msg_count  type i.
@@ -943,8 +938,7 @@ class lcl_test implementation.
     anon_log->add( batch_msgs ).
 
     get_messages( exporting log_handle  = anon_log->handle
-                  importing texts       = act_texts
-                            msg_details = bal_msgs ).
+                  importing msg_details = bal_msgs ).
 
     describe table bal_msgs lines msg_count.
     cl_aunit_assert=>assert_equals(
