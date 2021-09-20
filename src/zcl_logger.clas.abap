@@ -268,7 +268,8 @@ class zcl_logger implementation.
                    <bapi_coru_msg>     type bapi_coru_return,
                    <bdc_msg>           type bdcmsgcoll,
                    <hrpad_msg>         type hrpad_message_alike,
-                   <context_val>       type any.
+                   <context_val>       type any,
+                   <loggable_object_message> TYPE zif_loggable_object=>ty_message.
       "Solution manager doens't have BAPI_ORDER_RETURN, RCOMP, PROTT. Therefore avoid using these concrete types
 *                   <bapi_order_msg>    type bapi_order_return,
 *                   <rcomp_msg>         type rcomp,
@@ -389,20 +390,20 @@ elseif msg_type->absolute_name = '\TYPE=BAPI_ORDER_RETURN'.
           "this is a copy of adt://S4H/sap/bc/adt/oo/classes/zcl_logger/source/main#start=414,6;end=422,14
           "I think there should be a private method for handling tables
           "But I'll leave the decision to the ABAP Logger Project Owners
-          LOOP AT loggable_object_messages ASSIGNING <message_line>.
-            if <message_line>-symsg is not initial.
+          LOOP AT loggable_object_messages ASSIGNING <loggable_object_message>.
+            if <loggable_object_message>-symsg is not initial.
               zif_logger~add(
-                  obj_to_log    = <message_line>-symsg
+                  obj_to_log    = <loggable_object_message>-symsg
                   context       = context ).
             endif.
-            if <message_line>-exception is bound.
+            if <loggable_object_message>-exception is bound.
               zif_logger~add(
-                  obj_to_log    = <message_line>-exception
+                  obj_to_log    = <loggable_object_message>-exception
                   context       = context ).
             endif.
-            if <message_line>-string is not initial.
+            if <loggable_object_message>-string is not initial.
               zif_logger~add(
-                  obj_to_log    = <message_line>-string
+                  obj_to_log    = <loggable_object_message>-string
                   context       = context ).
             endif.
           ENDLOOP.

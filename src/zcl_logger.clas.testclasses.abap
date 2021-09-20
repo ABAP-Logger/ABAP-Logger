@@ -1,7 +1,7 @@
 class ltd_loggable_object definition create public FOR TESTING.
 
   public section.
-  DATA messages TYPE bapiret2_t.
+  DATA messages TYPE zif_loggable_object=>tty_message .
   INTERFACES zif_loggable_object.
   protected section.
   private section.
@@ -1076,19 +1076,14 @@ class lcl_test implementation.
 
   method can_log_loggable_object.
     "given
-    DATA bapi_msg type bapiret2.
+    DATA loggable_message type zif_loggable_object=>ty_message.
     DATA loggable TYPE REF TO ltd_loggable_object.
+    DATA dummy type string.
     CREATE OBJECT loggable TYPE ltd_loggable_object.
 
-    message s001(00) with 'I' 'test' 'the' 'logger.' into bapi_msg-message.
-    bapi_msg-number = sy-msgno.
-    bapi_msg-type = sy-msgty.
-    bapi_msg-id = sy-msgid.
-    bapi_msg-message_v1 = sy-msgv1.
-    bapi_msg-message_v2 = sy-msgv2.
-    bapi_msg-message_v3 = sy-msgv3.
-    bapi_msg-message_v4 = sy-msgv4.
-    APPEND bapi_msg TO loggable->messages.
+    message s001(00) with 'I' 'test' 'the' 'logger.' into dummy.
+    MOVE-CORRESPONDING sy to loggable_message-symsg.
+    APPEND loggable_message TO loggable->messages.
 
     "when
     named_log->add( obj_to_log = loggable ).
