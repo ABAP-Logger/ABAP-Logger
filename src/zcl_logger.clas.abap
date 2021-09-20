@@ -258,7 +258,7 @@ class zcl_logger implementation.
           formatted_params     type bal_s_parm,
           message_type         type symsgty,
           loggable             TYPE REF TO zif_loggable_object,
-          loggable_object_messages TYPE bapiret2_t.
+          loggable_object_messages TYPE zif_loggable_object=>tty_message.
 
     field-symbols: <table_of_messages> type any table,
                    <message_line>      type any,
@@ -390,13 +390,21 @@ elseif msg_type->absolute_name = '\TYPE=BAPI_ORDER_RETURN'.
           "I think there should be a private method for handling tables
           "But I'll leave the decision to the ABAP Logger Project Owners
           LOOP AT loggable_object_messages ASSIGNING <message_line>.
-            IF sy-tabix = 1.
+            if <message_line>-symsg is not initial.
               zif_logger~add(
-                  obj_to_log    = <message_line>
+                  obj_to_log    = <message_line>-symsg
                   context       = context ).
-            ELSE.
-              zif_logger~add( obj_to_log = <message_line> ).
-            ENDIF.
+            endif.
+            if <message_line>-exception is bound.
+              zif_logger~add(
+                  obj_to_log    = <message_line>-exception
+                  context       = context ).
+            endif.
+            if <message_line>-string is not initial.
+              zif_logger~add(
+                  obj_to_log    = <message_line>-string
+                  context       = context ).
+            endif.
           ENDLOOP.
 
         CATCH cx_sy_move_cast_error.
