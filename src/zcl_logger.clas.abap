@@ -258,7 +258,7 @@ class zcl_logger implementation.
           formatted_params     type bal_s_parm,
           message_type         type symsgty,
           loggable             TYPE REF TO zif_loggable_object,
-          loggable_object_messages TYPE zif_loggable_object=>tty_message.
+          loggable_object_messages TYPE zif_loggable_object=>tty_messages.
 
     field-symbols: <table_of_messages> type any table,
                    <message_line>      type any,
@@ -367,7 +367,7 @@ class zcl_logger implementation.
       detailed_msg-msgv2 = <hrpad_msg>-msgv2.
       detailed_msg-msgv3 = <hrpad_msg>-msgv3.
       detailed_msg-msgv4 = <hrpad_msg>-msgv4.
-elseif msg_type->absolute_name = '\TYPE=BAPI_ORDER_RETURN'.
+    elseif msg_type->absolute_name = '\TYPE=BAPI_ORDER_RETURN'.
       "Solution manager doens't have BAPI_ORDER_RETURN. Therefore avoid using the concrete type
       MOVE-CORRESPONDING obj_to_log TO replacement_bapi_order_return.
       detailed_msg-msgty = replacement_bapi_order_return-type.
@@ -387,25 +387,22 @@ elseif msg_type->absolute_name = '\TYPE=BAPI_ORDER_RETURN'.
          TRY.
           loggable ?= obj_to_log.
           loggable_object_messages = loggable->get_message_table( ) .
-          "this is a copy of adt://S4H/sap/bc/adt/oo/classes/zcl_logger/source/main#start=414,6;end=422,14
-          "I think there should be a private method for handling tables
-          "But I'll leave the decision to the ABAP Logger Project Owners
           LOOP AT loggable_object_messages ASSIGNING <loggable_object_message>.
-            if <loggable_object_message>-symsg is not initial.
+            IF <loggable_object_message>-symsg IS NOT INITIAL.
               zif_logger~add(
                   obj_to_log    = <loggable_object_message>-symsg
                   context       = context ).
-            endif.
-            if <loggable_object_message>-exception is bound.
+            ENDIF.
+            IF <loggable_object_message>-exception IS BOUND.
               zif_logger~add(
                   obj_to_log    = <loggable_object_message>-exception
                   context       = context ).
-            endif.
-            if <loggable_object_message>-string is not initial.
+            ENDIF.
+            IF <loggable_object_message>-string IS NOT INITIAL.
               zif_logger~add(
                   obj_to_log    = <loggable_object_message>-string
                   context       = context ).
-            endif.
+            ENDIF.
           ENDLOOP.
 
         CATCH cx_sy_move_cast_error.

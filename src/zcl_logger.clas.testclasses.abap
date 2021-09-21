@@ -1,7 +1,7 @@
 class ltd_loggable_object definition create public FOR TESTING.
 
   public section.
-  DATA messages TYPE zif_loggable_object=>tty_message .
+  DATA messages TYPE zif_loggable_object=>tty_messages .
   INTERFACES zif_loggable_object.
   protected section.
   private section.
