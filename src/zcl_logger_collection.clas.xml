@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_LOGGER_COLLECTION</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>zcl_logger_collection</DESCRIPT>
+    <DESCRIPT>Logger Collection</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>
