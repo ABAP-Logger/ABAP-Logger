@@ -257,6 +257,9 @@ class zcl_logger implementation.
           formatted_context    type bal_s_cont,
           formatted_params     type bal_s_parm,
           message_type         type symsgty,
+          "these objects could be moved into their own method
+          "see adt://***/sap/bc/adt/oo/classes/zcl_logger/source/main#start=391,10;end=415,61
+          symsg                type symsg,
           loggable             TYPE REF TO zif_loggable_object,
           loggable_object_messages TYPE zif_loggable_object=>tty_messages.
 
@@ -385,25 +388,31 @@ class zcl_logger implementation.
       MOVE-CORRESPONDING obj_to_log TO detailed_msg.
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_oref.
          TRY.
+          "BEGIN this could/should be moved into its own method
           loggable ?= obj_to_log.
           loggable_object_messages = loggable->get_message_table( ) .
           LOOP AT loggable_object_messages ASSIGNING <loggable_object_message>.
             IF <loggable_object_message>-symsg IS NOT INITIAL.
+              MOVE-CORRESPONDING <loggable_object_message>-symsg TO symsg.
+              symsg-msgty = <loggable_object_message>-type.
               zif_logger~add(
-                  obj_to_log    = <loggable_object_message>-symsg
+                  obj_to_log    = symsg
                   context       = context ).
             ENDIF.
             IF <loggable_object_message>-exception IS BOUND.
               zif_logger~add(
+                  type          = <loggable_object_message>-type
                   obj_to_log    = <loggable_object_message>-exception
                   context       = context ).
             ENDIF.
             IF <loggable_object_message>-string IS NOT INITIAL.
               zif_logger~add(
+                  type          = <loggable_object_message>-type
                   obj_to_log    = <loggable_object_message>-string
                   context       = context ).
             ENDIF.
           ENDLOOP.
+          "END this could/should be moved into its own method
 
         CATCH cx_sy_move_cast_error.
           IF type IS INITIAL.

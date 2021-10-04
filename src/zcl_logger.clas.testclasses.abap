@@ -1083,6 +1083,7 @@ class lcl_test implementation.
 
     message s001(00) with 'I' 'test' 'the' 'logger.' into dummy.
     MOVE-CORRESPONDING sy to loggable_message-symsg.
+    loggable_message-type = sy-msgty.
     APPEND loggable_message TO loggable->messages.
 
     "when
