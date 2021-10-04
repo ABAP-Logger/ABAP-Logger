@@ -1,3 +1,21 @@
+class ltd_loggable_object definition create public FOR TESTING.
+
+  public section.
+  DATA messages TYPE zif_loggable_object=>tty_messages .
+  INTERFACES zif_loggable_object.
+  protected section.
+  private section.
+
+endclass.
+
+class ltd_loggable_object implementation.
+
+  method zif_loggable_object~get_message_table.
+    r_result = messages.
+  endmethod.
+
+endclass.
+
 class lcl_test definition for testing
   duration short
   risk level harmless.
@@ -64,6 +82,7 @@ class lcl_test definition for testing
       can_log_batch_msgs for testing,
       can_log_any_simple_structure for testing,
       can_log_any_deep_structure for testing,
+      can_log_loggable_object for testing,
 
       can_add_msg_context for testing,
       can_add_callback_sub for testing,
@@ -1075,6 +1094,29 @@ class lcl_test implementation.
       act = act_details-context-tabname
       msg = 'Did not add context correctly' ).
 
+  endmethod.
+
+
+  method can_log_loggable_object.
+    "given
+    DATA loggable_message type zif_loggable_object=>ty_message.
+    DATA loggable TYPE REF TO ltd_loggable_object.
+    DATA dummy type string.
+    CREATE OBJECT loggable TYPE ltd_loggable_object.
+
+    message s001(00) with 'I' 'test' 'the' 'logger.' into dummy.
+    MOVE-CORRESPONDING sy to loggable_message-symsg.
+    loggable_message-type = sy-msgty.
+    APPEND loggable_message TO loggable->messages.
+
+    "when
+    named_log->add( obj_to_log = loggable ).
+
+    "then
+    cl_aunit_assert=>assert_equals(
+      exp = 'Itestthelogger.'
+      act = get_first_message( named_log->handle )
+      msg = 'Did not add loggable message correctly' ).
   endmethod.
 
 
