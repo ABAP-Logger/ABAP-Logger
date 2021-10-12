@@ -64,9 +64,10 @@ class zcl_logger definition
 
   constants:
     begin of c_struct_kind,
-      syst type i value 1,
-      bapi type i value 2,
-      bdc  type i value 3,
+      syst  type i value 1,
+      bapi  type i value 2,
+      bdc   type i value 3,
+      sprot type i value 4,
     end of c_struct_kind .
 
 *"* private components of class ZCL_LOGGER
@@ -105,7 +106,7 @@ class zcl_logger definition
           value(self)   type ref to zif_logger .
 
     methods save_log.
-      methods get_struct_kind
+    methods get_struct_kind
       importing
         !msg_type     type ref to cl_abap_typedescr
       returning
@@ -121,6 +122,11 @@ class zcl_logger definition
       returning
         value(detailed_msg) type bal_s_msg .
     methods add_bdc_msg
+      importing
+        !obj_to_log         type any
+      returning
+        value(detailed_msg) type bal_s_msg .
+    methods add_sprot_msg
       importing
         !obj_to_log         type any
       returning
@@ -156,6 +162,19 @@ class zcl_logger implementation.
     detailed_msg-msgv3 = bdc_message-msgv3.
     detailed_msg-msgv4 = bdc_message-msgv4.
   endmethod.  
+
+
+  method add_sprot_msg.
+    data sprot_message type sprot_u.
+    move-corresponding obj_to_log to sprot_message.
+    detailed_msg-msgty = sprot_message-severity.
+    detailed_msg-msgid = sprot_message-ag.
+    detailed_msg-msgno = sprot_message-msgnr. "!
+    detailed_msg-msgv1 = sprot_message-var1.
+    detailed_msg-msgv2 = sprot_message-var2.
+    detailed_msg-msgv3 = sprot_message-var3.
+    detailed_msg-msgv4 = sprot_message-var4.
+  endmethod.
 
 
   method add_syst_msg.
@@ -236,7 +255,8 @@ class zcl_logger implementation.
           component       like line of components,
           syst_count      type i,
           bapi_count      type i,
-          bdc_count       type i.
+          bdc_count       type i,
+          sprot_count     type i.
 
     if msg_type->type_kind = cl_abap_typedescr=>typekind_struct1
       or msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.
@@ -255,6 +275,9 @@ class zcl_logger implementation.
         if 'MSGTYP,MSGID,MSGNR,MSGV1,MSGV2,MSGV3,MSGV4,' cs |{ component-name },|.
           bdc_count = bdc_count + 1.
         endif.
+        if 'SEVERITY,AG,MSGNR,VAR1,VAR2,VAR3,VAR4,' cs |{ component-name },|.
+          sprot_count = sprot_count + 1.
+        endif.
       endloop.
 
       " Set message type if all expected fields are present
@@ -264,6 +287,8 @@ class zcl_logger implementation.
         result = c_struct_kind-bapi.
       elseif bdc_count = 7.
         result = c_struct_kind-bdc.
+      elseif sprot_count = 7.
+        result = c_struct_kind-sprot.
       endif.
     endif.
 
