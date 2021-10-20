@@ -251,7 +251,7 @@ class zcl_logger implementation.
   method get_struct_kind.
 
     data: msg_struct_kind type ref to cl_abap_structdescr,
-          components      type cl_abap_structdescr=>component_table,
+          components      type abap_compdescr_tab,
           component       like line of components,
           syst_count      type i,
           bapi_count      type i,
@@ -528,7 +528,7 @@ class zcl_logger implementation.
   method add_structure.
     data: msg_type        type ref to cl_abap_typedescr,
           msg_struct_type type ref to cl_abap_structdescr,
-          components      type cl_abap_structdescr=>component_table,
+          components      type abap_compdescr_tab,
           component       like line of components,
           string_to_log   type string.
     field-symbols: <component>   type any.
