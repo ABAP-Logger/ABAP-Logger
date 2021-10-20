@@ -262,7 +262,7 @@ class zcl_logger implementation.
       or msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.
 
       msg_struct_kind ?= msg_type.
-      components = msg_struct_kind->get_components( ).
+      components = msg_struct_kind->components.
 
       " Count number of fields expected for each supported type of message structure
       loop at components into component.
@@ -534,7 +534,7 @@ class zcl_logger implementation.
     field-symbols: <component>   type any.
 
     msg_struct_type ?= cl_abap_typedescr=>describe_by_data( obj_to_log ).
-    components = msg_struct_type->get_components( ).
+    components = msg_struct_type->components.
     add( '--- Begin of structure ---' ).
     loop at components into component.
       assign component component-name of structure obj_to_log to <component>.
