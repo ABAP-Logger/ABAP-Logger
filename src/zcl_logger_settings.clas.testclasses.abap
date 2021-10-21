@@ -1,143 +1,143 @@
-class lcl_logger_settings_should definition deferred.
-class zcl_logger_settings definition local friends lcl_logger_settings_should.
+CLASS lcl_logger_settings_should DEFINITION DEFERRED.
+CLASS zcl_logger_settings DEFINITION LOCAL FRIENDS lcl_logger_settings_should.
 
-class lcl_logger_settings_should definition for testing
-  risk level harmless
-  duration short.
+CLASS lcl_logger_settings_should DEFINITION FOR TESTING
+  RISK LEVEL HARMLESS
+  DURATION SHORT.
 
-  private section.
-    data cut type ref to zcl_logger_settings.
-    methods setup.
-    methods have_correct_defaults for testing.
-    methods set_autosave for testing.
-    methods set_expiry_date for testing.
-    methods set_expiry_in_days for testing.
-    methods set_flag_to_keep_until_expiry for testing.
-    methods set_usage_of_2nd_db_connection for testing.
-    methods set_max_drilldown_level for testing.
-endclass.
+  PRIVATE SECTION.
+    DATA cut TYPE REF TO zcl_logger_settings.
+    METHODS setup.
+    METHODS have_correct_defaults FOR TESTING.
+    METHODS set_autosave FOR TESTING.
+    METHODS set_expiry_date FOR TESTING.
+    METHODS set_expiry_in_days FOR TESTING.
+    METHODS set_flag_to_keep_until_expiry FOR TESTING.
+    METHODS set_usage_of_2nd_db_connection FOR TESTING.
+    METHODS set_max_drilldown_level FOR TESTING.
+ENDCLASS.
 
-class lcl_logger_settings_should implementation.
+CLASS lcl_logger_settings_should IMPLEMENTATION.
 
-  method setup.
-    create object cut.
-  endmethod.
+  METHOD setup.
+    CREATE OBJECT cut.
+  ENDMETHOD.
 
-  method have_correct_defaults.
+  METHOD have_correct_defaults.
     cl_aunit_assert=>assert_equals(
-      exporting
+      EXPORTING
         exp     = abap_true
         act     = cut->zif_logger_settings~get_autosave( )
         msg     = |Auto save should be on by default|
     ).
     cl_aunit_assert=>assert_equals(
-      exporting
+      EXPORTING
         exp     = abap_true
         act     = cut->zif_logger_settings~get_usage_of_secondary_db_conn( )
         msg     = |2nd database connection should be used by default|
     ).
     cl_aunit_assert=>assert_equals(
-      exporting
+      EXPORTING
         exp     = abap_false
         act     = cut->zif_logger_settings~get_must_be_kept_until_expiry( )
         msg     = |Log should be deletable before expiry date is reached by default|
     ).
     cl_aunit_assert=>assert_initial(
-      exporting
+      EXPORTING
         act     = cut->zif_logger_settings~get_expiry_date( )
         msg     = |No expiry date set by default|
     ).
     cl_aunit_assert=>assert_equals(
-      exporting
+      EXPORTING
         exp     = 10
         act     = cut->zif_logger_settings~get_max_exception_drill_down( )
         msg     = |Max exception drill down should be 10 by default|
     ).
-  endmethod.
+  ENDMETHOD.
 
-  method set_autosave.
+  METHOD set_autosave.
     cut->zif_logger_settings~set_autosave( abap_false ).
     cl_aunit_assert=>assert_equals(
-      exporting
+      EXPORTING
         exp     = abap_false
         act     = cut->zif_logger_settings~get_autosave( )
         msg     = |Auto save was not deactivated correctly|
     ).
-  endmethod.
+  ENDMETHOD.
 
-  method set_expiry_date.
+  METHOD set_expiry_date.
     cut->zif_logger_settings~set_expiry_date( '20161030' ).
     cl_aunit_assert=>assert_equals(
-      exporting
+      EXPORTING
         exp     = '20161030'
         act     = cut->zif_logger_settings~get_expiry_date( )
         msg     = |Expiry date was not set correctly|
     ).
-  endmethod.
+  ENDMETHOD.
 
-  method set_expiry_in_days.
+  METHOD set_expiry_in_days.
     cut->zif_logger_settings~set_expiry_in_days( -1 ).
     cl_aunit_assert=>assert_initial(
-      exporting
+      EXPORTING
         act     = cut->zif_logger_settings~get_expiry_date( )
         msg     = |Expiry in days should remain default when setting incorrect values.|
     ).
 
     cut->zif_logger_settings~set_expiry_in_days( 10 ).
 
-    data lv_exp type d.
+    DATA lv_exp TYPE d.
     lv_exp = sy-datum + 10.
 
     cl_aunit_assert=>assert_equals(
-      exporting
+      EXPORTING
         exp     = lv_exp
         act     = cut->zif_logger_settings~get_expiry_date( )
         msg     = |Expiry in days was not set correctly.|
     ).
-  endmethod.
+  ENDMETHOD.
 
-  method set_flag_to_keep_until_expiry.
+  METHOD set_flag_to_keep_until_expiry.
     cut->zif_logger_settings~set_must_be_kept_until_expiry( abap_true ).
     cl_aunit_assert=>assert_equals(
-      exporting
+      EXPORTING
         exp     = abap_true
         act     = cut->zif_logger_settings~get_must_be_kept_until_expiry( )
         msg     = |Setter for keeping log until expiry is not working correctly.|
     ).
-  endmethod.
+  ENDMETHOD.
 
-  method set_usage_of_2nd_db_connection.
+  METHOD set_usage_of_2nd_db_connection.
     cut->zif_logger_settings~set_usage_of_secondary_db_conn( abap_false ).
     cl_aunit_assert=>assert_equals(
-      exporting
+      EXPORTING
         exp     = abap_false
         act     = cut->zif_logger_settings~get_usage_of_secondary_db_conn( )
         msg     = |Setter for using 2nd db connection is not working correctly.|
     ).
-  endmethod.
+  ENDMETHOD.
 
-  method set_max_drilldown_level.
+  METHOD set_max_drilldown_level.
     cut->zif_logger_settings~set_max_exception_drill_down( 20 ).
     cl_aunit_assert=>assert_equals(
-      exporting
+      EXPORTING
         exp     = 20
         act     = cut->zif_logger_settings~get_max_exception_drill_down( )
         msg     = |Setter for max drilldown level is not working correctly.|
     ).
     cut->zif_logger_settings~set_max_exception_drill_down( -1 ).
     cl_aunit_assert=>assert_equals(
-      exporting
+      EXPORTING
         exp     = 20
         act     = cut->zif_logger_settings~get_max_exception_drill_down( )
         msg     = |Max exception drill down level should not change if value is incorrect.|
     ).
     cut->zif_logger_settings~set_max_exception_drill_down( 0 ).
     cl_aunit_assert=>assert_equals(
-      exporting
+      EXPORTING
         exp     = 0
         act     = cut->zif_logger_settings~get_max_exception_drill_down( )
         msg     = |Max exception drill down should be deactivatable.|
     ).
-  endmethod.
+  ENDMETHOD.
 
-endclass.
+ENDCLASS.

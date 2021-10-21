@@ -26,6 +26,7 @@
     "check_syntax": true,
     "global_class": true,
     "implement_methods": true,
+    "keyword_case": true,
     "method_implemented_twice": true,
     "parser_error": true,
     "parser_missing_space": true,
