@@ -473,8 +473,8 @@ CLASS zcl_logger IMPLEMENTATION.
           zif_logger~add( obj_to_log = <message_line> ).
         ENDIF.
       ENDLOOP.
-    ELSEIF msg_type->type_kind = cl_abap_typedescr=>typekind_struct1    "flat structure
-        OR msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.   "deep structure (already when string is used)
+    ELSEIF msg_type->type_kind = cl_abap_typedescr=>typekind_struct1     "flat structure
+        OR msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.    "deep structure (already when string is used)
       add_structure(
         EXPORTING
           obj_to_log    = obj_to_log

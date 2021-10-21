@@ -1,21 +1,21 @@
-class lcx_t100 definition inheriting from cx_static_check.
-  public section.
-    interfaces if_t100_message.
-    methods constructor importing previous like previous optional
-                                  id       type symsgid
-                                  no       type symsgno
-                                  msgv1    type symsgv optional
-                                  msgv2    type symsgv optional
-                                  msgv3    type symsgv optional
-                                  msgv4    type symsgv optional.
-    data msgv1 type symsgv.
-    data msgv2 type symsgv.
-    data msgv3 type symsgv.
-    data msgv4 type symsgv.
-endclass.
+CLASS lcx_t100 DEFINITION INHERITING FROM cx_static_check.
+  PUBLIC SECTION.
+    INTERFACES if_t100_message.
+    METHODS constructor IMPORTING previous LIKE previous OPTIONAL
+                                  id       TYPE symsgid
+                                  no       TYPE symsgno
+                                  msgv1    TYPE symsgv OPTIONAL
+                                  msgv2    TYPE symsgv OPTIONAL
+                                  msgv3    TYPE symsgv OPTIONAL
+                                  msgv4    TYPE symsgv OPTIONAL.
+    DATA msgv1 TYPE symsgv.
+    DATA msgv2 TYPE symsgv.
+    DATA msgv3 TYPE symsgv.
+    DATA msgv4 TYPE symsgv.
+ENDCLASS.
 
-class lcx_t100 implementation.
-  method constructor.
+CLASS lcx_t100 IMPLEMENTATION.
+  METHOD constructor.
     super->constructor( previous = previous ).
     me->msgv1                     = msgv1.
     me->msgv2                     = msgv2.
@@ -27,5 +27,5 @@ class lcx_t100 implementation.
     if_t100_message~t100key-attr2 = 'MSGV2'.
     if_t100_message~t100key-attr3 = 'MSGV3'.
     if_t100_message~t100key-attr4 = 'MSGV4'.
-  endmethod.
-endclass.
+  ENDMETHOD.
+ENDCLASS.
