@@ -61,18 +61,14 @@ class zcl_logger definition
 *"* protected components of class ZCL_LOGGER
 *"* do not include other source files here!!!
   private section.
-* Local type for hrpad_message as it is not available in an ABAP Development System
-    types: begin of hrpad_message_field_list_alike,
-             scrrprfd type scrrprfd.
-    types: end of hrpad_message_field_list_alike.
 
-    types: begin of hrpad_message_alike,
-             cause(32)    type c,                          "original: hrpad_message_cause
-             detail_level type ballevel.
-             include type symsg .
-             types: field_list   type standard table of hrpad_message_field_list_alike
-               with non-unique key scrrprfd.
-    types: end of hrpad_message_alike.
+  constants:
+    begin of c_struct_kind,
+      syst  type i value 1,
+      bapi  type i value 2,
+      bdc   type i value 3,
+      sprot type i value 4,
+    end of c_struct_kind .
 
 *"* private components of class ZCL_LOGGER
 *"* do not include other source files here!!!
@@ -110,11 +106,82 @@ class zcl_logger definition
           value(self)   type ref to zif_logger .
 
     methods save_log.
+    methods get_struct_kind
+      importing
+        !msg_type     type ref to cl_abap_typedescr
+      returning
+        value(result) type string .
+    methods add_syst_msg
+      importing
+        !obj_to_log         type any
+      returning
+        value(detailed_msg) type bal_s_msg .
+    methods add_bapi_msg
+      importing
+        !obj_to_log         type any
+      returning
+        value(detailed_msg) type bal_s_msg .
+    methods add_bdc_msg
+      importing
+        !obj_to_log         type any
+      returning
+        value(detailed_msg) type bal_s_msg .
+    methods add_sprot_msg
+      importing
+        !obj_to_log         type any
+      returning
+        value(detailed_msg) type bal_s_msg .
 endclass.
 
 
 
 class zcl_logger implementation.
+
+
+  method add_bapi_msg.
+    data bapi_message type bapiret1.
+    move-corresponding obj_to_log to bapi_message.
+    detailed_msg-msgty = bapi_message-type.
+    detailed_msg-msgid = bapi_message-id.
+    detailed_msg-msgno = bapi_message-number.
+    detailed_msg-msgv1 = bapi_message-message_v1.
+    detailed_msg-msgv2 = bapi_message-message_v2.
+    detailed_msg-msgv3 = bapi_message-message_v3.
+    detailed_msg-msgv4 = bapi_message-message_v4.
+  endmethod.
+
+
+  method add_bdc_msg.
+    data bdc_message type bdcmsgcoll.
+    move-corresponding obj_to_log to bdc_message.
+    detailed_msg-msgty = bdc_message-msgtyp. "!
+    detailed_msg-msgid = bdc_message-msgid.
+    detailed_msg-msgno = bdc_message-msgnr. "!
+    detailed_msg-msgv1 = bdc_message-msgv1.
+    detailed_msg-msgv2 = bdc_message-msgv2.
+    detailed_msg-msgv3 = bdc_message-msgv3.
+    detailed_msg-msgv4 = bdc_message-msgv4.
+  endmethod.  
+
+
+  method add_sprot_msg.
+    data sprot_message type sprot_u.
+    move-corresponding obj_to_log to sprot_message.
+    detailed_msg-msgty = sprot_message-severity.
+    detailed_msg-msgid = sprot_message-ag.
+    detailed_msg-msgno = sprot_message-msgnr. "!
+    detailed_msg-msgv1 = sprot_message-var1.
+    detailed_msg-msgv2 = sprot_message-var2.
+    detailed_msg-msgv3 = sprot_message-var3.
+    detailed_msg-msgv4 = sprot_message-var4.
+  endmethod.
+
+
+  method add_syst_msg.
+    data syst_message type symsg.
+    move-corresponding obj_to_log to syst_message.
+    move-corresponding syst_message to detailed_msg.
+  endmethod.
 
 
   method drill_down_into_exception.
@@ -177,6 +244,53 @@ class zcl_logger implementation.
         e_t_msg_handle = rt_message_handles
       exceptions
         msg_not_found  = 0.
+
+  endmethod.
+
+
+  method get_struct_kind.
+
+    data: msg_struct_kind type ref to cl_abap_structdescr,
+          components      type abap_compdescr_tab,
+          component       like line of components,
+          syst_count      type i,
+          bapi_count      type i,
+          bdc_count       type i,
+          sprot_count     type i.
+
+    if msg_type->type_kind = cl_abap_typedescr=>typekind_struct1
+      or msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.
+
+      msg_struct_kind ?= msg_type.
+      components = msg_struct_kind->components.
+
+      " Count number of fields expected for each supported type of message structure
+      loop at components into component.
+        if 'MSGTY,MSGID,MSGNO,MSGV1,MSGV2,MSGV3,MSGV4,' cs |{ component-name },|.
+          syst_count = syst_count + 1.
+        endif.
+        if 'TYPE,NUMBER,ID,MESSAGE_V1,MESSAGE_V2,MESSAGE_V3,MESSAGE_V4,' cs |{ component-name },|.
+          bapi_count = bapi_count + 1.
+        endif.
+        if 'MSGTYP,MSGID,MSGNR,MSGV1,MSGV2,MSGV3,MSGV4,' cs |{ component-name },|.
+          bdc_count = bdc_count + 1.
+        endif.
+        if 'SEVERITY,AG,MSGNR,VAR1,VAR2,VAR3,VAR4,' cs |{ component-name },|.
+          sprot_count = sprot_count + 1.
+        endif.
+      endloop.
+
+      " Set message type if all expected fields are present
+      if syst_count = 7.
+        result = c_struct_kind-syst.
+      elseif bapi_count = 7.
+        result = c_struct_kind-bapi.
+      elseif bdc_count = 7.
+        result = c_struct_kind-bdc.
+      elseif sprot_count = 7.
+        result = c_struct_kind-sprot.
+      endif.
+    endif.
 
   endmethod.
 
@@ -251,6 +365,7 @@ class zcl_logger implementation.
           ctx_ddic_header      type x030l,
           msg_type             type ref to cl_abap_typedescr,
           msg_table_type       type ref to cl_abap_tabledescr,
+          struct_kind          type i,
           log_numbers          type bal_t_lgnm,
           log_handles          type bal_t_logh,
           log_number           type bal_s_lgnm,
@@ -265,19 +380,8 @@ class zcl_logger implementation.
 
     field-symbols: <table_of_messages> type any table,
                    <message_line>      type any,
-                   <symsg>             TYPE symsg,
-                   <bapiret1_msg>      type bapiret1,
-                   <bapi_msg>          type bapiret2,
-                   <bapi_coru_msg>     type bapi_coru_return,
-                   <bdc_msg>           type bdcmsgcoll,
-                   <hrpad_msg>         type hrpad_message_alike,
                    <context_val>       type any,
                    <loggable_object_message> TYPE zif_loggable_object=>ty_message.
-      "Solution manager doens't have BAPI_ORDER_RETURN, RCOMP, PROTT. Therefore avoid using these concrete types
-*                   <bapi_order_msg>    type bapi_order_return,
-*                   <rcomp_msg>         type rcomp,
-*                   <prott_msg>         type prott,
-    DATA replacement_bapi_order_return TYPE bapiret2.
 
     if context is not initial.
       assign context to <context_val>.
@@ -307,85 +411,16 @@ class zcl_logger implementation.
     endif.
 
     msg_type = cl_abap_typedescr=>describe_by_data( obj_to_log ).
+    struct_kind = get_struct_kind( msg_type ).
 
     if obj_to_log is not supplied.
-      detailed_msg-msgty = sy-msgty.
-      detailed_msg-msgid = sy-msgid.
-      detailed_msg-msgno = sy-msgno.
-      detailed_msg-msgv1 = sy-msgv1.
-      detailed_msg-msgv2 = sy-msgv2.
-      detailed_msg-msgv3 = sy-msgv3.
-      detailed_msg-msgv4 = sy-msgv4.
-    elseif msg_type->absolute_name = '\TYPE=SYMSG'.
-      assign obj_to_log to <symsg>.
-      detailed_msg-msgty = <symsg>-msgty.
-      detailed_msg-msgid = <symsg>-msgid.
-      detailed_msg-msgno = <symsg>-msgno.
-      detailed_msg-msgv1 = <symsg>-msgv1.
-      detailed_msg-msgv2 = <symsg>-msgv2.
-      detailed_msg-msgv3 = <symsg>-msgv3.
-      detailed_msg-msgv4 = <symsg>-msgv4.
-    elseif msg_type->absolute_name = '\TYPE=BAPIRET1'.
-      assign obj_to_log to <bapiret1_msg>.
-      detailed_msg-msgty = <bapiret1_msg>-type.
-      detailed_msg-msgid = <bapiret1_msg>-id.
-      detailed_msg-msgno = <bapiret1_msg>-number.
-      detailed_msg-msgv1 = <bapiret1_msg>-message_v1.
-      detailed_msg-msgv2 = <bapiret1_msg>-message_v2.
-      detailed_msg-msgv3 = <bapiret1_msg>-message_v3.
-      detailed_msg-msgv4 = <bapiret1_msg>-message_v4.
-    elseif msg_type->absolute_name = '\TYPE=BAPIRET2'.
-      assign obj_to_log to <bapi_msg>.
-      detailed_msg-msgty = <bapi_msg>-type.
-      detailed_msg-msgid = <bapi_msg>-id.
-      detailed_msg-msgno = <bapi_msg>-number.
-      detailed_msg-msgv1 = <bapi_msg>-message_v1.
-      detailed_msg-msgv2 = <bapi_msg>-message_v2.
-      detailed_msg-msgv3 = <bapi_msg>-message_v3.
-      detailed_msg-msgv4 = <bapi_msg>-message_v4.
-    elseif msg_type->absolute_name = '\TYPE=BAPI_CORU_RETURN'.
-      assign obj_to_log to <bapi_coru_msg>.
-      detailed_msg-msgty = <bapi_coru_msg>-type.
-      detailed_msg-msgid = <bapi_coru_msg>-id.
-      detailed_msg-msgno = <bapi_coru_msg>-number.
-      detailed_msg-msgv1 = <bapi_coru_msg>-message_v1.
-      detailed_msg-msgv2 = <bapi_coru_msg>-message_v2.
-      detailed_msg-msgv3 = <bapi_coru_msg>-message_v3.
-      detailed_msg-msgv4 = <bapi_coru_msg>-message_v4.
-    elseif msg_type->absolute_name = '\TYPE=BDCMSGCOLL'.
-      assign obj_to_log to <bdc_msg>.
-      detailed_msg-msgty = <bdc_msg>-msgtyp.
-      detailed_msg-msgid = <bdc_msg>-msgid.
-      detailed_msg-msgno = <bdc_msg>-msgnr.
-      detailed_msg-msgv1 = <bdc_msg>-msgv1.
-      detailed_msg-msgv2 = <bdc_msg>-msgv2.
-      detailed_msg-msgv3 = <bdc_msg>-msgv3.
-      detailed_msg-msgv4 = <bdc_msg>-msgv4.
-    elseif msg_type->absolute_name = '\TYPE=HRPAD_MESSAGE'.
-      assign obj_to_log to <hrpad_msg>.
-      detailed_msg-msgty = <hrpad_msg>-msgty.
-      detailed_msg-msgid = <hrpad_msg>-msgid.
-      detailed_msg-msgno = <hrpad_msg>-msgno.
-      detailed_msg-msgv1 = <hrpad_msg>-msgv1.
-      detailed_msg-msgv2 = <hrpad_msg>-msgv2.
-      detailed_msg-msgv3 = <hrpad_msg>-msgv3.
-      detailed_msg-msgv4 = <hrpad_msg>-msgv4.
-    elseif msg_type->absolute_name = '\TYPE=BAPI_ORDER_RETURN'.
-      "Solution manager doens't have BAPI_ORDER_RETURN. Therefore avoid using the concrete type
-      MOVE-CORRESPONDING obj_to_log TO replacement_bapi_order_return.
-      detailed_msg-msgty = replacement_bapi_order_return-type.
-      detailed_msg-msgid = replacement_bapi_order_return-id.
-      detailed_msg-msgno = replacement_bapi_order_return-number.
-      detailed_msg-msgv1 = replacement_bapi_order_return-message_v1.
-      detailed_msg-msgv2 = replacement_bapi_order_return-message_v2.
-      detailed_msg-msgv3 = replacement_bapi_order_return-message_v3.
-      detailed_msg-msgv4 = replacement_bapi_order_return-message_v4.
-    elseif msg_type->absolute_name = '\TYPE=RCOMP'.
-      "Solution manager doens't have RCOMP. Therefore avoid using the concrete type
-      MOVE-CORRESPONDING obj_to_log TO detailed_msg.
-    elseif msg_type->absolute_name = '\TYPE=PROTT'.
-      "Solution manager doens't have PROTT. Therefore avoid using the concrete type
-      MOVE-CORRESPONDING obj_to_log TO detailed_msg.
+      detailed_msg = add_syst_msg( syst ).
+    elseif struct_kind = c_struct_kind-syst.
+      detailed_msg = add_syst_msg( obj_to_log ).
+    elseif struct_kind = c_struct_kind-bapi.
+      detailed_msg = add_bapi_msg( obj_to_log ).
+    elseif struct_kind = c_struct_kind-bdc.
+      detailed_msg = add_bdc_msg( obj_to_log ).
     elseif msg_type->type_kind = cl_abap_typedescr=>typekind_oref.
          TRY.
           "BEGIN this could/should be moved into its own method
@@ -493,13 +528,13 @@ class zcl_logger implementation.
   method add_structure.
     data: msg_type        type ref to cl_abap_typedescr,
           msg_struct_type type ref to cl_abap_structdescr,
-          components      type cl_abap_structdescr=>component_table,
+          components      type abap_compdescr_tab,
           component       like line of components,
           string_to_log   type string.
     field-symbols: <component>   type any.
 
     msg_struct_type ?= cl_abap_typedescr=>describe_by_data( obj_to_log ).
-    components = msg_struct_type->get_components( ).
+    components = msg_struct_type->components.
     add( '--- Begin of structure ---' ).
     loop at components into component.
       assign component component-name of structure obj_to_log to <component>.
