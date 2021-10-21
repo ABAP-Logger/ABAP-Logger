@@ -789,7 +789,7 @@ CLASS lcl_test IMPLEMENTATION.
       APPEND bapi_msg TO bapi_messages.
       APPEND exp_detail TO exp_details.
       APPEND exp_text TO exp_texts.
-    end-of-definition.
+    END-OF-DEFINITION.
 
     bapiret_messages_are: 'S' 'BL' '001' 'This' 'is' 'happy' 'message',
                   'W' 'BL' '001' 'This' 'is' 'warning' 'message',
@@ -881,7 +881,7 @@ CLASS lcl_test IMPLEMENTATION.
           msgv3    = &5
           msgv4    = &6.
       previous_exception = main_exception.
-    end-of-definition.
+    END-OF-DEFINITION.
 
     "Given
     exceptions_are:
@@ -947,7 +947,7 @@ CLASS lcl_test IMPLEMENTATION.
       batch_msg-msgv3 = &6.
       batch_msg-msgv4 = &7.
       APPEND batch_msg TO batch_msgs.
-    end-of-definition.
+    END-OF-DEFINITION.
 
     batch_messages_are:
       'S' 'SABP_UNIT' '010' ''     ''   ''     '',
