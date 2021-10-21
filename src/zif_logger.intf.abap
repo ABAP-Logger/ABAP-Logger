@@ -1,97 +1,97 @@
-interface zif_logger
-  public .
-  data handle type balloghndl read-only .
-  data db_number type balognr read-only .
-  data header type bal_s_log read-only .
+INTERFACE zif_logger
+  PUBLIC .
+  DATA handle    TYPE balloghndl READ-ONLY .
+  DATA db_number TYPE balognr READ-ONLY .
+  DATA header    TYPE bal_s_log READ-ONLY .
 
-  methods add
-    importing
-      obj_to_log    type any optional
-      context       type simple optional
-      callback_form type csequence optional
-      callback_prog type csequence optional
-      callback_fm   type csequence optional
-      type          type symsgty optional
-      importance    type balprobcl optional
-        preferred parameter obj_to_log
-    returning
-      value(self)   type ref to zif_logger .
+  METHODS add
+    IMPORTING
+      obj_to_log    TYPE any OPTIONAL
+      context       TYPE simple OPTIONAL
+      callback_form TYPE csequence OPTIONAL
+      callback_prog TYPE csequence OPTIONAL
+      callback_fm   TYPE csequence OPTIONAL
+      type          TYPE symsgty OPTIONAL
+      importance    TYPE balprobcl OPTIONAL
+        PREFERRED PARAMETER obj_to_log
+    RETURNING
+      VALUE(self)   TYPE REF TO zif_logger .
 
-  methods a
-    importing
-      obj_to_log    type any optional
-      context       type simple optional
-      callback_form type csequence optional
-      callback_prog type csequence optional
-      callback_fm   type csequence optional
-      importance    type balprobcl optional
-        preferred parameter obj_to_log
-    returning
-      value(self)   type ref to zif_logger .
+  METHODS a
+    IMPORTING
+      obj_to_log    TYPE any OPTIONAL
+      context       TYPE simple OPTIONAL
+      callback_form TYPE csequence OPTIONAL
+      callback_prog TYPE csequence OPTIONAL
+      callback_fm   TYPE csequence OPTIONAL
+      importance    TYPE balprobcl OPTIONAL
+        PREFERRED PARAMETER obj_to_log
+    RETURNING
+      VALUE(self)   TYPE REF TO zif_logger .
 
-  methods e
-    importing
-      obj_to_log    type any optional
-      context       type simple optional
-      callback_form type csequence optional
-      callback_prog type csequence optional
-      callback_fm   type csequence optional
-      importance    type balprobcl optional
-        preferred parameter obj_to_log
-    returning
-      value(self)   type ref to zif_logger .
+  METHODS e
+    IMPORTING
+      obj_to_log    TYPE any OPTIONAL
+      context       TYPE simple OPTIONAL
+      callback_form TYPE csequence OPTIONAL
+      callback_prog TYPE csequence OPTIONAL
+      callback_fm   TYPE csequence OPTIONAL
+      importance    TYPE balprobcl OPTIONAL
+        PREFERRED PARAMETER obj_to_log
+    RETURNING
+      VALUE(self)   TYPE REF TO zif_logger .
 
-  methods w
-    importing
-      obj_to_log    type any optional
-      context       type simple optional
-      callback_form type csequence optional
-      callback_prog type csequence optional
-      callback_fm   type csequence optional
-      importance    type balprobcl optional
-        preferred parameter obj_to_log
-    returning
-      value(self)   type ref to zif_logger .
+  METHODS w
+    IMPORTING
+      obj_to_log    TYPE any OPTIONAL
+      context       TYPE simple OPTIONAL
+      callback_form TYPE csequence OPTIONAL
+      callback_prog TYPE csequence OPTIONAL
+      callback_fm   TYPE csequence OPTIONAL
+      importance    TYPE balprobcl OPTIONAL
+        PREFERRED PARAMETER obj_to_log
+    RETURNING
+      VALUE(self)   TYPE REF TO zif_logger .
 
-  methods i
-    importing
-      obj_to_log    type any optional
-      context       type simple optional
-      callback_form type csequence optional
-      callback_prog type csequence optional
-      callback_fm   type csequence optional
-      importance    type balprobcl optional
-        preferred parameter obj_to_log
-    returning
-      value(self)   type ref to zif_logger .
+  METHODS i
+    IMPORTING
+      obj_to_log    TYPE any OPTIONAL
+      context       TYPE simple OPTIONAL
+      callback_form TYPE csequence OPTIONAL
+      callback_prog TYPE csequence OPTIONAL
+      callback_fm   TYPE csequence OPTIONAL
+      importance    TYPE balprobcl OPTIONAL
+        PREFERRED PARAMETER obj_to_log
+    RETURNING
+      VALUE(self)   TYPE REF TO zif_logger .
 
-  methods s
-    importing
-      obj_to_log    type any optional
-      context       type simple optional
-      callback_form type csequence optional
-      callback_prog type csequence optional
-      callback_fm   type csequence optional
-      importance    type balprobcl optional
-        preferred parameter obj_to_log
-    returning
-      value(self)   type ref to zif_logger .
+  METHODS s
+    IMPORTING
+      obj_to_log    TYPE any OPTIONAL
+      context       TYPE simple OPTIONAL
+      callback_form TYPE csequence OPTIONAL
+      callback_prog TYPE csequence OPTIONAL
+      callback_fm   TYPE csequence OPTIONAL
+      importance    TYPE balprobcl OPTIONAL
+        PREFERRED PARAMETER obj_to_log
+    RETURNING
+      VALUE(self)   TYPE REF TO zif_logger .
 
-  methods has_errors
-    returning
-      value(rv_yes) type abap_bool .
+  METHODS has_errors
+    RETURNING
+      VALUE(rv_yes) TYPE abap_bool .
 
-  methods has_warnings
-    returning
-      value(rv_yes) type abap_bool .
+  METHODS has_warnings
+    RETURNING
+      VALUE(rv_yes) TYPE abap_bool .
 
-  methods is_empty
-    returning
-      value(rv_yes) type abap_bool .
+  METHODS is_empty
+    RETURNING
+      VALUE(rv_yes) TYPE abap_bool .
 
-  methods length
-    returning
-      value(rv_length) type i .
+  METHODS length
+    RETURNING
+      VALUE(rv_length) TYPE i .
 
   "! Saves the log on demand. Intended to be called at the
   "! end of the log processing so that logs can be saved depending
@@ -99,16 +99,16 @@ interface zif_logger
   "! If there are no error messages, it may not be desirable to save
   "! a log.
   "! If auto save is enabled, save will do nothing.
-  methods save .
+  METHODS save .
 
-  methods export_to_table
-    returning
-      value(rt_bapiret) type bapirettab .
+  METHODS export_to_table
+    RETURNING
+      VALUE(rt_bapiret) TYPE bapirettab .
 
-  methods fullscreen .
+  METHODS fullscreen .
 
-  methods popup
-    importing
-      profile type bal_s_prof optional.
+  METHODS popup
+    IMPORTING
+      profile TYPE bal_s_prof OPTIONAL.
 
-endinterface.
+ENDINTERFACE.
