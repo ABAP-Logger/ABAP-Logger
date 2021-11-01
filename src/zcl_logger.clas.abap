@@ -421,6 +421,8 @@ CLASS zcl_logger IMPLEMENTATION.
       detailed_msg = add_bapi_msg( obj_to_log ).
     ELSEIF struct_kind = c_struct_kind-bdc.
       detailed_msg = add_bdc_msg( obj_to_log ).
+    ELSEIF struct_kind = c_struct_kind-sprot.
+      detailed_msg = add_sprot_msg( obj_to_log ).
     ELSEIF msg_type->type_kind = cl_abap_typedescr=>typekind_oref.
       TRY.
           "BEGIN this could/should be moved into its own method
