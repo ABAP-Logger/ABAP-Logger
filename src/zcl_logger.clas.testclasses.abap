@@ -76,6 +76,7 @@ CLASS lcl_test DEFINITION FOR TESTING
       can_log_bapi_order_return FOR TESTING,
       can_log_rcomp     FOR TESTING,
       can_log_prott FOR TESTING,
+      can_log_sprot FOR TESTING,
       can_log_bapirettab FOR TESTING,
       can_log_err FOR TESTING,
       can_log_chained_exceptions FOR TESTING,
@@ -729,6 +730,58 @@ CLASS lcl_test IMPLEMENTATION.
     MOVE-CORRESPONDING expected_details TO <prott_structure>.
 
     anon_log->add( <prott_structure> ).
+
+    msg_handle-log_handle = anon_log->handle.
+    msg_handle-msgnumber  = '000001'.
+
+    CALL FUNCTION 'BAL_LOG_MSG_READ'
+      EXPORTING
+        i_s_msg_handle = msg_handle
+      IMPORTING
+        e_s_msg        = actual_details
+        e_txt_msg      = actual_text.
+
+    cl_aunit_assert=>assert_not_initial(
+      act = actual_details-time_stmp
+      msg = 'Did not log system message properly' ).
+
+    expected_details-msg_count = 1.
+    CLEAR actual_details-time_stmp.
+
+    cl_aunit_assert=>assert_equals(
+      exp = expected_details
+      act = actual_details
+      msg = 'Did not log system message properly' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = 'This is a test'
+      act = condense( actual_text )
+      msg = 'Did not log system message properly' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = abap_true
+      act = anon_log->has_warnings( )
+      msg = 'Did not log or fetch system message properly'
+    ).
+  ENDMETHOD.
+
+  METHOD can_log_sprot.
+
+    DATA: sprot_msg        TYPE pat_sprot,
+          msg_handle       TYPE balmsghndl,
+          expected_details TYPE bal_s_msg,
+          actual_details   TYPE bal_s_msg,
+          actual_text      TYPE char200.
+
+    expected_details-msgty = sprot_msg-severity = 'W'.
+    expected_details-msgid = sprot_msg-ag = 'BL'.
+    expected_details-msgno = sprot_msg-msgnr = '001'.
+    expected_details-msgv1 = sprot_msg-var1 = 'This'.
+    expected_details-msgv2 = sprot_msg-var2 = 'is'.
+    expected_details-msgv3 = sprot_msg-var3 = 'a'.
+    expected_details-msgv4 = sprot_msg-var4 = 'test'.
+
+    anon_log->add( sprot_msg ).
 
     msg_handle-log_handle = anon_log->handle.
     msg_handle-msgnumber  = '000001'.
