@@ -95,6 +95,9 @@ CLASS lcl_test DEFINITION FOR TESTING
 
       return_proper_status FOR TESTING,
       return_proper_length FOR TESTING,
+
+      run_timer FOR TESTING,
+
       can_add_table_msg_context FOR TESTING RAISING cx_static_check.
 
 ENDCLASS.       "lcl_Test
@@ -1466,4 +1469,36 @@ CLASS lcl_test IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD run_timer.
+
+    CONSTANTS: lc_title TYPE string VALUE 'Total:'.
+
+    DATA: msg_handle TYPE balmsghndl,
+          msg_detail TYPE bal_s_msg,
+          msg_total  TYPE string,
+          msg_regex  TYPE string.
+
+    anon_log->timer_start( ).
+
+    WAIT UP TO 1 SECONDS.
+
+    anon_log->timer_end( lc_title ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = 1
+      act = anon_log->length( )
+      msg = 'Did not return right length after timer' ).
+
+    msg_total = get_first_message( anon_log->handle ).
+
+    msg_regex = |{ lc_title } 1.[0-9][0-9] seconds|.
+
+    FIND REGEX msg_regex IN msg_total.
+
+    cl_aunit_assert=>assert_subrc(
+      exp = 0
+      act = sy-subrc
+      msg = 'Did not return right measurement' ).
+
+  ENDMETHOD.
 ENDCLASS.       "lcl_Test
