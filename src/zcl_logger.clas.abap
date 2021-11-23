@@ -28,6 +28,8 @@ CLASS zcl_logger DEFINITION
              export_to_table FOR zif_logger~export_to_table,
              fullscreen FOR zif_logger~fullscreen,
              popup FOR zif_logger~popup,
+             timer_start FOR zif_logger~timer_start,
+             timer_end FOR zif_logger~timer_end,
              handle FOR zif_logger~handle,
              db_number FOR zif_logger~db_number,
              header FOR zif_logger~header.
@@ -75,6 +77,7 @@ CLASS zcl_logger DEFINITION
     DATA sec_connection     TYPE abap_bool .
     DATA sec_connect_commit TYPE abap_bool .
     DATA settings           TYPE REF TO zif_logger_settings.
+    DATA timer              TYPE timestampl.
 
     METHODS:
       "! Safety limit for previous exception drill down
@@ -715,6 +718,45 @@ CLASS zcl_logger IMPLEMENTATION.
   METHOD zif_logger~save.
     CHECK me->settings->get_autosave( ) = abap_false.
     save_log( ).
+  ENDMETHOD.
+
+
+  METHOD zif_logger~timer_end.
+
+    DATA:
+      lv_timestamp TYPE timestampl,
+      lv_sec       TYPE p LENGTH 10 DECIMALS 2.
+
+    GET TIME STAMP FIELD lv_timestamp.
+
+    TRY.
+        rv_runtime = cl_abap_tstmp=>subtract(
+          tstmp1 = lv_timestamp
+          tstmp2 = timer ).
+      CATCH cx_parameter_invalid.
+        zif_logger~e( 'Error getting runtime measurement' ).
+        RETURN.
+    ENDTRY.
+
+    lv_sec = rv_runtime. " round to 2 decimal places
+
+    IF title IS INITIAL.
+      zif_logger~i( |Runtime: { lv_sec } seconds| ).
+    ELSE.
+      zif_logger~i( |{ title } { lv_sec } seconds| ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD zif_logger~timer_start.
+
+    GET TIME STAMP FIELD timer.
+
+    IF title IS NOT INITIAL.
+      zif_logger~i( title ).
+    ENDIF.
+
   ENDMETHOD.
 
 
