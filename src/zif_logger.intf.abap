@@ -111,4 +111,14 @@ INTERFACE zif_logger
     IMPORTING
       profile TYPE bal_s_prof OPTIONAL.
 
+  METHODS timer_start
+    IMPORTING
+      title TYPE string OPTIONAL.
+
+  METHODS timer_end
+    IMPORTING
+      title TYPE string OPTIONAL
+    RETURNING
+      VALUE(rv_runtime) TYPE timestampl.
+
 ENDINTERFACE.
