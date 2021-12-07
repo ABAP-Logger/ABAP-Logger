@@ -44,7 +44,6 @@ CLASS lcl_test DEFINITION FOR TESTING
 
       format_message
         IMPORTING id         LIKE sy-msgid DEFAULT sy-msgid
-                  lang       TYPE langu DEFAULT '-'
                   no         LIKE sy-msgno DEFAULT sy-msgno
                   v1         LIKE sy-msgv1 DEFAULT sy-msgv1
                   v2         LIKE sy-msgv2 DEFAULT sy-msgv2
@@ -918,7 +917,6 @@ CLASS lcl_test IMPLEMENTATION.
     DATA: main_exception     TYPE REF TO lcx_t100,
           previous_exception TYPE REF TO lcx_t100,
           caught_exception   TYPE REF TO lcx_t100,
-          msg_handle         TYPE balmsghndl,
           msg_count          TYPE i,
           bal_msgs           TYPE bal_tt_msg,
           bal_msg            TYPE bal_s_msg.
