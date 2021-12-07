@@ -917,7 +917,6 @@ CLASS lcl_test IMPLEMENTATION.
     DATA: main_exception     TYPE REF TO lcx_t100,
           previous_exception TYPE REF TO lcx_t100,
           caught_exception   TYPE REF TO lcx_t100,
-          msg_handle         TYPE balmsghndl,
           msg_count          TYPE i,
           bal_msgs           TYPE bal_tt_msg,
           bal_msg            TYPE bal_s_msg.
