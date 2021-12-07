@@ -44,7 +44,6 @@ CLASS lcl_test DEFINITION FOR TESTING
 
       format_message
         IMPORTING id         LIKE sy-msgid DEFAULT sy-msgid
-                  lang       TYPE langu DEFAULT '-'
                   no         LIKE sy-msgno DEFAULT sy-msgno
                   v1         LIKE sy-msgv1 DEFAULT sy-msgv1
                   v2         LIKE sy-msgv2 DEFAULT sy-msgv2
