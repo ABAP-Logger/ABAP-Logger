@@ -111,4 +111,10 @@ INTERFACE zif_logger
     IMPORTING
       profile TYPE bal_s_prof OPTIONAL.
 
+  METHODS set_desc
+    IMPORTING
+      desc        TYPE bal_s_log-extnumber
+    RETURNING
+      VALUE(self) TYPE REF TO zif_logger .
+
 ENDINTERFACE.
