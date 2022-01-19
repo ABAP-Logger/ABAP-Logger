@@ -96,7 +96,7 @@ CLASS lcl_test DEFINITION FOR TESTING
       return_proper_length FOR TESTING,
       can_add_table_msg_context FOR TESTING RAISING cx_static_check,
 
-      can_change_desc FOR TESTING RAISING cx_static_check.
+      can_change_description FOR TESTING RAISING cx_static_check.
 
 ENDCLASS.       "lcl_Test
 
@@ -1467,7 +1467,7 @@ CLASS lcl_test IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD can_change_desc.
+  METHOD can_change_description.
 
     DATA desc TYPE bal_s_log-extnumber.
 
@@ -1477,7 +1477,7 @@ CLASS lcl_test IMPLEMENTATION.
                                  subobject = 'LOGGER'
                                  auto_save = abap_false ).
 
-    named_log->set_desc( desc ).
+    named_log->set_header( desc ).
 
     cl_abap_unit_assert=>assert_equals(
         exp = desc

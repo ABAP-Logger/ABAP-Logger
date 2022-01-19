@@ -746,9 +746,9 @@ CLASS zcl_logger IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD zif_logger~set_desc.
+  METHOD zif_logger~set_header.
 
-    me->header-extnumber = desc.
+    me->header-extnumber = description.
 
     CALL FUNCTION 'BAL_LOG_HDR_CHANGE'
       EXPORTING
