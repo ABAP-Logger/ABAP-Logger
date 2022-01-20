@@ -94,7 +94,9 @@ CLASS lcl_test DEFINITION FOR TESTING
 
       return_proper_status FOR TESTING,
       return_proper_length FOR TESTING,
-      can_add_table_msg_context FOR TESTING RAISING cx_static_check.
+      can_add_table_msg_context FOR TESTING RAISING cx_static_check,
+
+      can_change_description FOR TESTING RAISING cx_static_check.
 
 ENDCLASS.       "lcl_Test
 
@@ -1461,6 +1463,42 @@ CLASS lcl_test IMPLEMENTATION.
       exp = 3
       act = anon_log->length( )
       msg = 'Did not return right length after add' ).
+
+  ENDMETHOD.
+
+
+  METHOD can_change_description.
+
+    DATA desc TYPE bal_s_log-extnumber.
+
+    desc = cl_system_uuid=>create_uuid_c32_static( ).
+
+    named_log = zcl_logger=>new( object    = 'ABAPUNIT'
+                                 subobject = 'LOGGER'
+                                 auto_save = abap_false ).
+
+    named_log->set_header( desc ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = desc
+        act = named_log->header-extnumber
+        msg = 'Did not return new desc' ).
+
+    named_log->save( ).
+
+    CALL FUNCTION 'BAL_GLB_MEMORY_REFRESH'.                "Close Logs
+    reopened_log = zcl_logger=>open( object    = 'ABAPUNIT'
+                                     subobject = 'LOGGER'
+                                     desc      = desc ).
+
+    cl_abap_unit_assert=>assert_bound(
+        act = reopened_log
+        msg = 'Did not find log with new desc' ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = desc
+        act = reopened_log->header-extnumber
+        msg = 'Did not return new desc' ).
 
   ENDMETHOD.
 
