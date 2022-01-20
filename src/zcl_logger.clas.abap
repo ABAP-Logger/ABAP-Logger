@@ -750,4 +750,24 @@ CLASS zcl_logger IMPLEMENTATION.
       me->db_number = log_number-lognumber.
     ENDIF.
   ENDMETHOD.
+
+
+  METHOD zif_logger~set_header.
+
+    me->header-extnumber = description.
+
+    CALL FUNCTION 'BAL_LOG_HDR_CHANGE'
+      EXPORTING
+        i_log_handle            = me->handle
+        i_s_log                 = header
+      EXCEPTIONS
+        log_not_found           = 1
+        log_header_inconsistent = 2
+        OTHERS                  = 3.
+    ASSERT sy-subrc = 0.
+
+    self = me.
+
+  ENDMETHOD.
+
 ENDCLASS.
