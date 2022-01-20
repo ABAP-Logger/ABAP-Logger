@@ -95,7 +95,7 @@ CLASS lcl_test DEFINITION FOR TESTING
       return_proper_status FOR TESTING,
       return_proper_length FOR TESTING,
       can_add_table_msg_context FOR TESTING RAISING cx_static_check,
-
+      can_log_string_and_export FOR TESTING,
       can_change_description FOR TESTING RAISING cx_static_check.
 
 ENDCLASS.       "lcl_Test
@@ -1467,6 +1467,22 @@ CLASS lcl_test IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD can_log_string_and_export.
+
+    DATA: stringmessage TYPE string VALUE `Logging a string, guys!`,
+          table         TYPE bapirettab.
+
+    anon_log->add( stringmessage ).
+
+    table = anon_log->export_to_table( ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = 1
+      act = lines( table )
+      msg = 'Did not log system message properly' ).
+  ENDMETHOD.
+  
+  
   METHOD can_change_description.
 
     DATA desc TYPE bal_s_log-extnumber.

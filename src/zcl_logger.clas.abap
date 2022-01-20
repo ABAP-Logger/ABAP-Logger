@@ -490,10 +490,16 @@ CLASS zcl_logger IMPLEMENTATION.
     ENDIF.
 
     IF free_text_msg IS NOT INITIAL.
+
+      message_type = type.
+      IF message_type IS INITIAL.
+        message_type = if_msg_output=>msgtype_success.
+      ENDIF.
+
       CALL FUNCTION 'BAL_LOG_MSG_ADD_FREE_TEXT'
         EXPORTING
           i_log_handle = me->handle
-          i_msgty      = type
+          i_msgty      = message_type
           i_probclass  = importance
           i_text       = free_text_msg
           i_s_context  = formatted_context
