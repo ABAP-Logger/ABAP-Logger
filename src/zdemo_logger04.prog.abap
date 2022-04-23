@@ -30,7 +30,7 @@ END-OF-SELECTION.
 
 * show one log file and no tree next to it
   IF NOT p_notree IS INITIAL.
-    SUBMIT zdemo_logger04_NO_TREE
+    SUBMIT zdemo_logger04_no_tree
            AND RETURN.
   ENDIF.
 
