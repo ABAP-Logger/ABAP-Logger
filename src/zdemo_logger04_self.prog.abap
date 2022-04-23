@@ -26,7 +26,7 @@ FORM logs_create.
     l_s_fcat TYPE bal_s_fcat.
 
   g_s_display_profile-title     = 'Application Log:Self defined display profile'.
-  g_s_display_profile-use_grid = P_GRID.
+  g_s_display_profile-use_grid = p_grid.
   g_s_display_profile-head_text = 'Application.Log.Demo'.
   g_s_display_profile-head_size = 47.
   g_s_display_profile-tree_size = 28.
@@ -76,7 +76,9 @@ FORM logs_create.
   DATA :
     importance TYPE balprobcl,
     l_s_msg    TYPE bal_s_msg,
-    l_msgno    TYPE symsgno.
+    l_msgno    TYPE symsgno,
+    lv_msg     TYPE string,
+    rem        TYPE i.
 
   l_msgno = 301.
   DO.
@@ -102,10 +104,9 @@ FORM logs_create.
     ENDIF.
 
     MESSAGE ID l_s_msg-msgid TYPE l_s_msg-msgty NUMBER l_s_msg-msgno
-             INTO DATA(lv_msg).
+             INTO lv_msg.
 
-
-    data(rem) = ( l_msgno mod 2 ).
+    rem = ( l_msgno MOD 2 ).
     IF   rem  = 0.
     ls_context-carrid = 'SF'. "Airline
     ELSE.
