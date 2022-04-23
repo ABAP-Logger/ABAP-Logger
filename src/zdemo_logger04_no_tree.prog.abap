@@ -18,9 +18,7 @@ END-OF-SELECTION.
 
 FORM logs_create.
   DATA:
-    ls_context           TYPE bal_s_ex01,
-    g_s_display_profile  TYPE bal_s_prof,
-    l_s_message_defaults TYPE bal_s_mdef.
+    ls_context           TYPE bal_s_ex01.
 
   logger = zcl_logger_factory=>create_log(
             object = ''
