@@ -22,9 +22,9 @@ CLASS lcl_test DEFINITION FOR TESTING
   PRIVATE SECTION.
 
     DATA:
-          anon_log     TYPE REF TO zif_logger,
-          named_log    TYPE REF TO zif_logger,
-          reopened_log TYPE REF TO zif_logger.
+      anon_log     TYPE REF TO zif_logger,
+      named_log    TYPE REF TO zif_logger,
+      reopened_log TYPE REF TO zif_logger.
 
     CLASS-METHODS:
       class_setup.
@@ -87,6 +87,8 @@ CLASS lcl_test DEFINITION FOR TESTING
       can_add_msg_context FOR TESTING,
       can_add_callback_sub FOR TESTING,
       can_add_callback_fm  FOR TESTING,
+
+      can_set_default_context FOR TESTING,
 
       must_use_factory FOR TESTING,
 
@@ -642,10 +644,10 @@ CLASS lcl_test IMPLEMENTATION.
 
   METHOD can_log_rcomp.
     DATA:
-          msg_handle       TYPE balmsghndl,
-          expected_details TYPE bal_s_msg,
-          actual_details   TYPE bal_s_msg,
-          actual_text      TYPE char200.
+      msg_handle       TYPE balmsghndl,
+      expected_details TYPE bal_s_msg,
+      actual_details   TYPE bal_s_msg,
+      actual_text      TYPE char200.
 
     "Solution manager doens't have PROTT. Therefore avoid using the concrete type
     DATA rcomp_data_ref TYPE REF TO data.
@@ -1080,10 +1082,10 @@ CLASS lcl_test IMPLEMENTATION.
              comp1 TYPE string,
              comp2 TYPE i,
            END   OF ty_struct,
-             BEGIN OF ty_deep_struct,
+           BEGIN OF ty_deep_struct,
              comp1 TYPE string,
              deep  TYPE ty_struct,
-             END OF ty_deep_struct.
+           END OF ty_deep_struct.
     DATA: struct      TYPE ty_deep_struct,
           act_table   TYPE table_of_strings,
           exp_table   TYPE table_of_strings,
@@ -1515,6 +1517,78 @@ CLASS lcl_test IMPLEMENTATION.
         exp = desc
         act = reopened_log->header-extnumber
         msg = 'Did not return new desc' ).
+
+  ENDMETHOD.
+
+  METHOD can_set_default_context.
+    DATA:
+      log                 TYPE REF TO zif_logger,
+      random_country_data TYPE t005t,
+      ls_msgdefault       TYPE bal_s_mdef,
+      dummy               TYPE c,
+      log_handle          TYPE bal_t_logh,
+      message_handles     TYPE bal_t_msgh,
+      message_handle      TYPE balmsghndl,
+      ls_s_msg            TYPE bal_s_msg.
+
+    random_country_data-mandt = sy-mandt.
+    random_country_data-spras = 'D'.
+    random_country_data-land1 = 'DE'.
+
+    log = zcl_logger=>new( ).
+
+    log->set_default_context( context = random_country_data ).
+    log->get_default_context( IMPORTING e_msgdefault = ls_msgdefault ).
+
+
+    cl_aunit_assert=>assert_equals(
+      exp = 'T005T'
+      act = ls_msgdefault-context-tabname
+      msg = 'Did not add default context tab to log' ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = random_country_data
+      act = ls_msgdefault-context-value
+      msg = 'Did not add default context values to log' ).
+
+    "check default context added to messages.
+    MESSAGE s001(00) WITH 'I' 'test' 'the' 'logger.' INTO dummy.
+    log->add( ).
+    MESSAGE e001(00) WITH 'I' 'test' 'the' 'logger.' INTO dummy.
+    log->add( ).
+
+    INSERT log->handle INTO TABLE log_handle.
+
+    CALL FUNCTION 'BAL_GLB_SEARCH_MSG'
+      EXPORTING
+        i_t_log_handle = log_handle
+      IMPORTING
+        e_t_msg_handle = message_handles
+      EXCEPTIONS
+        msg_not_found  = 0.
+
+    LOOP AT message_handles INTO  message_handle.
+      CLEAR : ls_s_msg.
+      CALL FUNCTION 'BAL_LOG_MSG_READ'
+        EXPORTING
+          i_s_msg_handle = message_handle
+        IMPORTING
+          e_s_msg        = ls_s_msg
+        EXCEPTIONS
+          OTHERS         = 1.
+      IF sy-subrc = 0.
+
+        cl_aunit_assert=>assert_equals(
+          exp = 'T005T'
+          act = ls_s_msg-context-tabname
+          msg = 'Did not add default context tab to message' ).
+
+        cl_aunit_assert=>assert_equals(
+          exp = random_country_data
+          act = ls_s_msg-context-value
+          msg = 'Did not add default context values to message' ).
+      ENDIF.
+    ENDLOOP.
 
   ENDMETHOD.
 
