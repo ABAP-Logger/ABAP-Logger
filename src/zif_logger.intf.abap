@@ -117,4 +117,12 @@ INTERFACE zif_logger
     RETURNING
       VALUE(self) TYPE REF TO zif_logger .
 
+  METHODS set_default_context
+    IMPORTING
+      context TYPE simple.
+
+  METHODS get_default_context
+    EXPORTING
+      e_msgdefault TYPE bal_s_mdef.
+
 ENDINTERFACE.

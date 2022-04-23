@@ -83,6 +83,7 @@ CLASS zcl_logger_factory IMPLEMENTATION.
         cl_abap_typedescr=>describe_by_data( context )->get_ddic_header( )-tabname.
       ASSIGN context TO <context_val> CASTING.
       lo_log->header-context-value = <context_val>.
+      lo_log->settings->set_context_tabname( lo_log->header-context-tabname  ).
     ENDIF.
 
     CALL FUNCTION 'BAL_LOG_CREATE'

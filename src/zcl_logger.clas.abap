@@ -30,7 +30,9 @@ CLASS zcl_logger DEFINITION
              popup FOR zif_logger~popup,
              handle FOR zif_logger~handle,
              db_number FOR zif_logger~db_number,
-             header FOR zif_logger~header.
+             header FOR zif_logger~header,
+             get_default_context FOR zif_logger~get_default_context,
+             set_default_context FOR zif_logger~set_default_context.
 
     "! Starts a new log.
     "! For backwards compatibility only! Use ZCL_LOGGER_FACTORY instead.
@@ -64,10 +66,10 @@ CLASS zcl_logger DEFINITION
 
     CONSTANTS:
       BEGIN OF c_struct_kind,
-                 syst  TYPE i VALUE 1,
-                 bapi  TYPE i VALUE 2,
-                 bdc   TYPE i VALUE 3,
-                 sprot TYPE i VALUE 4,
+        syst  TYPE i VALUE 1,
+        bapi  TYPE i VALUE 2,
+        bdc   TYPE i VALUE 3,
+        sprot TYPE i VALUE 4,
       END OF c_struct_kind .
 
 *"* private components of class ZCL_LOGGER
@@ -358,16 +360,16 @@ CLASS zcl_logger IMPLEMENTATION.
 
   METHOD zif_logger~add.
 
-    DATA: detailed_msg         TYPE bal_s_msg,
-          exception_data_table TYPE tty_exception_data,
-          free_text_msg        TYPE char200,
-          ctx_type             TYPE REF TO cl_abap_typedescr,
-          ctx_ddic_header      TYPE x030l,
-          msg_type             TYPE REF TO cl_abap_typedescr,
-          struct_kind          TYPE i,
-          formatted_context    TYPE bal_s_cont,
-          formatted_params     TYPE bal_s_parm,
-          message_type         TYPE symsgty,
+    DATA: detailed_msg             TYPE bal_s_msg,
+          exception_data_table     TYPE tty_exception_data,
+          free_text_msg            TYPE char200,
+          ctx_type                 TYPE REF TO cl_abap_typedescr,
+          ctx_ddic_header          TYPE x030l,
+          msg_type                 TYPE REF TO cl_abap_typedescr,
+          struct_kind              TYPE i,
+          formatted_context        TYPE bal_s_cont,
+          formatted_params         TYPE bal_s_parm,
+          message_type             TYPE symsgty,
           "these objects could be moved into their own method
           "see adt://***/sap/bc/adt/oo/classes/zcl_logger/source/main#start=391,10;end=415,61
           symsg                    TYPE symsg,
@@ -393,6 +395,7 @@ CLASS zcl_logger IMPLEMENTATION.
           OTHERS       = 3.
       IF sy-subrc = 0.
         formatted_context-tabname = ctx_ddic_header-tabname.
+        settings->set_context_tabname( formatted_context-tabname  ).
       ENDIF.
     ENDIF.
 
@@ -623,14 +626,19 @@ CLASS zcl_logger IMPLEMENTATION.
   METHOD zif_logger~fullscreen.
 
     DATA:
-          profile        TYPE bal_s_prof,
-          lt_log_handles TYPE bal_t_logh.
+      profile        TYPE bal_s_prof,
+      lt_log_handles TYPE bal_t_logh.
 
     APPEND me->handle TO lt_log_handles.
 
-    CALL FUNCTION 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
-      IMPORTING
-        e_s_display_profile = profile.
+    profile = settings->get_display_profile( ).
+
+    IF profile IS INITIAL.
+      "get default profile
+      CALL FUNCTION 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
+        IMPORTING
+          e_s_display_profile = profile.
+    ENDIF.
 
     CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
       EXPORTING
@@ -768,6 +776,39 @@ CLASS zcl_logger IMPLEMENTATION.
 
     self = me.
 
+  ENDMETHOD.
+
+  METHOD zif_logger~set_default_context.
+    DATA :
+      ctx_ddic_header TYPE x030l,
+      lv_msgdefault   TYPE bal_s_mdef.
+
+    FIELD-SYMBOLS <context_val> TYPE c.
+
+    get_default_context( IMPORTING e_msgdefault = lv_msgdefault ).
+
+    lv_msgdefault-log_handle =  me->handle.
+    ASSIGN context TO <context_val> CASTING.
+
+    lv_msgdefault-context-value = <context_val>.
+    lv_msgdefault-context-tabname =  cl_abap_typedescr=>describe_by_data( context )->get_ddic_header( )-tabname.
+
+    me->settings->set_context_tabname( lv_msgdefault-context-tabname ).
+
+    CALL FUNCTION 'BAL_GLB_MSG_DEFAULTS_SET'
+      EXPORTING
+        i_s_msg_defaults = lv_msgdefault
+      EXCEPTIONS
+        OTHERS           = 0.
+  ENDMETHOD.
+
+  METHOD zif_logger~get_default_context.
+*   modify defaults for all following messages
+    CALL FUNCTION 'BAL_GLB_MSG_DEFAULTS_GET'
+      IMPORTING
+        e_s_msg_defaults = e_msgdefault
+      EXCEPTIONS
+        OTHERS           = 0.
   ENDMETHOD.
 
 ENDCLASS.

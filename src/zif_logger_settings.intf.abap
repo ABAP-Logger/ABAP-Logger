@@ -1,4 +1,6 @@
-INTERFACE zif_logger_settings PUBLIC .
+INTERFACE zif_logger_settings PUBLIC.
+
+  TYPES ty_profile_name TYPE string.
 
   "! Is the log automatically saved when adding messages?
   "! See setter for more details.
@@ -88,5 +90,33 @@ INTERFACE zif_logger_settings PUBLIC .
       i_use_2nd_db_connection TYPE flag
     RETURNING
       VALUE(r_self)           TYPE REF TO zif_logger_settings.
+
+  "! Set display profile it will be used to display custom fields from context
+  "!display_profile_names default, self_defined, no_tree, single
+  METHODS set_display_profile
+    IMPORTING
+      i_profile_name       TYPE ty_profile_name OPTIONAL
+      !i_display_profile TYPE bal_s_prof OPTIONAL
+      !i_context           TYPE simple OPTIONAL
+
+    RETURNING
+      VALUE(r_self)      TYPE REF TO zif_logger_settings.
+
+  "! get display profile it will be used to display custom fields from context
+  METHODS get_display_profile
+    RETURNING
+      VALUE(r_display_profile) TYPE bal_s_prof.
+
+  "! set context
+  METHODS set_context_tabname
+    IMPORTING
+      !i_context_tabname    TYPE bal_s_cont-tabname
+    RETURNING
+      VALUE(r_self) TYPE REF TO zif_logger_settings.
+
+  "! get context
+  METHODS get_context_tabname
+    RETURNING
+      VALUE(r_context_tabname) TYPE bal_s_cont-tabname.
 
 ENDINTERFACE.
