@@ -40,7 +40,8 @@ FORM logs_create.
   DATA :
     importance TYPE balprobcl,
     l_s_msg    TYPE bal_s_msg,
-    l_msgno    TYPE symsgno.
+    l_msgno    TYPE symsgno,
+    lv_msg     TYPE string.
 
   l_msgno = 301.
   DO.
@@ -66,7 +67,7 @@ FORM logs_create.
     ENDIF.
 
     MESSAGE ID l_s_msg-msgid TYPE l_s_msg-msgty NUMBER l_s_msg-msgno
-             INTO DATA(lv_msg).
+             INTO lv_msg.
 
     IF pcontext EQ 'X'.
       ls_context-carrid = 'SF'. "Airline
