@@ -780,7 +780,6 @@ CLASS zcl_logger IMPLEMENTATION.
 
   METHOD zif_logger~set_default_context.
     DATA :
-      ctx_ddic_header TYPE x030l,
       lv_msgdefault   TYPE bal_s_mdef.
 
     FIELD-SYMBOLS <context_val> TYPE c.
