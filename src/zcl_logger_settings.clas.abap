@@ -129,7 +129,8 @@ CLASS zcl_logger_settings IMPLEMENTATION.
     DATA:
       lr_typedesc TYPE REF TO cl_abap_typedescr,
       lr_struc    TYPE REF TO cl_abap_structdescr,
-      lt_comp     TYPE abap_compdescr_tab.
+      lt_comp     TYPE abap_compdescr_tab,
+      lv_context_tabname TYPE bal_s_cont-tabname.
 
     IF i_profile_name IS SUPPLIED.
       profile_name = i_profile_name.
@@ -139,7 +140,7 @@ CLASS zcl_logger_settings IMPLEMENTATION.
       lr_typedesc = cl_abap_typedescr=>describe_by_data( i_context ).
       lr_struc ?= lr_typedesc.
       lt_comp = lr_struc->components.
-      DATA(lv_context_tabname) = cl_abap_typedescr=>describe_by_data( i_context )->get_ddic_header( )-tabname.
+      lv_context_tabname = cl_abap_typedescr=>describe_by_data( i_context )->get_ddic_header( )-tabname.
 
       set_context_tabname( lv_context_tabname ).
 
@@ -275,14 +276,15 @@ CLASS zcl_logger_settings IMPLEMENTATION.
     DATA:
       l_s_fcat    TYPE bal_s_fcat,
       lr_typedesc TYPE REF TO cl_abap_typedescr,
-      lr_struc    TYPE REF TO cl_abap_structdescr.
-
+      lr_struc    TYPE REF TO cl_abap_structdescr,
+      ls_comp     TYPE abap_compdescr.
+      
     IF context_tabname IS NOT INITIAL.
       lr_typedesc = cl_abap_typedescr=>describe_by_name( context_tabname ).
       lr_struc ?= lr_typedesc.
 
 
-      LOOP AT lr_struc->components INTO DATA(ls_comp).
+      LOOP AT lr_struc->components INTO ls_comp.
         l_s_fcat-col_pos   = 100 + sy-tabix.
 
         READ TABLE display_profile-mess_fcat TRANSPORTING NO FIELDS
