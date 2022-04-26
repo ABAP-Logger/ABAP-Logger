@@ -813,7 +813,6 @@ CLASS zcl_logger IMPLEMENTATION.
 
   METHOD zif_logger~export_to_table_with_context.
     DATA:
-      lt_t_msg           TYPE bal_t_msg,
       log_handle         TYPE bal_t_logh,
       message_handles    TYPE bal_t_msgh,
       lw_s_msg           TYPE bal_s_msg,
