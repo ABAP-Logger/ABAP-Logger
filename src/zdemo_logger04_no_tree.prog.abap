@@ -38,7 +38,7 @@ FORM logs_create.
     importance TYPE balprobcl,
     l_s_msg    TYPE bal_s_msg,
     l_msgno    TYPE symsgno,
-    lv_msg    TYPE string.
+    lv_msg     TYPE string.
 
   l_msgno = 301.
   DO.

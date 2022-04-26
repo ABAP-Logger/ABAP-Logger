@@ -32,7 +32,8 @@ CLASS zcl_logger DEFINITION
              db_number FOR zif_logger~db_number,
              header FOR zif_logger~header,
              get_default_context FOR zif_logger~get_default_context,
-             set_default_context FOR zif_logger~set_default_context.
+             set_default_context FOR zif_logger~set_default_context,
+             export_to_table_with_context FOR zif_logger~export_to_table_with_context.
 
     "! Starts a new log.
     "! For backwards compatibility only! Use ZCL_LOGGER_FACTORY instead.
@@ -802,12 +803,89 @@ CLASS zcl_logger IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD zif_logger~get_default_context.
-*   modify defaults for all following messages
+"   modify defaults for all following messages
     CALL FUNCTION 'BAL_GLB_MSG_DEFAULTS_GET'
       IMPORTING
         e_s_msg_defaults = e_msgdefault
       EXCEPTIONS
         OTHERS           = 0.
+  ENDMETHOD.
+
+  METHOD zif_logger~export_to_table_with_context.
+    DATA:
+      lt_t_msg           TYPE bal_t_msg,
+      log_handle         TYPE bal_t_logh,
+      message_handles    TYPE bal_t_msgh,
+      lw_s_msg           TYPE bal_s_msg,
+      lw_s_show          TYPE bal_s_show,
+      dref               TYPE REF TO data,
+      lv_context_tabname TYPE bal_s_cont-tabname.
+
+    FIELD-SYMBOLS:
+      <table_of_messages> TYPE STANDARD TABLE,
+      <message_line>      TYPE any,
+      <context_val>       TYPE any,
+      <msg_handle>        TYPE balmsghndl.
+
+    ASSIGN mess_tab TO <table_of_messages>.
+
+
+    lv_context_tabname = me->settings->get_context_tabname( ).
+
+    IF lv_context_tabname IS NOT INITIAL.
+      CREATE DATA dref TYPE (lv_context_tabname).
+      ASSIGN dref->* TO <context_val>.
+      CLEAR dref.
+    ENDIF.
+
+    INSERT handle INTO TABLE log_handle.
+
+    CALL FUNCTION 'BAL_GLB_SEARCH_MSG'
+      EXPORTING
+        i_t_log_handle = log_handle
+      IMPORTING
+        e_t_msg_handle = message_handles
+      EXCEPTIONS
+        msg_not_found  = 0.
+
+    LOOP AT message_handles ASSIGNING <msg_handle>.
+      CLEAR : lw_s_msg, lw_s_show.
+      CALL FUNCTION 'BAL_LOG_MSG_READ'
+        EXPORTING
+          i_s_msg_handle  = <msg_handle>
+        IMPORTING
+          e_s_msg         = lw_s_msg
+          e_txt_msgty     = lw_s_show-t_msgty
+          e_txt_msgid     = lw_s_show-t_msgid
+          e_txt_detlevel  = lw_s_show-t_detlevel
+          e_txt_probclass = lw_s_show-t_probclss
+          e_txt_msg       = lw_s_show-t_msg
+        EXCEPTIONS
+          OTHERS          = 1.
+      IF sy-subrc = 0.
+
+        APPEND INITIAL LINE TO <table_of_messages> ASSIGNING <message_line>.
+
+        IF <context_val> IS ASSIGNED.
+          <context_val>  =  lw_s_msg-context-value.
+          MOVE-CORRESPONDING <context_val>  TO <message_line>.
+        ENDIF.
+
+*       set the message type icon
+        CASE lw_s_msg-msgty.
+          WHEN 'A'.         lw_s_show-icon_msgty = icon_alert.
+          WHEN 'E'.         lw_s_show-icon_msgty = icon_led_red.
+          WHEN 'W'.         lw_s_show-icon_msgty = icon_led_yellow.
+          WHEN 'S' OR 'I'.  lw_s_show-icon_msgty = icon_led_green.
+          WHEN OTHERS.      lw_s_show-icon_msgty = icon_led_inactive.
+        ENDCASE.
+
+        MOVE-CORRESPONDING lw_s_msg TO : lw_s_show, <message_line>.
+        MOVE-CORRESPONDING lw_s_show TO <message_line>.
+
+      ENDIF.
+    ENDLOOP.
+
   ENDMETHOD.
 
 ENDCLASS.

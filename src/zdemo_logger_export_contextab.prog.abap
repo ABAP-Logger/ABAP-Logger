@@ -1,24 +1,58 @@
 *&---------------------------------------------------------------------*
-*& Report zdemo_logger04_self
+*& Report ZDEMO_LOGGER_EXPORT_CONTEXTAB
 *&---------------------------------------------------------------------*
 *&
 *&---------------------------------------------------------------------*
-REPORT zdemo_logger04_self MESSAGE-ID bl.
+REPORT zdemo_logger_export_contextab MESSAGE-ID bl.
 DATA :
   logger          TYPE REF TO zif_logger.
-
-PARAMETERS:
-  p_grid   AS CHECKBOX DEFAULT space.
 
 START-OF-SELECTION.
 
   PERFORM logs_create.
 
 END-OF-SELECTION.
+  PERFORM export_log.
 
-  IF logger->is_empty( ) EQ abap_false.
-    logger->fullscreen( ).
-  ENDIF.
+FORM export_log.
+  TYPES BEGIN OF ty_mess_tab.
+  INCLUDE TYPE bal_s_ex01.
+  TYPES: icon_msgty TYPE balimsgty,
+         t_msg      TYPE baltmsg,
+         msgty      TYPE symsgty,
+         msgid      TYPE symsgid,
+         msgno      TYPE symsgno,
+         msgv1      TYPE symsgv,
+         msgv2      TYPE symsgv,
+         msgv3      TYPE symsgv,
+         msgv4      TYPE symsgv,
+         END OF ty_mess_tab.
+  TYPES tt_mess_tab TYPE STANDARD TABLE OF ty_mess_tab.
+
+  DATA mess_tab TYPE tt_mess_tab.
+
+  logger->export_to_table_with_context( IMPORTING mess_tab = mess_tab ).
+
+  "can be used for email
+  "display in alv
+  DATA: lr_alv          TYPE REF TO cl_salv_table.
+  TRY.
+      CALL METHOD cl_salv_table=>factory
+        EXPORTING
+          list_display = if_salv_c_bool_sap=>false
+        IMPORTING
+          r_salv_table = lr_alv
+        CHANGING
+          t_table      = mess_tab.
+      ##NO_HANDLER.
+    CATCH cx_salv_msg .
+  ENDTRY.
+
+* Fit the columns
+  lr_alv->get_columns( )->set_optimize( 'X' ).
+
+  CALL METHOD lr_alv->display.
+ENDFORM.
 
 FORM logs_create.
   DATA:
@@ -27,7 +61,7 @@ FORM logs_create.
     l_s_fcat            TYPE bal_s_fcat.
 
   g_s_display_profile-title     = 'Application Log:Self defined display profile'.
-  g_s_display_profile-use_grid = p_grid.
+  g_s_display_profile-use_grid = 'X'.
   g_s_display_profile-head_text = 'Application.Log.Demo'.
   g_s_display_profile-head_size = 47.
   g_s_display_profile-tree_size = 28.

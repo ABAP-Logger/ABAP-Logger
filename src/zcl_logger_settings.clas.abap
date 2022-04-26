@@ -278,7 +278,7 @@ CLASS zcl_logger_settings IMPLEMENTATION.
       lr_typedesc TYPE REF TO cl_abap_typedescr,
       lr_struc    TYPE REF TO cl_abap_structdescr,
       ls_comp     TYPE abap_compdescr.
-      
+
     IF context_tabname IS NOT INITIAL.
       lr_typedesc = cl_abap_typedescr=>describe_by_name( context_tabname ).
       lr_struc ?= lr_typedesc.

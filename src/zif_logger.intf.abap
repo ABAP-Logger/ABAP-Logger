@@ -125,4 +125,7 @@ INTERFACE zif_logger
     EXPORTING
       e_msgdefault TYPE bal_s_mdef.
 
+  methods export_to_table_with_context
+    exporting mess_tab type standard table.
+
 ENDINTERFACE.

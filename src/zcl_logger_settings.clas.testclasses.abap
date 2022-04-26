@@ -15,6 +15,8 @@ CLASS lcl_logger_settings_should DEFINITION FOR TESTING
     METHODS set_flag_to_keep_until_expiry FOR TESTING.
     METHODS set_usage_of_2nd_db_connection FOR TESTING.
     METHODS set_max_drilldown_level FOR TESTING.
+    METHODS set_context_tabname FOR TESTING.
+    METHODS set_display_profile FOR TESTING.
 ENDCLASS.
 
 CLASS lcl_logger_settings_should IMPLEMENTATION.
@@ -140,4 +142,19 @@ CLASS lcl_logger_settings_should IMPLEMENTATION.
     ).
   ENDMETHOD.
 
+  METHOD set_context_tabname.
+    CONSTANTS : context_tabname TYPE bal_s_cont-tabname VALUE 'BAL_S_CONT'.
+
+    cut->zif_logger_settings~set_context_tabname( context_tabname  ).
+
+    cl_aunit_assert=>assert_equals(
+      EXPORTING
+        exp     = context_tabname
+        act     = cut->zif_logger_settings~get_context_tabname( )
+        msg     = |setting context tabname was not working correctly|
+    ).
+  ENDMETHOD.
+
+  METHOD set_display_profile.
+  ENDMETHOD.
 ENDCLASS.
