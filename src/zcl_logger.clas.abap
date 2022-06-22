@@ -3,63 +3,79 @@
 *----------------------------------------------------------------------*
 *
 *----------------------------------------------------------------------*
-CLASS zcl_logger DEFINITION
-  PUBLIC
-  CREATE PRIVATE
-  GLOBAL FRIENDS zcl_logger_factory.
+class ZCL_LOGGER definition
+  public
+  create private
 
-  PUBLIC SECTION.
+  global friends ZCL_LOGGER_FACTORY .
+
+public section.
 *"* public components of class ZCL_LOGGER
 *"* do not include other source files here!!!
-    TYPE-POOLS abap .
+  type-pools ABAP .
 
-    INTERFACES zif_logger.
-    ALIASES: add FOR zif_logger~add,
-             a FOR zif_logger~a,
-             e FOR zif_logger~e,
-             w FOR zif_logger~w,
-             i FOR zif_logger~i,
-             s FOR zif_logger~s,
-             has_errors FOR zif_logger~has_errors,
-             has_warnings FOR zif_logger~has_warnings,
-             is_empty FOR zif_logger~is_empty,
-             length FOR zif_logger~length,
-             save FOR zif_logger~save,
-             export_to_table FOR zif_logger~export_to_table,
-             fullscreen FOR zif_logger~fullscreen,
-             popup FOR zif_logger~popup,
-             handle FOR zif_logger~handle,
-             db_number FOR zif_logger~db_number,
-             header FOR zif_logger~header,
-             get_default_context FOR zif_logger~get_default_context,
-             set_default_context FOR zif_logger~set_default_context,
-             export_to_table_with_context FOR zif_logger~export_to_table_with_context.
+  interfaces ZIF_LOGGER .
+
+  aliases DB_NUMBER
+    for ZIF_LOGGER~DB_NUMBER .
+  aliases HANDLE
+    for ZIF_LOGGER~HANDLE .
+  aliases HEADER
+    for ZIF_LOGGER~HEADER .
+  aliases A
+    for ZIF_LOGGER~A .
+  aliases ADD
+    for ZIF_LOGGER~ADD .
+  aliases E
+    for ZIF_LOGGER~E .
+  aliases EXPORT_TO_TABLE
+    for ZIF_LOGGER~EXPORT_TO_TABLE .
+  aliases EXPORT_TO_TABLE_WITH_CONTEXT
+    for ZIF_LOGGER~EXPORT_TO_TABLE_WITH_CONTEXT .
+  aliases FULLSCREEN
+    for ZIF_LOGGER~FULLSCREEN .
+  aliases HAS_ERRORS
+    for ZIF_LOGGER~HAS_ERRORS .
+  aliases HAS_WARNINGS
+    for ZIF_LOGGER~HAS_WARNINGS .
+  aliases I
+    for ZIF_LOGGER~I .
+  aliases IS_EMPTY
+    for ZIF_LOGGER~IS_EMPTY .
+  aliases LENGTH
+    for ZIF_LOGGER~LENGTH .
+  aliases POPUP
+    for ZIF_LOGGER~POPUP .
+  aliases S
+    for ZIF_LOGGER~S .
+  aliases SAVE
+    for ZIF_LOGGER~SAVE .
+  aliases W
+    for ZIF_LOGGER~W .
 
     "! Starts a new log.
     "! For backwards compatibility only! Use ZCL_LOGGER_FACTORY instead.
-    CLASS-METHODS new
-      IMPORTING
-        !object         TYPE csequence OPTIONAL
-        !subobject      TYPE csequence OPTIONAL
-        !desc           TYPE csequence OPTIONAL
-        !context        TYPE simple OPTIONAL
-        !auto_save      TYPE abap_bool OPTIONAL
-        !second_db_conn TYPE abap_bool DEFAULT abap_true
-      RETURNING
-        VALUE(r_log)    TYPE REF TO zcl_logger .
-
+  class-methods NEW
+    importing
+      !OBJECT type CSEQUENCE optional
+      !SUBOBJECT type CSEQUENCE optional
+      !DESC type CSEQUENCE optional
+      !CONTEXT type SIMPLE optional
+      !AUTO_SAVE type ABAP_BOOL optional
+      !SECOND_DB_CONN type ABAP_BOOL default ABAP_TRUE
+    returning
+      value(R_LOG) type ref to ZCL_LOGGER .
     "! Reopens an already existing log.
     "! For backwards compatibility only! Use ZCL_LOGGER_FACTORY instead.
-    CLASS-METHODS open
-      IMPORTING
-        !object                   TYPE csequence
-        !subobject                TYPE csequence
-        !desc                     TYPE csequence OPTIONAL
-        !create_if_does_not_exist TYPE abap_bool DEFAULT abap_false
-        !auto_save                TYPE abap_bool OPTIONAL
-      RETURNING
-        VALUE(r_log)              TYPE REF TO zcl_logger .
-
+  class-methods OPEN
+    importing
+      !OBJECT type CSEQUENCE
+      !SUBOBJECT type CSEQUENCE
+      !DESC type CSEQUENCE optional
+      !CREATE_IF_DOES_NOT_EXIST type ABAP_BOOL default ABAP_FALSE
+      !AUTO_SAVE type ABAP_BOOL optional
+    returning
+      value(R_LOG) type ref to ZCL_LOGGER .
   PROTECTED SECTION.
 *"* protected components of class ZCL_LOGGER
 *"* do not include other source files here!!!
@@ -138,7 +154,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_logger IMPLEMENTATION.
+CLASS ZCL_LOGGER IMPLEMENTATION.
 
 
   METHOD add_bapi_msg.
@@ -177,6 +193,44 @@ CLASS zcl_logger IMPLEMENTATION.
     detailed_msg-msgv2 = sprot_message-var2.
     detailed_msg-msgv3 = sprot_message-var3.
     detailed_msg-msgv4 = sprot_message-var4.
+  ENDMETHOD.
+
+
+  METHOD add_structure.
+    DATA: msg_type        TYPE REF TO cl_abap_typedescr,
+          msg_struct_type TYPE REF TO cl_abap_structdescr,
+          components      TYPE abap_compdescr_tab,
+          component       LIKE LINE OF components,
+          string_to_log   TYPE string.
+    FIELD-SYMBOLS: <component>   TYPE any.
+
+    msg_struct_type ?= cl_abap_typedescr=>describe_by_data( obj_to_log ).
+    components = msg_struct_type->components.
+    add( '--- Begin of structure ---' ).
+    LOOP AT components INTO component.
+      ASSIGN COMPONENT component-name OF STRUCTURE obj_to_log TO <component>.
+      IF sy-subrc = 0.
+        msg_type = cl_abap_typedescr=>describe_by_data( <component> ).
+        IF msg_type->kind = cl_abap_typedescr=>kind_elem.
+          string_to_log = |{ to_lower( component-name ) } = { <component> }|.
+          add( string_to_log ).
+        ELSEIF msg_type->kind = cl_abap_typedescr=>kind_struct.
+          add_structure(
+            EXPORTING
+              obj_to_log    = <component>
+              context       = context
+              callback_form = callback_form
+              callback_prog = callback_prog
+              callback_fm   = callback_fm
+              type          = type
+              importance    = importance
+            RECEIVING
+              self          = self
+          ).
+        ENDIF.
+      ENDIF.
+    ENDLOOP.
+    add( '--- End of structure ---' ).
   ENDMETHOD.
 
 
@@ -344,6 +398,26 @@ CLASS zcl_logger IMPLEMENTATION.
       ).
     ENDIF.
 
+  ENDMETHOD.
+
+
+  METHOD save_log.
+    DATA log_handles TYPE bal_t_logh.
+    DATA log_numbers TYPE bal_t_lgnm.
+    DATA log_number  TYPE bal_s_lgnm.
+
+    INSERT me->handle INTO TABLE log_handles.
+    CALL FUNCTION 'BAL_DB_SAVE'
+      EXPORTING
+        i_t_log_handle       = log_handles
+        i_2th_connection     = me->sec_connection
+        i_2th_connect_commit = me->sec_connect_commit
+      IMPORTING
+        e_new_lognumbers     = log_numbers.
+    IF me->db_number IS INITIAL.
+      READ TABLE log_numbers INDEX 1 INTO log_number.
+      me->db_number = log_number-lognumber.
+    ENDIF.
   ENDMETHOD.
 
 
@@ -533,44 +607,6 @@ CLASS zcl_logger IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD add_structure.
-    DATA: msg_type        TYPE REF TO cl_abap_typedescr,
-          msg_struct_type TYPE REF TO cl_abap_structdescr,
-          components      TYPE abap_compdescr_tab,
-          component       LIKE LINE OF components,
-          string_to_log   TYPE string.
-    FIELD-SYMBOLS: <component>   TYPE any.
-
-    msg_struct_type ?= cl_abap_typedescr=>describe_by_data( obj_to_log ).
-    components = msg_struct_type->components.
-    add( '--- Begin of structure ---' ).
-    LOOP AT components INTO component.
-      ASSIGN COMPONENT component-name OF STRUCTURE obj_to_log TO <component>.
-      IF sy-subrc = 0.
-        msg_type = cl_abap_typedescr=>describe_by_data( <component> ).
-        IF msg_type->kind = cl_abap_typedescr=>kind_elem.
-          string_to_log = |{ to_lower( component-name ) } = { <component> }|.
-          add( string_to_log ).
-        ELSEIF msg_type->kind = cl_abap_typedescr=>kind_struct.
-          add_structure(
-            EXPORTING
-              obj_to_log    = <component>
-              context       = context
-              callback_form = callback_form
-              callback_prog = callback_prog
-              callback_fm   = callback_fm
-              type          = type
-              importance    = importance
-            RECEIVING
-              self          = self
-          ).
-        ENDIF.
-      ENDIF.
-    ENDLOOP.
-    add( '--- End of structure ---' ).
-  ENDMETHOD.
-
-
   METHOD zif_logger~e.
     self = add(
       obj_to_log    = obj_to_log
@@ -618,6 +654,83 @@ CLASS zcl_logger IMPLEMENTATION.
         bapiret2-message_v4 = message-msgv4.
         bapiret2-system     = sy-sysid.
         APPEND bapiret2 TO rt_bapiret.
+      ENDIF.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD zif_logger~export_to_table_with_context.
+    DATA:
+      log_handle         TYPE bal_t_logh,
+      message_handles    TYPE bal_t_msgh,
+      lw_s_msg           TYPE bal_s_msg,
+      lw_s_show          TYPE bal_s_show,
+      dref               TYPE REF TO data,
+      lv_context_tabname TYPE bal_s_cont-tabname.
+
+    FIELD-SYMBOLS:
+      <table_of_messages> TYPE STANDARD TABLE,
+      <message_line>      TYPE any,
+      <context_val>       TYPE any,
+      <msg_handle>        TYPE balmsghndl.
+
+    ASSIGN mess_tab TO <table_of_messages>.
+
+
+    lv_context_tabname = me->settings->get_context_tabname( ).
+
+    IF lv_context_tabname IS NOT INITIAL.
+      CREATE DATA dref TYPE (lv_context_tabname).
+      ASSIGN dref->* TO <context_val>.
+      CLEAR dref.
+    ENDIF.
+
+    INSERT handle INTO TABLE log_handle.
+
+    CALL FUNCTION 'BAL_GLB_SEARCH_MSG'
+      EXPORTING
+        i_t_log_handle = log_handle
+      IMPORTING
+        e_t_msg_handle = message_handles
+      EXCEPTIONS
+        msg_not_found  = 0.
+
+    LOOP AT message_handles ASSIGNING <msg_handle>.
+      CLEAR : lw_s_msg, lw_s_show.
+      CALL FUNCTION 'BAL_LOG_MSG_READ'
+        EXPORTING
+          i_s_msg_handle  = <msg_handle>
+        IMPORTING
+          e_s_msg         = lw_s_msg
+          e_txt_msgty     = lw_s_show-t_msgty
+          e_txt_msgid     = lw_s_show-t_msgid
+          e_txt_detlevel  = lw_s_show-t_detlevel
+          e_txt_probclass = lw_s_show-t_probclss
+          e_txt_msg       = lw_s_show-t_msg
+        EXCEPTIONS
+          OTHERS          = 1.
+      IF sy-subrc = 0.
+
+        APPEND INITIAL LINE TO <table_of_messages> ASSIGNING <message_line>.
+
+        IF <context_val> IS ASSIGNED.
+          <context_val>  =  lw_s_msg-context-value.
+          MOVE-CORRESPONDING <context_val>  TO <message_line>.
+        ENDIF.
+
+*       set the message type icon
+        CASE lw_s_msg-msgty.
+          WHEN 'A'.         lw_s_show-icon_msgty = icon_alert.
+          WHEN 'E'.         lw_s_show-icon_msgty = icon_led_red.
+          WHEN 'W'.         lw_s_show-icon_msgty = icon_led_yellow.
+          WHEN 'S' OR 'I'.  lw_s_show-icon_msgty = icon_led_green.
+          WHEN OTHERS.      lw_s_show-icon_msgty = icon_led_inactive.
+        ENDCASE.
+
+        MOVE-CORRESPONDING lw_s_msg TO : lw_s_show, <message_line>.
+        MOVE-CORRESPONDING lw_s_show TO <message_line>.
+
       ENDIF.
     ENDLOOP.
 
@@ -729,38 +842,6 @@ CLASS zcl_logger IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD zif_logger~w.
-    self = add(
-      obj_to_log    = obj_to_log
-      context       = context
-      callback_form = callback_form
-      callback_prog = callback_prog
-      callback_fm   = callback_fm
-      type          = 'W'
-      importance    = importance ).
-  ENDMETHOD.
-
-
-  METHOD save_log.
-    DATA log_handles TYPE bal_t_logh.
-    DATA log_numbers TYPE bal_t_lgnm.
-    DATA log_number  TYPE bal_s_lgnm.
-
-    INSERT me->handle INTO TABLE log_handles.
-    CALL FUNCTION 'BAL_DB_SAVE'
-      EXPORTING
-        i_t_log_handle       = log_handles
-        i_2th_connection     = me->sec_connection
-        i_2th_connect_commit = me->sec_connect_commit
-      IMPORTING
-        e_new_lognumbers     = log_numbers.
-    IF me->db_number IS INITIAL.
-      READ TABLE log_numbers INDEX 1 INTO log_number.
-      me->db_number = log_number-lognumber.
-    ENDIF.
-  ENDMETHOD.
-
-
   METHOD zif_logger~set_header.
 
     me->header-extnumber = description.
@@ -779,112 +860,15 @@ CLASS zcl_logger IMPLEMENTATION.
 
   ENDMETHOD.
 
-  METHOD zif_logger~set_default_context.
-    DATA :
-      lv_msgdefault   TYPE bal_s_mdef.
 
-    FIELD-SYMBOLS <context_val> TYPE c.
-
-    get_default_context( IMPORTING e_msgdefault = lv_msgdefault ).
-
-    lv_msgdefault-log_handle =  me->handle.
-    ASSIGN context TO <context_val> CASTING.
-
-    lv_msgdefault-context-value = <context_val>.
-    lv_msgdefault-context-tabname =  cl_abap_typedescr=>describe_by_data( context )->get_ddic_header( )-tabname.
-
-    me->settings->set_context_tabname( lv_msgdefault-context-tabname ).
-
-    CALL FUNCTION 'BAL_GLB_MSG_DEFAULTS_SET'
-      EXPORTING
-        i_s_msg_defaults = lv_msgdefault
-      EXCEPTIONS
-        OTHERS           = 0.
+  METHOD zif_logger~w.
+    self = add(
+      obj_to_log    = obj_to_log
+      context       = context
+      callback_form = callback_form
+      callback_prog = callback_prog
+      callback_fm   = callback_fm
+      type          = 'W'
+      importance    = importance ).
   ENDMETHOD.
-
-  METHOD zif_logger~get_default_context.
-"   modify defaults for all following messages
-    CALL FUNCTION 'BAL_GLB_MSG_DEFAULTS_GET'
-      IMPORTING
-        e_s_msg_defaults = e_msgdefault
-      EXCEPTIONS
-        OTHERS           = 0.
-  ENDMETHOD.
-
-  METHOD zif_logger~export_to_table_with_context.
-    DATA:
-      log_handle         TYPE bal_t_logh,
-      message_handles    TYPE bal_t_msgh,
-      lw_s_msg           TYPE bal_s_msg,
-      lw_s_show          TYPE bal_s_show,
-      dref               TYPE REF TO data,
-      lv_context_tabname TYPE bal_s_cont-tabname.
-
-    FIELD-SYMBOLS:
-      <table_of_messages> TYPE STANDARD TABLE,
-      <message_line>      TYPE any,
-      <context_val>       TYPE any,
-      <msg_handle>        TYPE balmsghndl.
-
-    ASSIGN mess_tab TO <table_of_messages>.
-
-
-    lv_context_tabname = me->settings->get_context_tabname( ).
-
-    IF lv_context_tabname IS NOT INITIAL.
-      CREATE DATA dref TYPE (lv_context_tabname).
-      ASSIGN dref->* TO <context_val>.
-      CLEAR dref.
-    ENDIF.
-
-    INSERT handle INTO TABLE log_handle.
-
-    CALL FUNCTION 'BAL_GLB_SEARCH_MSG'
-      EXPORTING
-        i_t_log_handle = log_handle
-      IMPORTING
-        e_t_msg_handle = message_handles
-      EXCEPTIONS
-        msg_not_found  = 0.
-
-    LOOP AT message_handles ASSIGNING <msg_handle>.
-      CLEAR : lw_s_msg, lw_s_show.
-      CALL FUNCTION 'BAL_LOG_MSG_READ'
-        EXPORTING
-          i_s_msg_handle  = <msg_handle>
-        IMPORTING
-          e_s_msg         = lw_s_msg
-          e_txt_msgty     = lw_s_show-t_msgty
-          e_txt_msgid     = lw_s_show-t_msgid
-          e_txt_detlevel  = lw_s_show-t_detlevel
-          e_txt_probclass = lw_s_show-t_probclss
-          e_txt_msg       = lw_s_show-t_msg
-        EXCEPTIONS
-          OTHERS          = 1.
-      IF sy-subrc = 0.
-
-        APPEND INITIAL LINE TO <table_of_messages> ASSIGNING <message_line>.
-
-        IF <context_val> IS ASSIGNED.
-          <context_val>  =  lw_s_msg-context-value.
-          MOVE-CORRESPONDING <context_val>  TO <message_line>.
-        ENDIF.
-
-*       set the message type icon
-        CASE lw_s_msg-msgty.
-          WHEN 'A'.         lw_s_show-icon_msgty = icon_alert.
-          WHEN 'E'.         lw_s_show-icon_msgty = icon_led_red.
-          WHEN 'W'.         lw_s_show-icon_msgty = icon_led_yellow.
-          WHEN 'S' OR 'I'.  lw_s_show-icon_msgty = icon_led_green.
-          WHEN OTHERS.      lw_s_show-icon_msgty = icon_led_inactive.
-        ENDCASE.
-
-        MOVE-CORRESPONDING lw_s_msg TO : lw_s_show, <message_line>.
-        MOVE-CORRESPONDING lw_s_show TO <message_line>.
-
-      ENDIF.
-    ENDLOOP.
-
-  ENDMETHOD.
-
 ENDCLASS.
