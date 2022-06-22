@@ -15,7 +15,6 @@ CLASS zcl_logger DEFINITION
     TYPE-POOLS abap .
 
     INTERFACES zif_logger .
-    
     ALIASES :
       add FOR zif_logger~add,
       a FOR zif_logger~a,
