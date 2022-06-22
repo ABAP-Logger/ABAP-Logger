@@ -3,79 +3,79 @@
 *----------------------------------------------------------------------*
 *
 *----------------------------------------------------------------------*
-class ZCL_LOGGER definition
-  public
-  create private
+CLASS zcl_logger DEFINITION
+  PUBLIC
+  CREATE PRIVATE
 
-  global friends ZCL_LOGGER_FACTORY .
+  GLOBAL FRIENDS zcl_logger_factory .
 
-public section.
+  PUBLIC SECTION.
 *"* public components of class ZCL_LOGGER
 *"* do not include other source files here!!!
-  type-pools ABAP .
+    TYPE-POOLS abap .
 
-  interfaces ZIF_LOGGER .
+    INTERFACES zif_logger .
 
-  aliases DB_NUMBER
-    for ZIF_LOGGER~DB_NUMBER .
-  aliases HANDLE
-    for ZIF_LOGGER~HANDLE .
-  aliases HEADER
-    for ZIF_LOGGER~HEADER .
-  aliases A
-    for ZIF_LOGGER~A .
-  aliases ADD
-    for ZIF_LOGGER~ADD .
-  aliases E
-    for ZIF_LOGGER~E .
-  aliases EXPORT_TO_TABLE
-    for ZIF_LOGGER~EXPORT_TO_TABLE .
-  aliases EXPORT_TO_TABLE_WITH_CONTEXT
-    for ZIF_LOGGER~EXPORT_TO_TABLE_WITH_CONTEXT .
-  aliases FULLSCREEN
-    for ZIF_LOGGER~FULLSCREEN .
-  aliases HAS_ERRORS
-    for ZIF_LOGGER~HAS_ERRORS .
-  aliases HAS_WARNINGS
-    for ZIF_LOGGER~HAS_WARNINGS .
-  aliases I
-    for ZIF_LOGGER~I .
-  aliases IS_EMPTY
-    for ZIF_LOGGER~IS_EMPTY .
-  aliases LENGTH
-    for ZIF_LOGGER~LENGTH .
-  aliases POPUP
-    for ZIF_LOGGER~POPUP .
-  aliases S
-    for ZIF_LOGGER~S .
-  aliases SAVE
-    for ZIF_LOGGER~SAVE .
-  aliases W
-    for ZIF_LOGGER~W .
+    ALIASES db_number
+      FOR zif_logger~db_number .
+    ALIASES handle
+      FOR zif_logger~handle .
+    ALIASES header
+      FOR zif_logger~header .
+    ALIASES a
+      FOR zif_logger~a .
+    ALIASES add
+      FOR zif_logger~add .
+    ALIASES e
+      FOR zif_logger~e .
+    ALIASES export_to_table
+      FOR zif_logger~export_to_table .
+    ALIASES export_to_table_with_context
+      FOR zif_logger~export_to_table_with_context .
+    ALIASES fullscreen
+      FOR zif_logger~fullscreen .
+    ALIASES has_errors
+      FOR zif_logger~has_errors .
+    ALIASES has_warnings
+      FOR zif_logger~has_warnings .
+    ALIASES i
+      FOR zif_logger~i .
+    ALIASES is_empty
+      FOR zif_logger~is_empty .
+    ALIASES length
+      FOR zif_logger~length .
+    ALIASES popup
+      FOR zif_logger~popup .
+    ALIASES s
+      FOR zif_logger~s .
+    ALIASES save
+      FOR zif_logger~save .
+    ALIASES w
+      FOR zif_logger~w .
 
     "! Starts a new log.
     "! For backwards compatibility only! Use ZCL_LOGGER_FACTORY instead.
-  class-methods NEW
-    importing
-      !OBJECT type CSEQUENCE optional
-      !SUBOBJECT type CSEQUENCE optional
-      !DESC type CSEQUENCE optional
-      !CONTEXT type SIMPLE optional
-      !AUTO_SAVE type ABAP_BOOL optional
-      !SECOND_DB_CONN type ABAP_BOOL default ABAP_TRUE
-    returning
-      value(R_LOG) type ref to ZCL_LOGGER .
+    CLASS-METHODS new
+      IMPORTING
+        !object         TYPE csequence OPTIONAL
+        !subobject      TYPE csequence OPTIONAL
+        !desc           TYPE csequence OPTIONAL
+        !context        TYPE simple OPTIONAL
+        !auto_save      TYPE abap_bool OPTIONAL
+        !second_db_conn TYPE abap_bool DEFAULT abap_true
+      RETURNING
+        VALUE(r_log)    TYPE REF TO zcl_logger .
     "! Reopens an already existing log.
     "! For backwards compatibility only! Use ZCL_LOGGER_FACTORY instead.
-  class-methods OPEN
-    importing
-      !OBJECT type CSEQUENCE
-      !SUBOBJECT type CSEQUENCE
-      !DESC type CSEQUENCE optional
-      !CREATE_IF_DOES_NOT_EXIST type ABAP_BOOL default ABAP_FALSE
-      !AUTO_SAVE type ABAP_BOOL optional
-    returning
-      value(R_LOG) type ref to ZCL_LOGGER .
+    CLASS-METHODS open
+      IMPORTING
+        !object                   TYPE csequence
+        !subobject                TYPE csequence
+        !desc                     TYPE csequence OPTIONAL
+        !create_if_does_not_exist TYPE abap_bool DEFAULT abap_false
+        !auto_save                TYPE abap_bool OPTIONAL
+      RETURNING
+        VALUE(r_log)              TYPE REF TO zcl_logger .
   PROTECTED SECTION.
 *"* protected components of class ZCL_LOGGER
 *"* do not include other source files here!!!
