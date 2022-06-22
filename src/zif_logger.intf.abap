@@ -116,8 +116,4 @@ INTERFACE zif_logger
     RETURNING
       VALUE(self)  TYPE REF TO zif_logger .
 
-  METHODS export_to_table_with_context
-    EXPORTING
-      mess_tab TYPE STANDARD TABLE .
-
 ENDINTERFACE.

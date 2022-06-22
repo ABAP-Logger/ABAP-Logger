@@ -6,15 +6,14 @@
 CLASS zcl_logger DEFINITION
   PUBLIC
   CREATE PRIVATE
-  GLOBAL FRIENDS zcl_logger_factory .
+  GLOBAL FRIENDS zcl_logger_factory.
 
   PUBLIC SECTION.
 *"* public components of class ZCL_LOGGER
 *"* do not include other source files here!!!
     TYPE-POOLS abap .
 
-    INTERFACES zif_logger .
-
+    INTERFACES zif_logger.
     ALIASES : add FOR zif_logger~add,
               a FOR zif_logger~a,
               e FOR zif_logger~e,
@@ -31,8 +30,7 @@ CLASS zcl_logger DEFINITION
               popup FOR zif_logger~popup,
               handle FOR zif_logger~handle,
               db_number FOR zif_logger~db_number,
-              header FOR zif_logger~header,
-              export_to_table_with_context FOR zif_logger~export_to_table_with_context.
+              header FOR zif_logger~header.
 
     "! Starts a new log.
     "! For backwards compatibility only! Use ZCL_LOGGER_FACTORY instead.
@@ -66,10 +64,10 @@ CLASS zcl_logger DEFINITION
 
     CONSTANTS:
       BEGIN OF c_struct_kind,
-        syst  TYPE i VALUE 1,
-        bapi  TYPE i VALUE 2,
-        bdc   TYPE i VALUE 3,
-        sprot TYPE i VALUE 4,
+                 syst  TYPE i VALUE 1,
+                 bapi  TYPE i VALUE 2,
+                 bdc   TYPE i VALUE 3,
+                 sprot TYPE i VALUE 4,
       END OF c_struct_kind .
 
 *"* private components of class ZCL_LOGGER
@@ -137,7 +135,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_LOGGER IMPLEMENTATION.
+CLASS zcl_logger IMPLEMENTATION.
 
 
   METHOD add_bapi_msg.
@@ -176,44 +174,6 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     detailed_msg-msgv2 = sprot_message-var2.
     detailed_msg-msgv3 = sprot_message-var3.
     detailed_msg-msgv4 = sprot_message-var4.
-  ENDMETHOD.
-
-
-  METHOD add_structure.
-    DATA: msg_type        TYPE REF TO cl_abap_typedescr,
-          msg_struct_type TYPE REF TO cl_abap_structdescr,
-          components      TYPE abap_compdescr_tab,
-          component       LIKE LINE OF components,
-          string_to_log   TYPE string.
-    FIELD-SYMBOLS: <component>   TYPE any.
-
-    msg_struct_type ?= cl_abap_typedescr=>describe_by_data( obj_to_log ).
-    components = msg_struct_type->components.
-    add( '--- Begin of structure ---' ).
-    LOOP AT components INTO component.
-      ASSIGN COMPONENT component-name OF STRUCTURE obj_to_log TO <component>.
-      IF sy-subrc = 0.
-        msg_type = cl_abap_typedescr=>describe_by_data( <component> ).
-        IF msg_type->kind = cl_abap_typedescr=>kind_elem.
-          string_to_log = |{ to_lower( component-name ) } = { <component> }|.
-          add( string_to_log ).
-        ELSEIF msg_type->kind = cl_abap_typedescr=>kind_struct.
-          add_structure(
-            EXPORTING
-              obj_to_log    = <component>
-              context       = context
-              callback_form = callback_form
-              callback_prog = callback_prog
-              callback_fm   = callback_fm
-              type          = type
-              importance    = importance
-            RECEIVING
-              self          = self
-          ).
-        ENDIF.
-      ENDIF.
-    ENDLOOP.
-    add( '--- End of structure ---' ).
   ENDMETHOD.
 
 
@@ -287,6 +247,52 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD get_struct_kind.
+
+    DATA: msg_struct_kind TYPE REF TO cl_abap_structdescr,
+          components      TYPE abap_compdescr_tab,
+          component       LIKE LINE OF components,
+          syst_count      TYPE i,
+          bapi_count      TYPE i,
+          bdc_count       TYPE i,
+          sprot_count     TYPE i.
+
+    IF msg_type->type_kind = cl_abap_typedescr=>typekind_struct1
+      OR msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.
+
+      msg_struct_kind ?= msg_type.
+      components = msg_struct_kind->components.
+
+      " Count number of fields expected for each supported type of message structure
+      LOOP AT components INTO component.
+        IF 'MSGTY,MSGID,MSGNO,MSGV1,MSGV2,MSGV3,MSGV4,' CS |{ component-name },|.
+          syst_count = syst_count + 1.
+        ENDIF.
+        IF 'TYPE,NUMBER,ID,MESSAGE_V1,MESSAGE_V2,MESSAGE_V3,MESSAGE_V4,' CS |{ component-name },|.
+          bapi_count = bapi_count + 1.
+        ENDIF.
+        IF 'MSGTYP,MSGID,MSGNR,MSGV1,MSGV2,MSGV3,MSGV4,' CS |{ component-name },|.
+          bdc_count = bdc_count + 1.
+        ENDIF.
+        IF 'SEVERITY,AG,MSGNR,VAR1,VAR2,VAR3,VAR4,' CS |{ component-name },|.
+          sprot_count = sprot_count + 1.
+        ENDIF.
+      ENDLOOP.
+
+      " Set message type if all expected fields are present
+      IF syst_count = 7.
+        result = c_struct_kind-syst.
+      ELSEIF bapi_count = 7.
+        result = c_struct_kind-bapi.
+      ELSEIF bdc_count = 7.
+        result = c_struct_kind-bdc.
+      ELSEIF sprot_count = 7.
+        result = c_struct_kind-sprot.
+      ENDIF.
+    ENDIF.
+
+  ENDMETHOD.
+
 
   METHOD new.
 
@@ -351,16 +357,16 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 
   METHOD zif_logger~add.
 
-    DATA: detailed_msg             TYPE bal_s_msg,
-          exception_data_table     TYPE tty_exception_data,
-          free_text_msg            TYPE char200,
-          ctx_type                 TYPE REF TO cl_abap_typedescr,
-          ctx_ddic_header          TYPE x030l,
-          msg_type                 TYPE REF TO cl_abap_typedescr,
-          struct_kind              TYPE i,
-          formatted_context        TYPE bal_s_cont,
-          formatted_params         TYPE bal_s_parm,
-          message_type             TYPE symsgty,
+    DATA: detailed_msg         TYPE bal_s_msg,
+          exception_data_table TYPE tty_exception_data,
+          free_text_msg        TYPE char200,
+          ctx_type             TYPE REF TO cl_abap_typedescr,
+          ctx_ddic_header      TYPE x030l,
+          msg_type             TYPE REF TO cl_abap_typedescr,
+          struct_kind          TYPE i,
+          formatted_context    TYPE bal_s_cont,
+          formatted_params     TYPE bal_s_parm,
+          message_type         TYPE symsgty,
           "these objects could be moved into their own method
           "see adt://***/sap/bc/adt/oo/classes/zcl_logger/source/main#start=391,10;end=415,61
           symsg                    TYPE symsg,
@@ -523,52 +529,42 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_struct_kind.
-
-    DATA: msg_struct_kind TYPE REF TO cl_abap_structdescr,
+  METHOD add_structure.
+    DATA: msg_type        TYPE REF TO cl_abap_typedescr,
+          msg_struct_type TYPE REF TO cl_abap_structdescr,
           components      TYPE abap_compdescr_tab,
           component       LIKE LINE OF components,
-          syst_count      TYPE i,
-          bapi_count      TYPE i,
-          bdc_count       TYPE i,
-          sprot_count     TYPE i.
+          string_to_log   TYPE string.
+    FIELD-SYMBOLS: <component>   TYPE any.
 
-    IF msg_type->type_kind = cl_abap_typedescr=>typekind_struct1
-      OR msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.
-
-      msg_struct_kind ?= msg_type.
-      components = msg_struct_kind->components.
-
-      " Count number of fields expected for each supported type of message structure
-      LOOP AT components INTO component.
-        IF 'MSGTY,MSGID,MSGNO,MSGV1,MSGV2,MSGV3,MSGV4,' CS |{ component-name },|.
-          syst_count = syst_count + 1.
+    msg_struct_type ?= cl_abap_typedescr=>describe_by_data( obj_to_log ).
+    components = msg_struct_type->components.
+    add( '--- Begin of structure ---' ).
+    LOOP AT components INTO component.
+      ASSIGN COMPONENT component-name OF STRUCTURE obj_to_log TO <component>.
+      IF sy-subrc = 0.
+        msg_type = cl_abap_typedescr=>describe_by_data( <component> ).
+        IF msg_type->kind = cl_abap_typedescr=>kind_elem.
+          string_to_log = |{ to_lower( component-name ) } = { <component> }|.
+          add( string_to_log ).
+        ELSEIF msg_type->kind = cl_abap_typedescr=>kind_struct.
+          add_structure(
+            EXPORTING
+              obj_to_log    = <component>
+              context       = context
+              callback_form = callback_form
+              callback_prog = callback_prog
+              callback_fm   = callback_fm
+              type          = type
+              importance    = importance
+            RECEIVING
+              self          = self
+          ).
         ENDIF.
-        IF 'TYPE,NUMBER,ID,MESSAGE_V1,MESSAGE_V2,MESSAGE_V3,MESSAGE_V4,' CS |{ component-name },|.
-          bapi_count = bapi_count + 1.
-        ENDIF.
-        IF 'MSGTYP,MSGID,MSGNR,MSGV1,MSGV2,MSGV3,MSGV4,' CS |{ component-name },|.
-          bdc_count = bdc_count + 1.
-        ENDIF.
-        IF 'SEVERITY,AG,MSGNR,VAR1,VAR2,VAR3,VAR4,' CS |{ component-name },|.
-          sprot_count = sprot_count + 1.
-        ENDIF.
-      ENDLOOP.
-
-      " Set message type if all expected fields are present
-      IF syst_count = 7.
-        result = c_struct_kind-syst.
-      ELSEIF bapi_count = 7.
-        result = c_struct_kind-bapi.
-      ELSEIF bdc_count = 7.
-        result = c_struct_kind-bdc.
-      ELSEIF sprot_count = 7.
-        result = c_struct_kind-sprot.
       ENDIF.
-    ENDIF.
-
+    ENDLOOP.
+    add( '--- End of structure ---' ).
   ENDMETHOD.
-
 
 
   METHOD zif_logger~e.
@@ -618,83 +614,6 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
         bapiret2-message_v4 = message-msgv4.
         bapiret2-system     = sy-sysid.
         APPEND bapiret2 TO rt_bapiret.
-      ENDIF.
-    ENDLOOP.
-
-  ENDMETHOD.
-
-
-  METHOD zif_logger~export_to_table_with_context.
-    DATA:
-      log_handle         TYPE bal_t_logh,
-      message_handles    TYPE bal_t_msgh,
-      lw_s_msg           TYPE bal_s_msg,
-      lw_s_show          TYPE bal_s_show,
-      dref               TYPE REF TO data,
-      lv_context_tabname TYPE bal_s_cont-tabname.
-
-    FIELD-SYMBOLS:
-      <table_of_messages> TYPE STANDARD TABLE,
-      <message_line>      TYPE any,
-      <context_val>       TYPE any,
-      <msg_handle>        TYPE balmsghndl.
-
-    ASSIGN mess_tab TO <table_of_messages>.
-
-
-    lv_context_tabname = me->settings->get_context_tabname( ).
-
-    IF lv_context_tabname IS NOT INITIAL.
-      CREATE DATA dref TYPE (lv_context_tabname).
-      ASSIGN dref->* TO <context_val>.
-      CLEAR dref.
-    ENDIF.
-
-    INSERT handle INTO TABLE log_handle.
-
-    CALL FUNCTION 'BAL_GLB_SEARCH_MSG'
-      EXPORTING
-        i_t_log_handle = log_handle
-      IMPORTING
-        e_t_msg_handle = message_handles
-      EXCEPTIONS
-        msg_not_found  = 0.
-
-    LOOP AT message_handles ASSIGNING <msg_handle>.
-      CLEAR : lw_s_msg, lw_s_show.
-      CALL FUNCTION 'BAL_LOG_MSG_READ'
-        EXPORTING
-          i_s_msg_handle  = <msg_handle>
-        IMPORTING
-          e_s_msg         = lw_s_msg
-          e_txt_msgty     = lw_s_show-t_msgty
-          e_txt_msgid     = lw_s_show-t_msgid
-          e_txt_detlevel  = lw_s_show-t_detlevel
-          e_txt_probclass = lw_s_show-t_probclss
-          e_txt_msg       = lw_s_show-t_msg
-        EXCEPTIONS
-          OTHERS          = 1.
-      IF sy-subrc = 0.
-
-        APPEND INITIAL LINE TO <table_of_messages> ASSIGNING <message_line>.
-
-        IF <context_val> IS ASSIGNED.
-          <context_val>  =  lw_s_msg-context-value.
-          MOVE-CORRESPONDING <context_val>  TO <message_line>.
-        ENDIF.
-
-*       set the message type icon
-        CASE lw_s_msg-msgty.
-          WHEN 'A'.         lw_s_show-icon_msgty = icon_alert.
-          WHEN 'E'.         lw_s_show-icon_msgty = icon_led_red.
-          WHEN 'W'.         lw_s_show-icon_msgty = icon_led_yellow.
-          WHEN 'S' OR 'I'.  lw_s_show-icon_msgty = icon_led_green.
-          WHEN OTHERS.      lw_s_show-icon_msgty = icon_led_inactive.
-        ENDCASE.
-
-        MOVE-CORRESPONDING lw_s_msg TO : lw_s_show, <message_line>.
-        MOVE-CORRESPONDING lw_s_show TO <message_line>.
-
       ENDIF.
     ENDLOOP.
 

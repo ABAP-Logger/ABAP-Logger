@@ -22,9 +22,9 @@ CLASS lcl_test DEFINITION FOR TESTING
   PRIVATE SECTION.
 
     DATA:
-      anon_log     TYPE REF TO zif_logger,
-      named_log    TYPE REF TO zif_logger,
-      reopened_log TYPE REF TO zif_logger.
+          anon_log     TYPE REF TO zif_logger,
+          named_log    TYPE REF TO zif_logger,
+          reopened_log TYPE REF TO zif_logger.
 
     CLASS-METHODS:
       class_setup.
@@ -642,10 +642,10 @@ CLASS lcl_test IMPLEMENTATION.
 
   METHOD can_log_rcomp.
     DATA:
-      msg_handle       TYPE balmsghndl,
-      expected_details TYPE bal_s_msg,
-      actual_details   TYPE bal_s_msg,
-      actual_text      TYPE char200.
+          msg_handle       TYPE balmsghndl,
+          expected_details TYPE bal_s_msg,
+          actual_details   TYPE bal_s_msg,
+          actual_text      TYPE char200.
 
     "Solution manager doens't have PROTT. Therefore avoid using the concrete type
     DATA rcomp_data_ref TYPE REF TO data.
@@ -1080,10 +1080,10 @@ CLASS lcl_test IMPLEMENTATION.
              comp1 TYPE string,
              comp2 TYPE i,
            END   OF ty_struct,
-           BEGIN OF ty_deep_struct,
+             BEGIN OF ty_deep_struct,
              comp1 TYPE string,
              deep  TYPE ty_struct,
-           END OF ty_deep_struct.
+             END OF ty_deep_struct.
     DATA: struct      TYPE ty_deep_struct,
           act_table   TYPE table_of_strings,
           exp_table   TYPE table_of_strings,
@@ -1481,7 +1481,6 @@ CLASS lcl_test IMPLEMENTATION.
       act = lines( table )
       msg = 'Did not log system message properly' ).
   ENDMETHOD.
-
 
 
   METHOD can_change_description.
