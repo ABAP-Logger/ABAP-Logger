@@ -33,6 +33,7 @@
     "superclass_final": true,
     "unknown_types": true,
     "unused_variables": true,
+    "whitespace_end": true,
     "xml_consistency": true
   }
 }
