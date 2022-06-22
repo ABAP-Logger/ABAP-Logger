@@ -15,43 +15,26 @@ CLASS zcl_logger DEFINITION
     TYPE-POOLS abap .
 
     INTERFACES zif_logger .
-
-    ALIASES db_number
-      FOR zif_logger~db_number .
-    ALIASES handle
-      FOR zif_logger~handle .
-    ALIASES header
-      FOR zif_logger~header .
-    ALIASES a
-      FOR zif_logger~a .
-    ALIASES add
-      FOR zif_logger~add .
-    ALIASES e
-      FOR zif_logger~e .
-    ALIASES export_to_table
-      FOR zif_logger~export_to_table .
-    ALIASES export_to_table_with_context
-      FOR zif_logger~export_to_table_with_context .
-    ALIASES fullscreen
-      FOR zif_logger~fullscreen .
-    ALIASES has_errors
-      FOR zif_logger~has_errors .
-    ALIASES has_warnings
-      FOR zif_logger~has_warnings .
-    ALIASES i
-      FOR zif_logger~i .
-    ALIASES is_empty
-      FOR zif_logger~is_empty .
-    ALIASES length
-      FOR zif_logger~length .
-    ALIASES popup
-      FOR zif_logger~popup .
-    ALIASES s
-      FOR zif_logger~s .
-    ALIASES save
-      FOR zif_logger~save .
-    ALIASES w
-      FOR zif_logger~w .
+    
+    ALIASES :
+      add FOR zif_logger~add,
+      a FOR zif_logger~a,
+      e FOR zif_logger~e,
+      w FOR zif_logger~w,
+      i FOR zif_logger~i,
+      s FOR zif_logger~s,
+      has_errors FOR zif_logger~has_errors,
+      has_warnings FOR zif_logger~has_warnings,
+      is_empty FOR zif_logger~is_empty,
+      length FOR zif_logger~length,
+      save FOR zif_logger~save,
+      export_to_table FOR zif_logger~export_to_table,
+      fullscreen FOR zif_logger~fullscreen,
+      popup FOR zif_logger~popup,
+      handle FOR zif_logger~handle,
+      db_number FOR zif_logger~db_number,
+      header FOR zif_logger~header,
+      export_to_table_with_context FOR zif_logger~export_to_table_with_context.
 
     "! Starts a new log.
     "! For backwards compatibility only! Use ZCL_LOGGER_FACTORY instead.
