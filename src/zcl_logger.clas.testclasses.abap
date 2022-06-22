@@ -1483,6 +1483,7 @@ CLASS lcl_test IMPLEMENTATION.
   ENDMETHOD.
 
 
+
   METHOD can_change_description.
 
     DATA desc TYPE bal_s_log-extnumber.

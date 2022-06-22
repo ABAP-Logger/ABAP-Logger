@@ -96,8 +96,8 @@ INTERFACE zif_logger_settings PUBLIC.
   METHODS set_display_profile
     IMPORTING
       i_profile_name       TYPE ty_profile_name OPTIONAL
-      !i_display_profile TYPE bal_s_prof OPTIONAL
-      !i_context           TYPE simple OPTIONAL
+      i_display_profile TYPE bal_s_prof OPTIONAL
+      i_context           TYPE simple OPTIONAL
 
     RETURNING
       VALUE(r_self)      TYPE REF TO zif_logger_settings.
@@ -110,7 +110,7 @@ INTERFACE zif_logger_settings PUBLIC.
   "! set context
   METHODS set_context_tabname
     IMPORTING
-      !i_context_tabname    TYPE bal_s_cont-tabname
+      i_context_tabname    TYPE bal_s_cont-tabname
     RETURNING
       VALUE(r_self) TYPE REF TO zif_logger_settings.
 

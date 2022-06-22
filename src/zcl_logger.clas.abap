@@ -6,7 +6,6 @@
 CLASS zcl_logger DEFINITION
   PUBLIC
   CREATE PRIVATE
-
   GLOBAL FRIENDS zcl_logger_factory .
 
   PUBLIC SECTION.
@@ -15,25 +14,25 @@ CLASS zcl_logger DEFINITION
     TYPE-POOLS abap .
 
     INTERFACES zif_logger .
-    ALIASES :
-      add FOR zif_logger~add,
-      a FOR zif_logger~a,
-      e FOR zif_logger~e,
-      w FOR zif_logger~w,
-      i FOR zif_logger~i,
-      s FOR zif_logger~s,
-      has_errors FOR zif_logger~has_errors,
-      has_warnings FOR zif_logger~has_warnings,
-      is_empty FOR zif_logger~is_empty,
-      length FOR zif_logger~length,
-      save FOR zif_logger~save,
-      export_to_table FOR zif_logger~export_to_table,
-      fullscreen FOR zif_logger~fullscreen,
-      popup FOR zif_logger~popup,
-      handle FOR zif_logger~handle,
-      db_number FOR zif_logger~db_number,
-      header FOR zif_logger~header,
-      export_to_table_with_context FOR zif_logger~export_to_table_with_context.
+
+    ALIASES : add FOR zif_logger~add,
+              a FOR zif_logger~a,
+              e FOR zif_logger~e,
+              w FOR zif_logger~w,
+              i FOR zif_logger~i,
+              s FOR zif_logger~s,
+              has_errors FOR zif_logger~has_errors,
+              has_warnings FOR zif_logger~has_warnings,
+              is_empty FOR zif_logger~is_empty,
+              length FOR zif_logger~length,
+              save FOR zif_logger~save,
+              export_to_table FOR zif_logger~export_to_table,
+              fullscreen FOR zif_logger~fullscreen,
+              popup FOR zif_logger~popup,
+              handle FOR zif_logger~handle,
+              db_number FOR zif_logger~db_number,
+              header FOR zif_logger~header,
+              export_to_table_with_context FOR zif_logger~export_to_table_with_context.
 
     "! Starts a new log.
     "! For backwards compatibility only! Use ZCL_LOGGER_FACTORY instead.
@@ -47,6 +46,7 @@ CLASS zcl_logger DEFINITION
         !second_db_conn TYPE abap_bool DEFAULT abap_true
       RETURNING
         VALUE(r_log)    TYPE REF TO zcl_logger .
+
     "! Reopens an already existing log.
     "! For backwards compatibility only! Use ZCL_LOGGER_FACTORY instead.
     CLASS-METHODS open
@@ -58,6 +58,7 @@ CLASS zcl_logger DEFINITION
         !auto_save                TYPE abap_bool OPTIONAL
       RETURNING
         VALUE(r_log)              TYPE REF TO zcl_logger .
+
   PROTECTED SECTION.
 *"* protected components of class ZCL_LOGGER
 *"* do not include other source files here!!!
@@ -287,53 +288,6 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_struct_kind.
-
-    DATA: msg_struct_kind TYPE REF TO cl_abap_structdescr,
-          components      TYPE abap_compdescr_tab,
-          component       LIKE LINE OF components,
-          syst_count      TYPE i,
-          bapi_count      TYPE i,
-          bdc_count       TYPE i,
-          sprot_count     TYPE i.
-
-    IF msg_type->type_kind = cl_abap_typedescr=>typekind_struct1
-      OR msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.
-
-      msg_struct_kind ?= msg_type.
-      components = msg_struct_kind->components.
-
-      " Count number of fields expected for each supported type of message structure
-      LOOP AT components INTO component.
-        IF 'MSGTY,MSGID,MSGNO,MSGV1,MSGV2,MSGV3,MSGV4,' CS |{ component-name },|.
-          syst_count = syst_count + 1.
-        ENDIF.
-        IF 'TYPE,NUMBER,ID,MESSAGE_V1,MESSAGE_V2,MESSAGE_V3,MESSAGE_V4,' CS |{ component-name },|.
-          bapi_count = bapi_count + 1.
-        ENDIF.
-        IF 'MSGTYP,MSGID,MSGNR,MSGV1,MSGV2,MSGV3,MSGV4,' CS |{ component-name },|.
-          bdc_count = bdc_count + 1.
-        ENDIF.
-        IF 'SEVERITY,AG,MSGNR,VAR1,VAR2,VAR3,VAR4,' CS |{ component-name },|.
-          sprot_count = sprot_count + 1.
-        ENDIF.
-      ENDLOOP.
-
-      " Set message type if all expected fields are present
-      IF syst_count = 7.
-        result = c_struct_kind-syst.
-      ELSEIF bapi_count = 7.
-        result = c_struct_kind-bapi.
-      ELSEIF bdc_count = 7.
-        result = c_struct_kind-bdc.
-      ELSEIF sprot_count = 7.
-        result = c_struct_kind-sprot.
-      ENDIF.
-    ENDIF.
-
-  ENDMETHOD.
-
-
   METHOD new.
 
     IF auto_save IS SUPPLIED.
@@ -380,26 +334,6 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       ).
     ENDIF.
 
-  ENDMETHOD.
-
-
-  METHOD save_log.
-    DATA log_handles TYPE bal_t_logh.
-    DATA log_numbers TYPE bal_t_lgnm.
-    DATA log_number  TYPE bal_s_lgnm.
-
-    INSERT me->handle INTO TABLE log_handles.
-    CALL FUNCTION 'BAL_DB_SAVE'
-      EXPORTING
-        i_t_log_handle       = log_handles
-        i_2th_connection     = me->sec_connection
-        i_2th_connect_commit = me->sec_connect_commit
-      IMPORTING
-        e_new_lognumbers     = log_numbers.
-    IF me->db_number IS INITIAL.
-      READ TABLE log_numbers INDEX 1 INTO log_number.
-      me->db_number = log_number-lognumber.
-    ENDIF.
   ENDMETHOD.
 
 
@@ -587,6 +521,54 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     ENDIF.
     self = me.
   ENDMETHOD.
+
+
+  METHOD get_struct_kind.
+
+    DATA: msg_struct_kind TYPE REF TO cl_abap_structdescr,
+          components      TYPE abap_compdescr_tab,
+          component       LIKE LINE OF components,
+          syst_count      TYPE i,
+          bapi_count      TYPE i,
+          bdc_count       TYPE i,
+          sprot_count     TYPE i.
+
+    IF msg_type->type_kind = cl_abap_typedescr=>typekind_struct1
+      OR msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.
+
+      msg_struct_kind ?= msg_type.
+      components = msg_struct_kind->components.
+
+      " Count number of fields expected for each supported type of message structure
+      LOOP AT components INTO component.
+        IF 'MSGTY,MSGID,MSGNO,MSGV1,MSGV2,MSGV3,MSGV4,' CS |{ component-name },|.
+          syst_count = syst_count + 1.
+        ENDIF.
+        IF 'TYPE,NUMBER,ID,MESSAGE_V1,MESSAGE_V2,MESSAGE_V3,MESSAGE_V4,' CS |{ component-name },|.
+          bapi_count = bapi_count + 1.
+        ENDIF.
+        IF 'MSGTYP,MSGID,MSGNR,MSGV1,MSGV2,MSGV3,MSGV4,' CS |{ component-name },|.
+          bdc_count = bdc_count + 1.
+        ENDIF.
+        IF 'SEVERITY,AG,MSGNR,VAR1,VAR2,VAR3,VAR4,' CS |{ component-name },|.
+          sprot_count = sprot_count + 1.
+        ENDIF.
+      ENDLOOP.
+
+      " Set message type if all expected fields are present
+      IF syst_count = 7.
+        result = c_struct_kind-syst.
+      ELSEIF bapi_count = 7.
+        result = c_struct_kind-bapi.
+      ELSEIF bdc_count = 7.
+        result = c_struct_kind-bdc.
+      ELSEIF sprot_count = 7.
+        result = c_struct_kind-sprot.
+      ENDIF.
+    ENDIF.
+
+  ENDMETHOD.
+
 
 
   METHOD zif_logger~e.
@@ -824,6 +806,38 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD zif_logger~w.
+    self = add(
+      obj_to_log    = obj_to_log
+      context       = context
+      callback_form = callback_form
+      callback_prog = callback_prog
+      callback_fm   = callback_fm
+      type          = 'W'
+      importance    = importance ).
+  ENDMETHOD.
+
+
+  METHOD save_log.
+    DATA log_handles TYPE bal_t_logh.
+    DATA log_numbers TYPE bal_t_lgnm.
+    DATA log_number  TYPE bal_s_lgnm.
+
+    INSERT me->handle INTO TABLE log_handles.
+    CALL FUNCTION 'BAL_DB_SAVE'
+      EXPORTING
+        i_t_log_handle       = log_handles
+        i_2th_connection     = me->sec_connection
+        i_2th_connect_commit = me->sec_connect_commit
+      IMPORTING
+        e_new_lognumbers     = log_numbers.
+    IF me->db_number IS INITIAL.
+      READ TABLE log_numbers INDEX 1 INTO log_number.
+      me->db_number = log_number-lognumber.
+    ENDIF.
+  ENDMETHOD.
+
+
   METHOD zif_logger~set_header.
 
     me->header-extnumber = description.
@@ -843,14 +857,4 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD zif_logger~w.
-    self = add(
-      obj_to_log    = obj_to_log
-      context       = context
-      callback_form = callback_form
-      callback_prog = callback_prog
-      callback_fm   = callback_fm
-      type          = 'W'
-      importance    = importance ).
-  ENDMETHOD.
 ENDCLASS.

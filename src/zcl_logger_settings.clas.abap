@@ -8,17 +8,11 @@ CLASS zcl_logger_settings DEFINITION
     INTERFACES zif_logger_settings.
     METHODS constructor.
 
-    ALIASES set_context_tabname
-      FOR zif_logger_settings~set_context_tabname.
-
-    ALIASES get_context_tabname
-      FOR zif_logger_settings~get_context_tabname.
-
-    ALIASES set_display_profile
-      FOR zif_logger_settings~set_display_profile.
-
-    ALIASES get_display_profile
-      FOR zif_logger_settings~get_display_profile.
+    ALIASES:
+      set_context_tabname FOR zif_logger_settings~set_context_tabname,
+      get_context_tabname FOR zif_logger_settings~get_context_tabname,
+      set_display_profile FOR zif_logger_settings~set_display_profile,
+      get_display_profile FOR zif_logger_settings~get_display_profile.
 
     CONSTANTS :
       BEGIN OF display_profile_names,
