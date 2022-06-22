@@ -1484,7 +1484,7 @@ CLASS lcl_test IMPLEMENTATION.
  
  
   METHOD can_change_description.
-  
+
     DATA desc TYPE bal_s_log-extnumber.
 
     desc = cl_system_uuid=>create_uuid_c32_static( ).
