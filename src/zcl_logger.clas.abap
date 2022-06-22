@@ -14,23 +14,23 @@ CLASS zcl_logger DEFINITION
     TYPE-POOLS abap .
 
     INTERFACES zif_logger.
-    ALIASES : add FOR zif_logger~add,
-              a FOR zif_logger~a,
-              e FOR zif_logger~e,
-              w FOR zif_logger~w,
-              i FOR zif_logger~i,
-              s FOR zif_logger~s,
-              has_errors FOR zif_logger~has_errors,
-              has_warnings FOR zif_logger~has_warnings,
-              is_empty FOR zif_logger~is_empty,
-              length FOR zif_logger~length,
-              save FOR zif_logger~save,
-              export_to_table FOR zif_logger~export_to_table,
-              fullscreen FOR zif_logger~fullscreen,
-              popup FOR zif_logger~popup,
-              handle FOR zif_logger~handle,
-              db_number FOR zif_logger~db_number,
-              header FOR zif_logger~header.
+    ALIASES: add FOR zif_logger~add,
+             a FOR zif_logger~a,
+             e FOR zif_logger~e,
+             w FOR zif_logger~w,
+             i FOR zif_logger~i,
+             s FOR zif_logger~s,
+             has_errors FOR zif_logger~has_errors,
+             has_warnings FOR zif_logger~has_warnings,
+             is_empty FOR zif_logger~is_empty,
+             length FOR zif_logger~length,
+             save FOR zif_logger~save,
+             export_to_table FOR zif_logger~export_to_table,
+             fullscreen FOR zif_logger~fullscreen,
+             popup FOR zif_logger~popup,
+             handle FOR zif_logger~handle,
+             db_number FOR zif_logger~db_number,
+             header FOR zif_logger~header.
 
     "! Starts a new log.
     "! For backwards compatibility only! Use ZCL_LOGGER_FACTORY instead.
@@ -246,6 +246,7 @@ CLASS zcl_logger IMPLEMENTATION.
         msg_not_found  = 0.
 
   ENDMETHOD.
+
 
   METHOD get_struct_kind.
 
@@ -623,8 +624,8 @@ CLASS zcl_logger IMPLEMENTATION.
   METHOD zif_logger~fullscreen.
 
     DATA:
-      profile        TYPE bal_s_prof,
-      lt_log_handles TYPE bal_t_logh.
+          profile        TYPE bal_s_prof,
+          lt_log_handles TYPE bal_t_logh.
 
     APPEND me->handle TO lt_log_handles.
 
@@ -774,6 +775,5 @@ CLASS zcl_logger IMPLEMENTATION.
     self = me.
 
   ENDMETHOD.
-
 
 ENDCLASS.

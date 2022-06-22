@@ -1,4 +1,4 @@
-INTERFACE zif_logger_settings PUBLIC.
+INTERFACE zif_logger_settings PUBLIC .
 
   TYPES ty_profile_name TYPE string.
 

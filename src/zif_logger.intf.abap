@@ -1,8 +1,8 @@
 INTERFACE zif_logger
   PUBLIC .
-  DATA handle TYPE balloghndl READ-ONLY .
+  DATA handle    TYPE balloghndl READ-ONLY .
   DATA db_number TYPE balognr READ-ONLY .
-  DATA header TYPE bal_s_log READ-ONLY .
+  DATA header    TYPE bal_s_log READ-ONLY .
 
   METHODS add
     IMPORTING
@@ -15,7 +15,7 @@ INTERFACE zif_logger
       importance    TYPE balprobcl OPTIONAL
         PREFERRED PARAMETER obj_to_log
     RETURNING
-      VALUE(self)    TYPE REF TO zif_logger .
+      VALUE(self)   TYPE REF TO zif_logger .
 
   METHODS a
     IMPORTING
@@ -27,7 +27,7 @@ INTERFACE zif_logger
       importance    TYPE balprobcl OPTIONAL
         PREFERRED PARAMETER obj_to_log
     RETURNING
-      VALUE(self)    TYPE REF TO zif_logger .
+      VALUE(self)   TYPE REF TO zif_logger .
 
   METHODS e
     IMPORTING
@@ -39,7 +39,7 @@ INTERFACE zif_logger
       importance    TYPE balprobcl OPTIONAL
         PREFERRED PARAMETER obj_to_log
     RETURNING
-      VALUE(self)    TYPE REF TO zif_logger .
+      VALUE(self)   TYPE REF TO zif_logger .
 
   METHODS w
     IMPORTING
@@ -51,7 +51,7 @@ INTERFACE zif_logger
       importance    TYPE balprobcl OPTIONAL
         PREFERRED PARAMETER obj_to_log
     RETURNING
-      VALUE(self)    TYPE REF TO zif_logger .
+      VALUE(self)   TYPE REF TO zif_logger .
 
   METHODS i
     IMPORTING
@@ -63,7 +63,7 @@ INTERFACE zif_logger
       importance    TYPE balprobcl OPTIONAL
         PREFERRED PARAMETER obj_to_log
     RETURNING
-      VALUE(self)    TYPE REF TO zif_logger .
+      VALUE(self)   TYPE REF TO zif_logger .
 
   METHODS s
     IMPORTING
@@ -75,7 +75,7 @@ INTERFACE zif_logger
       importance    TYPE balprobcl OPTIONAL
         PREFERRED PARAMETER obj_to_log
     RETURNING
-      VALUE(self)    TYPE REF TO zif_logger .
+      VALUE(self)   TYPE REF TO zif_logger .
 
   METHODS has_errors
     RETURNING
@@ -104,6 +104,7 @@ INTERFACE zif_logger
   METHODS export_to_table
     RETURNING
       VALUE(rt_bapiret) TYPE bapirettab .
+
   METHODS fullscreen .
 
   METHODS popup
@@ -114,6 +115,6 @@ INTERFACE zif_logger
     IMPORTING
       description TYPE bal_s_log-extnumber
     RETURNING
-      VALUE(self)  TYPE REF TO zif_logger .
+      VALUE(self) TYPE REF TO zif_logger .
 
 ENDINTERFACE.
