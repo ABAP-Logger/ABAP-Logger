@@ -109,7 +109,7 @@ INTERFACE zif_logger
 
   METHODS popup
     IMPORTING
-      profile TYPE bal_s_prof OPTIONAL .
+      profile TYPE bal_s_prof OPTIONAL.
 
   METHODS set_header
     IMPORTING
