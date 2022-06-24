@@ -1481,8 +1481,8 @@ CLASS lcl_test IMPLEMENTATION.
       act = lines( table )
       msg = 'Did not log system message properly' ).
   ENDMETHOD.
-  
-  
+
+
   METHOD can_change_description.
 
     DATA desc TYPE bal_s_log-extnumber.
