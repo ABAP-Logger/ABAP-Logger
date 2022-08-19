@@ -277,7 +277,7 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD can_add_to_log.
     DATA: dummy TYPE c.
 
-    MESSAGE s001(00) WITH 'I' 'test' 'the' 'logger.' INTO dummy.
+    MESSAGE s001(00) WITH 'I' 'test' 'the' 'logger.' INTO dummy ##MG_MISSING.
     anon_log->add( ).
 
     cl_aunit_assert=>assert_equals(
@@ -290,7 +290,7 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD can_add_to_named_log.
     DATA: dummy TYPE c.
 
-    MESSAGE s001(00) WITH 'Testing' 'a' 'named' 'logger.' INTO dummy.
+    MESSAGE s001(00) WITH 'Testing' 'a' 'named' 'logger.' INTO dummy ##MG_MISSING.
     named_log->add( ).
 
     cl_aunit_assert=>assert_equals(
@@ -311,7 +311,7 @@ CLASS lcl_test IMPLEMENTATION.
 
     CALL FUNCTION 'BAL_GLB_MEMORY_REFRESH'.
 
-    APPEND named_log->db_number TO log_numbers.
+    INSERT named_log->db_number INTO TABLE log_numbers.
     CALL FUNCTION 'BAL_DB_LOAD'
       EXPORTING
         i_t_lognumber = log_numbers.
@@ -330,7 +330,7 @@ CLASS lcl_test IMPLEMENTATION.
     reopened_log->add( 'This is another message in the database' ).
     CALL FUNCTION 'BAL_GLB_MEMORY_REFRESH'.
 
-    APPEND reopened_log->db_number TO log_numbers.
+    INSERT reopened_log->db_number INTO TABLE log_numbers.
     CALL FUNCTION 'BAL_DB_LOAD'
       EXPORTING
         i_t_lognumber = log_numbers.
@@ -1157,7 +1157,7 @@ CLASS lcl_test IMPLEMENTATION.
     DATA dummy            TYPE string.
     CREATE OBJECT loggable TYPE ltd_loggable_object.
 
-    MESSAGE s001(00) WITH 'I' 'test' 'the' 'logger.' INTO dummy.
+    MESSAGE s001(00) WITH 'I' 'test' 'the' 'logger.' INTO dummy ##MG_MISSING.
     MOVE-CORRESPONDING sy TO loggable_message-symsg.
     loggable_message-type = sy-msgty.
     APPEND loggable_message TO loggable->messages.
@@ -1372,7 +1372,7 @@ CLASS lcl_test IMPLEMENTATION.
           msg_detail      TYPE bal_s_msg,
           msg_text        TYPE char255.
 
-    APPEND log_handle TO handle_as_table.
+    INSERT log_handle INTO TABLE handle_as_table.
     CALL FUNCTION 'BAL_GLB_SEARCH_MSG'
       EXPORTING
         i_t_log_handle = handle_as_table

@@ -539,7 +539,7 @@ CLASS zcl_logger IMPLEMENTATION.
 
     msg_struct_type ?= cl_abap_typedescr=>describe_by_data( obj_to_log ).
     components = msg_struct_type->components.
-    add( '--- Begin of structure ---' ).
+    add( '--- Begin of structure ---' ##NO_TEXT ).
     LOOP AT components INTO component.
       ASSIGN COMPONENT component-name OF STRUCTURE obj_to_log TO <component>.
       IF sy-subrc = 0.
@@ -563,7 +563,7 @@ CLASS zcl_logger IMPLEMENTATION.
         ENDIF.
       ENDIF.
     ENDLOOP.
-    add( '--- End of structure ---' ).
+    add( '--- End of structure ---' ##NO_TEXT ).
   ENDMETHOD.
 
 
@@ -626,7 +626,7 @@ CLASS zcl_logger IMPLEMENTATION.
           profile        TYPE bal_s_prof,
           lt_log_handles TYPE bal_t_logh.
 
-    APPEND me->handle TO lt_log_handles.
+    INSERT me->handle INTO TABLE lt_log_handles.
 
     CALL FUNCTION 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
       IMPORTING
@@ -685,7 +685,7 @@ CLASS zcl_logger IMPLEMENTATION.
     DATA relevant_profile TYPE bal_s_prof.
     DATA lt_log_handles   TYPE bal_t_logh.
 
-    APPEND me->handle TO lt_log_handles.
+    INSERT me->handle INTO TABLE lt_log_handles.
 
     IF profile IS SUPPLIED AND profile IS NOT INITIAL.
       relevant_profile = profile.
