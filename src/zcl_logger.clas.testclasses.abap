@@ -277,7 +277,7 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD can_add_to_log.
     DATA: dummy TYPE c.
 
-    MESSAGE s001(00) WITH 'I' 'test' 'the' 'logger.' INTO dummy ##MG_MISSING.
+    MESSAGE s001(00) WITH 'I' 'test' 'the' 'logger.' INTO dummy.
     anon_log->add( ).
 
     cl_aunit_assert=>assert_equals(
@@ -290,7 +290,7 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD can_add_to_named_log.
     DATA: dummy TYPE c.
 
-    MESSAGE s001(00) WITH 'Testing' 'a' 'named' 'logger.' INTO dummy ##MG_MISSING.
+    MESSAGE s001(00) WITH 'Testing' 'a' 'named' 'logger.' INTO dummy.
     named_log->add( ).
 
     cl_aunit_assert=>assert_equals(
@@ -914,7 +914,7 @@ CLASS lcl_test IMPLEMENTATION.
 
   METHOD can_log_chained_exceptions.
 
-    CONSTANTS c_chained_exception TYPE string VALUE 'Did not log chained exception correctly' ##NO_TEXT.
+    CONSTANTS c_chained_exception TYPE string VALUE 'Did not log chained exception correctly'.
 
     DATA: main_exception     TYPE REF TO lcx_t100,
           previous_exception TYPE REF TO lcx_t100,
@@ -983,7 +983,7 @@ CLASS lcl_test IMPLEMENTATION.
 
   METHOD can_log_batch_msgs.
 
-    CONSTANTS c_bdc_message TYPE string VALUE 'Did not log BDC return messages correctly' ##NO_TEXT.
+    CONSTANTS c_bdc_message TYPE string VALUE 'Did not log BDC return messages correctly'.
 
     DATA: batch_msgs TYPE TABLE OF bdcmsgcoll,
           batch_msg  TYPE bdcmsgcoll,
@@ -1157,7 +1157,7 @@ CLASS lcl_test IMPLEMENTATION.
     DATA dummy            TYPE string.
     CREATE OBJECT loggable TYPE ltd_loggable_object.
 
-    MESSAGE s001(00) WITH 'I' 'test' 'the' 'logger.' INTO dummy ##MG_MISSING.
+    MESSAGE s001(00) WITH 'I' 'test' 'the' 'logger.' INTO dummy.
     MOVE-CORRESPONDING sy TO loggable_message-symsg.
     loggable_message-type = sy-msgty.
     APPEND loggable_message TO loggable->messages.
