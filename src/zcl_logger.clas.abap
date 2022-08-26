@@ -539,7 +539,7 @@ CLASS zcl_logger IMPLEMENTATION.
 
     msg_struct_type ?= cl_abap_typedescr=>describe_by_data( obj_to_log ).
     components = msg_struct_type->components.
-    add( '--- Begin of structure ---' ##NO_TEXT ).
+    add( '--- Begin of structure ---' ).
     LOOP AT components INTO component.
       ASSIGN COMPONENT component-name OF STRUCTURE obj_to_log TO <component>.
       IF sy-subrc = 0.
@@ -563,7 +563,7 @@ CLASS zcl_logger IMPLEMENTATION.
         ENDIF.
       ENDIF.
     ENDLOOP.
-    add( '--- End of structure ---' ##NO_TEXT ).
+    add( '--- End of structure ---' ).
   ENDMETHOD.
 
 
