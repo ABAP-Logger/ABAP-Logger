@@ -11,6 +11,7 @@ INTERFACE zif_logger
       callback_form TYPE csequence OPTIONAL
       callback_prog TYPE csequence OPTIONAL
       callback_fm   TYPE csequence OPTIONAL
+      parameters    TYPE bal_t_par OPTIONAL
       type          TYPE symsgty OPTIONAL
       importance    TYPE balprobcl OPTIONAL
         PREFERRED PARAMETER obj_to_log
@@ -24,6 +25,7 @@ INTERFACE zif_logger
       callback_form TYPE csequence OPTIONAL
       callback_prog TYPE csequence OPTIONAL
       callback_fm   TYPE csequence OPTIONAL
+      parameters    TYPE bal_t_par OPTIONAL
       importance    TYPE balprobcl OPTIONAL
         PREFERRED PARAMETER obj_to_log
     RETURNING
@@ -36,6 +38,7 @@ INTERFACE zif_logger
       callback_form TYPE csequence OPTIONAL
       callback_prog TYPE csequence OPTIONAL
       callback_fm   TYPE csequence OPTIONAL
+      parameters    TYPE bal_t_par OPTIONAL
       importance    TYPE balprobcl OPTIONAL
         PREFERRED PARAMETER obj_to_log
     RETURNING
@@ -48,6 +51,7 @@ INTERFACE zif_logger
       callback_form TYPE csequence OPTIONAL
       callback_prog TYPE csequence OPTIONAL
       callback_fm   TYPE csequence OPTIONAL
+      parameters    TYPE bal_t_par OPTIONAL
       importance    TYPE balprobcl OPTIONAL
         PREFERRED PARAMETER obj_to_log
     RETURNING
@@ -60,6 +64,7 @@ INTERFACE zif_logger
       callback_form TYPE csequence OPTIONAL
       callback_prog TYPE csequence OPTIONAL
       callback_fm   TYPE csequence OPTIONAL
+      parameters    TYPE bal_t_par OPTIONAL
       importance    TYPE balprobcl OPTIONAL
         PREFERRED PARAMETER obj_to_log
     RETURNING
@@ -72,6 +77,7 @@ INTERFACE zif_logger
       callback_form TYPE csequence OPTIONAL
       callback_prog TYPE csequence OPTIONAL
       callback_fm   TYPE csequence OPTIONAL
+      parameters    TYPE bal_t_par OPTIONAL
       importance    TYPE balprobcl OPTIONAL
         PREFERRED PARAMETER obj_to_log
     RETURNING

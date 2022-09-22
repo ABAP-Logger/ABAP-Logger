@@ -96,7 +96,8 @@ CLASS lcl_test DEFINITION FOR TESTING
       return_proper_length FOR TESTING,
       can_add_table_msg_context FOR TESTING RAISING cx_static_check,
       can_log_string_and_export FOR TESTING,
-      can_change_description FOR TESTING RAISING cx_static_check.
+      can_change_description FOR TESTING RAISING cx_static_check,
+      can_log_callback_params FOR TESTING RAISING cx_static_check.
 
 ENDCLASS.       "lcl_Test
 
@@ -1517,5 +1518,65 @@ CLASS lcl_test IMPLEMENTATION.
         msg = 'Did not return new desc' ).
 
   ENDMETHOD.
+
+
+  METHOD can_log_callback_params.
+
+    DATA:
+      parameters  TYPE bal_t_par,
+      parameter   LIKE LINE OF parameters,
+      act_details TYPE bal_tt_msg.
+    FIELD-SYMBOLS: <detail> TYPE bal_s_msg.
+
+    parameter-parname  = 'DATE'.
+    parameter-parvalue = sy-datum.
+    INSERT parameter INTO TABLE parameters.
+
+    parameter-parname  = 'TIME'.
+    parameter-parvalue = sy-uzeit.
+    INSERT parameter INTO TABLE parameters.
+
+    anon_log->a(
+        obj_to_log  = |Test W|
+        callback_fm = 'DUMMY'
+        parameters  = parameters ).
+
+    anon_log->e(
+        obj_to_log  = |Test E|
+        callback_fm = 'DUMMY'
+        parameters  = parameters ).
+
+    anon_log->i(
+        obj_to_log  = |Test I|
+        callback_fm = 'DUMMY'
+        parameters  = parameters ).
+
+    anon_log->s(
+        obj_to_log  = |Test S|
+        callback_fm = 'DUMMY'
+        parameters  = parameters ).
+
+    anon_log->w(
+        obj_to_log    = |Test W|
+        callback_form = 'DUMMY_FORM'
+        callback_prog = 'DUMMY_PROG'
+        parameters    = parameters ).
+
+    get_messages(
+      EXPORTING
+        log_handle  = anon_log->handle
+      IMPORTING
+        msg_details = act_details ).
+
+    LOOP AT act_details ASSIGNING <detail>.
+
+      cl_abap_unit_assert=>assert_equals(
+          exp = parameters
+          act = <detail>-params-t_par ).
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
 
 ENDCLASS.       "lcl_Test

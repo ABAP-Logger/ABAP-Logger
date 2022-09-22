@@ -351,6 +351,7 @@ CLASS zcl_logger IMPLEMENTATION.
       callback_form = callback_form
       callback_prog = callback_prog
       callback_fm   = callback_fm
+      parameters    = parameters
       type          = 'A'
       importance    = importance ).
   ENDMETHOD.
@@ -400,10 +401,12 @@ CLASS zcl_logger IMPLEMENTATION.
       formatted_params-callback-userexitf = callback_fm.
       formatted_params-callback-userexitp = callback_prog.
       formatted_params-callback-userexitt = 'F'.
+      formatted_params-t_par              = parameters.
     ELSEIF callback_form IS NOT INITIAL.
       formatted_params-callback-userexitf = callback_form.
       formatted_params-callback-userexitp = callback_prog.
       formatted_params-callback-userexitt = ' '.
+      formatted_params-t_par              = parameters.
     ENDIF.
 
     msg_type    = cl_abap_typedescr=>describe_by_data( obj_to_log ).
@@ -574,6 +577,7 @@ CLASS zcl_logger IMPLEMENTATION.
       callback_form = callback_form
       callback_prog = callback_prog
       callback_fm   = callback_fm
+      parameters    = parameters
       type          = 'E'
       importance    = importance ).
   ENDMETHOD.
@@ -661,6 +665,7 @@ CLASS zcl_logger IMPLEMENTATION.
       callback_form = callback_form
       callback_prog = callback_prog
       callback_fm   = callback_fm
+      parameters    = parameters
       type          = 'I'
       importance    = importance ).
   ENDMETHOD.
@@ -709,6 +714,7 @@ CLASS zcl_logger IMPLEMENTATION.
       callback_form = callback_form
       callback_prog = callback_prog
       callback_fm   = callback_fm
+      parameters    = parameters
       type          = 'S'
       importance    = importance ).
   ENDMETHOD.
@@ -727,6 +733,7 @@ CLASS zcl_logger IMPLEMENTATION.
       callback_form = callback_form
       callback_prog = callback_prog
       callback_fm   = callback_fm
+      parameters    = parameters
       type          = 'W'
       importance    = importance ).
   ENDMETHOD.
