@@ -346,14 +346,14 @@ CLASS zcl_logger IMPLEMENTATION.
 
   METHOD zif_logger~a.
     self = add(
-      obj_to_log    = obj_to_log
-      context       = context
-      callback_form = callback_form
-      callback_prog = callback_prog
-      callback_fm   = callback_fm
-      parameters    = parameters
-      type          = 'A'
-      importance    = importance ).
+      obj_to_log          = obj_to_log
+      context             = context
+      callback_form       = callback_form
+      callback_prog       = callback_prog
+      callback_fm         = callback_fm
+      callback_parameters = callback_parameters
+      type                = 'A'
+      importance          = importance ).
   ENDMETHOD.
 
 
@@ -401,12 +401,12 @@ CLASS zcl_logger IMPLEMENTATION.
       formatted_params-callback-userexitf = callback_fm.
       formatted_params-callback-userexitp = callback_prog.
       formatted_params-callback-userexitt = 'F'.
-      formatted_params-t_par              = parameters.
+      formatted_params-t_par              = callback_parameters.
     ELSEIF callback_form IS NOT INITIAL.
       formatted_params-callback-userexitf = callback_form.
       formatted_params-callback-userexitp = callback_prog.
       formatted_params-callback-userexitt = ' '.
-      formatted_params-t_par              = parameters.
+      formatted_params-t_par              = callback_parameters.
     ENDIF.
 
     msg_type    = cl_abap_typedescr=>describe_by_data( obj_to_log ).
@@ -571,15 +571,15 @@ CLASS zcl_logger IMPLEMENTATION.
 
 
   METHOD zif_logger~e.
-    self = add(
-      obj_to_log    = obj_to_log
-      context       = context
-      callback_form = callback_form
-      callback_prog = callback_prog
-      callback_fm   = callback_fm
-      parameters    = parameters
-      type          = 'E'
-      importance    = importance ).
+    self                  = add(
+      obj_to_log          = obj_to_log
+      context             = context
+      callback_form       = callback_form
+      callback_prog       = callback_prog
+      callback_fm         = callback_fm
+      callback_parameters = callback_parameters
+      type                = 'E'
+      importance          = importance ).
   ENDMETHOD.
 
 
@@ -660,14 +660,14 @@ CLASS zcl_logger IMPLEMENTATION.
 
   METHOD zif_logger~i.
     self = add(
-      obj_to_log    = obj_to_log
-      context       = context
-      callback_form = callback_form
-      callback_prog = callback_prog
-      callback_fm   = callback_fm
-      parameters    = parameters
-      type          = 'I'
-      importance    = importance ).
+      obj_to_log          = obj_to_log
+      context             = context
+      callback_form       = callback_form
+      callback_prog       = callback_prog
+      callback_fm         = callback_fm
+      callback_parameters = callback_parameters
+      type                = 'I'
+      importance          = importance ).
   ENDMETHOD.
 
 
@@ -709,14 +709,14 @@ CLASS zcl_logger IMPLEMENTATION.
 
   METHOD zif_logger~s.
     self = add(
-      obj_to_log    = obj_to_log
-      context       = context
-      callback_form = callback_form
-      callback_prog = callback_prog
-      callback_fm   = callback_fm
-      parameters    = parameters
-      type          = 'S'
-      importance    = importance ).
+      obj_to_log          = obj_to_log
+      context             = context
+      callback_form       = callback_form
+      callback_prog       = callback_prog
+      callback_fm         = callback_fm
+      callback_parameters = callback_parameters
+      type                = 'S'
+      importance          = importance ).
   ENDMETHOD.
 
 
@@ -728,14 +728,14 @@ CLASS zcl_logger IMPLEMENTATION.
 
   METHOD zif_logger~w.
     self = add(
-      obj_to_log    = obj_to_log
-      context       = context
-      callback_form = callback_form
-      callback_prog = callback_prog
-      callback_fm   = callback_fm
-      parameters    = parameters
-      type          = 'W'
-      importance    = importance ).
+      obj_to_log          = obj_to_log
+      context             = context
+      callback_form       = callback_form
+      callback_prog       = callback_prog
+      callback_fm         = callback_fm
+      callback_parameters = callback_parameters
+      type                = 'W'
+      importance          = importance ).
   ENDMETHOD.
 
 

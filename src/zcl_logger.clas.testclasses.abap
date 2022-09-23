@@ -1523,44 +1523,44 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD can_log_callback_params.
 
     DATA:
-      parameters  TYPE bal_t_par,
-      parameter   LIKE LINE OF parameters,
-      act_details TYPE bal_tt_msg.
+      callback_parameters TYPE bal_t_par,
+      parameter           LIKE LINE OF callback_parameters,
+      act_details         TYPE bal_tt_msg.
     FIELD-SYMBOLS: <detail> TYPE bal_s_msg.
 
     parameter-parname  = 'DATE'.
     parameter-parvalue = sy-datum.
-    INSERT parameter INTO TABLE parameters.
+    INSERT parameter INTO TABLE callback_parameters.
 
     parameter-parname  = 'TIME'.
     parameter-parvalue = sy-uzeit.
-    INSERT parameter INTO TABLE parameters.
+    INSERT parameter INTO TABLE callback_parameters.
 
     anon_log->a(
-        obj_to_log  = |Test W|
-        callback_fm = 'DUMMY'
-        parameters  = parameters ).
+        obj_to_log          = |Test W|
+        callback_fm         = 'DUMMY'
+        callback_parameters = callback_parameters ).
 
     anon_log->e(
-        obj_to_log  = |Test E|
-        callback_fm = 'DUMMY'
-        parameters  = parameters ).
+        obj_to_log          = |Test E|
+        callback_fm         = 'DUMMY'
+        callback_parameters = callback_parameters ).
 
     anon_log->i(
-        obj_to_log  = |Test I|
-        callback_fm = 'DUMMY'
-        parameters  = parameters ).
+        obj_to_log          = |Test I|
+        callback_fm         = 'DUMMY'
+        callback_parameters = callback_parameters ).
 
     anon_log->s(
-        obj_to_log  = |Test S|
-        callback_fm = 'DUMMY'
-        parameters  = parameters ).
+        obj_to_log          = |Test S|
+        callback_fm         = 'DUMMY'
+        callback_parameters = callback_parameters ).
 
     anon_log->w(
-        obj_to_log    = |Test W|
-        callback_form = 'DUMMY_FORM'
-        callback_prog = 'DUMMY_PROG'
-        parameters    = parameters ).
+        obj_to_log          = |Test W|
+        callback_form       = 'DUMMY_FORM'
+        callback_prog       = 'DUMMY_PROG'
+        callback_parameters = callback_parameters ).
 
     get_messages(
       EXPORTING
@@ -1571,7 +1571,7 @@ CLASS lcl_test IMPLEMENTATION.
     LOOP AT act_details ASSIGNING <detail>.
 
       cl_abap_unit_assert=>assert_equals(
-          exp = parameters
+          exp = callback_parameters
           act = <detail>-params-t_par ).
 
     ENDLOOP.
