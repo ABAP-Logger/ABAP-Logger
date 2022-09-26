@@ -196,7 +196,7 @@ CLASS zcl_logger_factory IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD create_display_profile.
-    r_display_profile = NEW zcl_logger_display_profile( ).
+    CREATE OBJECT r_display_profile TYPE zcl_logger_display_profile.
     r_display_profile->set(
      i_detlevel    = i_detlevel
      i_no_tree     = i_no_tree
