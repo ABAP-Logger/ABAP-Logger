@@ -57,7 +57,8 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
 
   METHOD zif_logger_display_profile~set_value.
 
-    ASSIGN COMPONENT i_fld OF STRUCTURE display_profile TO FIELD-SYMBOL(<value>).
+    FIELD-SYMBOLS <value> TYPE any.
+    ASSIGN COMPONENT i_fld OF STRUCTURE display_profile TO <value>.
     IF sy-subrc = 0.
       <value> = i_val.
       r_self = me.
@@ -76,43 +77,59 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
     CLEAR display_profile-lev2_fcat.
     CLEAR display_profile-lev2_sort.
 
-    DATA(strucdescr) = CAST cl_abap_structdescr( cl_abap_structdescr=>describe_by_name( i_context_structure ) ).
-    DATA(colpos) = 100.
-    DATA(sortpos) = 1.
-    LOOP AT strucdescr->components INTO DATA(component).
+    DATA strucdescr TYPE REF TO cl_abap_structdescr.
+    DATA colpos TYPE i VALUE 100.
+    DATA sortpos TYPE i VALUE 1.
 
-      APPEND VALUE #(
-        ref_table = i_context_structure
-        ref_field = component-name
-        col_pos   = colpos ) TO display_profile-mess_fcat.
+    strucdescr ?= cl_abap_structdescr=>describe_by_name( i_context_structure ).
 
-      APPEND VALUE #(
-        ref_table = i_context_structure
-        ref_field = component-name
-        col_pos   = colpos ) TO display_profile-lev1_fcat.
+    DATA component TYPE abap_compdescr.
+    DATA mess_fcat LIKE LINE OF display_profile-mess_fcat.
+    DATA lev1_fcat LIKE LINE OF display_profile-lev1_fcat.
+    DATA lev2_fcat LIKE LINE OF display_profile-lev1_fcat.
+    DATA lev1_sort LIKE LINE OF display_profile-lev2_sort.
+    DATA lev2_sort LIKE LINE OF display_profile-lev2_sort.
+
+
+    LOOP AT strucdescr->components INTO component.
+
+      CLEAR mess_fcat.
+      CLEAR lev1_fcat.
+      CLEAR lev1_sort.
+
+      mess_fcat-ref_table = i_context_structure.
+      mess_fcat-ref_field = component-name.
+      mess_fcat-col_pos   = colpos.
+      APPEND mess_fcat TO display_profile-mess_fcat.
+
+      lev1_fcat-ref_table = i_context_structure.
+      lev1_fcat-ref_field = component-name.
+      lev1_fcat-col_pos   = colpos.
+      APPEND lev1_fcat TO display_profile-lev1_fcat.
+
       colpos = colpos + 1.
 
-      APPEND VALUE #(
-        ref_table = i_context_structure
-        ref_field  = component-name
-        up         = 'X'
-        spos       = sortpos ) TO display_profile-lev1_sort.
+
+      lev1_sort-ref_table = i_context_structure.
+      lev1_sort-ref_field  = component-name.
+      lev1_sort-up         = 'X'.
+      lev1_sort-spos       = sortpos.
+      APPEND lev1_sort TO display_profile-lev1_sort.
 
       sortpos = sortpos + 1.
 
     ENDLOOP.
 
-    APPEND VALUE #(
-      ref_table = 'BAL_S_SHOW'
-      ref_field = 'T_MSGTY'
-      col_pos   = colpos ) TO display_profile-lev2_fcat.
+    lev2_fcat-ref_table = 'BAL_S_SHOW'.
+    lev2_fcat-ref_field = 'T_MSGTY'.
+    lev2_fcat-col_pos   = colpos.
+    APPEND lev2_fcat TO display_profile-lev2_fcat.
 
-    APPEND VALUE #(
-      ref_table = 'BAL_S_SHOW'
-      ref_field  = 'T_MSGTY'
-      up         = 'X'
-      spos       = 1 ) TO display_profile-lev2_sort.
-
+    lev2_sort-ref_table = 'BAL_S_SHOW'.
+    lev2_sort-ref_field  = 'T_MSGTY'.
+    lev2_sort-up         = 'X'.
+    lev2_sort-spos       = 1.
+    APPEND lev2_sort TO display_profile-lev2_sort.
 
   ENDMETHOD.
 
