@@ -10,6 +10,14 @@
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>
    </VSEOINTERF>
+   <DESCRIPTIONS_SUB>
+    <SEOSUBCOTX>
+     <CMPNAME>SET_CONTEXT_TREE</CMPNAME>
+     <SCONAME>I_UNDER_LOG</SCONAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>X: Display context fields under each log</DESCRIPT>
+    </SEOSUBCOTX>
+   </DESCRIPTIONS_SUB>
   </asx:values>
  </asx:abap>
 </abapGit>

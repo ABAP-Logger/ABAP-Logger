@@ -8,13 +8,33 @@ CLASS zcl_logger_display_profile DEFINITION
     INTERFACES zif_logger_display_profile.
   PROTECTED SECTION.
     DATA display_profile TYPE bal_s_prof.
-  PRIVATE SECTION.
+private section.
 
+  methods GET_STRUCTURE_COMPONENTS
+    importing
+      !I_STRUCTURE_NAME type CLIKE
+    returning
+      value(R_COMPONENTS) type CL_ABAP_STRUCTDESCR=>COMPONENT_TABLE .
 ENDCLASS.
 
 
 
-CLASS zcl_logger_display_profile IMPLEMENTATION.
+CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
+
+
+  METHOD get_structure_components.
+
+    DATA strucdescr TYPE REF TO cl_abap_structdescr.
+    strucdescr ?= cl_abap_structdescr=>describe_by_name( i_structure_name ).
+    r_components = strucdescr->get_components( ).
+
+  ENDMETHOD.
+
+
+  METHOD zif_logger_display_profile~get.
+    r_display_profile = display_profile.
+  ENDMETHOD.
+
 
   METHOD zif_logger_display_profile~set.
     CASE abap_true.
@@ -43,6 +63,97 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
     r_self = me.
   ENDMETHOD.
 
+
+  METHOD zif_logger_display_profile~set_context_message.
+
+    CHECK display_profile IS NOT INITIAL.
+
+    DATA colpos TYPE i VALUE 100.
+    DATA sortpos TYPE i VALUE 1.
+
+    DATA mess_fcat LIKE LINE OF display_profile-mess_fcat.
+
+
+    LOOP AT get_structure_components( i_context_structure ) INTO data(component).
+
+      CLEAR mess_fcat.
+      mess_fcat-ref_table = i_context_structure.
+      mess_fcat-ref_field = component-name.
+      mess_fcat-col_pos   = colpos.
+      APPEND mess_fcat TO display_profile-mess_fcat.
+      colpos = colpos + 1.
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD zif_logger_display_profile~set_context_tree.
+
+    CHECK display_profile IS NOT INITIAL.
+
+    IF i_under_log IS INITIAL.
+      ASSIGN display_profile-lev1_fcat TO FIELD-SYMBOL(<lev1_fcat>).
+      ASSIGN display_profile-lev2_fcat TO FIELD-SYMBOL(<lev2_fcat>).
+      ASSIGN display_profile-lev1_sort TO FIELD-SYMBOL(<lev1_sort>).
+      ASSIGN display_profile-lev2_sort TO FIELD-SYMBOL(<lev2_sort>).
+    ELSE.
+      ASSIGN display_profile-lev2_fcat TO <lev1_fcat>.
+      ASSIGN display_profile-lev3_fcat TO <lev2_fcat>.
+      ASSIGN display_profile-lev2_sort TO <lev1_sort>.
+      ASSIGN display_profile-lev3_sort TO <lev2_sort>.
+    ENDIF.
+    CLEAR <lev1_fcat>.
+    CLEAR <lev2_fcat>.
+    CLEAR <lev1_sort>.
+    CLEAR <lev2_sort>.
+
+
+    DATA colpos  TYPE i VALUE 100.
+    DATA sortpos TYPE i VALUE 1.
+
+    DATA lev_fcat LIKE LINE OF display_profile-lev1_fcat.
+    DATA lev_sort LIKE LINE OF display_profile-lev2_sort.
+
+
+    LOOP AT get_structure_components( i_context_structure ) INTO DATA(component).
+
+      CLEAR lev_fcat.
+
+      lev_fcat-ref_table = i_context_structure.
+      lev_fcat-ref_field = component-name.
+      lev_fcat-col_pos   = colpos.
+      APPEND lev_fcat TO <lev1_fcat>.
+
+      colpos = colpos + 1.
+
+      CLEAR lev_sort.
+      lev_sort-ref_table = i_context_structure.
+      lev_sort-ref_field  = component-name.
+      lev_sort-up         = 'X'.
+      lev_sort-spos       = sortpos.
+      APPEND lev_sort TO <lev1_sort>.
+
+      sortpos = sortpos + 1.
+
+    ENDLOOP.
+
+    CLEAR lev_fcat.
+    lev_fcat-ref_table = 'BAL_S_SHOW'.
+    lev_fcat-ref_field = 'T_MSGTY'.
+    lev_fcat-col_pos   = colpos.
+    APPEND lev_fcat TO <lev2_fcat>.
+
+    CLEAR lev_sort.
+    lev_sort-ref_table = 'BAL_S_SHOW'.
+    lev_sort-ref_field = 'T_MSGTY'.
+    lev_sort-up        = 'X'.
+    lev_sort-spos      = 1.
+    APPEND lev_sort TO <lev2_sort>.
+
+  ENDMETHOD.
+
+
   METHOD zif_logger_display_profile~set_grid.
     zif_logger_display_profile~set_value(
       i_fld = 'USE_GRID'
@@ -51,9 +162,6 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
     r_self = me.
   ENDMETHOD.
 
-  METHOD zif_logger_display_profile~get.
-    r_display_profile = display_profile.
-  ENDMETHOD.
 
   METHOD zif_logger_display_profile~set_value.
 
@@ -68,69 +176,4 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
           info = |field { i_fld } does not exist| ##no_text.
     ENDIF.
   ENDMETHOD.
-
-  METHOD zif_logger_display_profile~set_context.
-    CHECK display_profile IS NOT INITIAL.
-
-    CLEAR display_profile-lev1_fcat.
-    CLEAR display_profile-lev1_sort.
-    CLEAR display_profile-lev2_fcat.
-    CLEAR display_profile-lev2_sort.
-
-    DATA strucdescr TYPE REF TO cl_abap_structdescr.
-    DATA colpos TYPE i VALUE 100.
-    DATA sortpos TYPE i VALUE 1.
-
-    strucdescr ?= cl_abap_structdescr=>describe_by_name( i_context_structure ).
-
-    DATA component TYPE abap_compdescr.
-    DATA mess_fcat LIKE LINE OF display_profile-mess_fcat.
-    DATA lev1_fcat LIKE LINE OF display_profile-lev1_fcat.
-    DATA lev2_fcat LIKE LINE OF display_profile-lev1_fcat.
-    DATA lev1_sort LIKE LINE OF display_profile-lev2_sort.
-    DATA lev2_sort LIKE LINE OF display_profile-lev2_sort.
-
-
-    LOOP AT strucdescr->components INTO component.
-
-      CLEAR mess_fcat.
-      CLEAR lev1_fcat.
-      CLEAR lev1_sort.
-
-      mess_fcat-ref_table = i_context_structure.
-      mess_fcat-ref_field = component-name.
-      mess_fcat-col_pos   = colpos.
-      APPEND mess_fcat TO display_profile-mess_fcat.
-
-      lev1_fcat-ref_table = i_context_structure.
-      lev1_fcat-ref_field = component-name.
-      lev1_fcat-col_pos   = colpos.
-      APPEND lev1_fcat TO display_profile-lev1_fcat.
-
-      colpos = colpos + 1.
-
-
-      lev1_sort-ref_table = i_context_structure.
-      lev1_sort-ref_field  = component-name.
-      lev1_sort-up         = 'X'.
-      lev1_sort-spos       = sortpos.
-      APPEND lev1_sort TO display_profile-lev1_sort.
-
-      sortpos = sortpos + 1.
-
-    ENDLOOP.
-
-    lev2_fcat-ref_table = 'BAL_S_SHOW'.
-    lev2_fcat-ref_field = 'T_MSGTY'.
-    lev2_fcat-col_pos   = colpos.
-    APPEND lev2_fcat TO display_profile-lev2_fcat.
-
-    lev2_sort-ref_table = 'BAL_S_SHOW'.
-    lev2_sort-ref_field  = 'T_MSGTY'.
-    lev2_sort-up         = 'X'.
-    lev2_sort-spos       = 1.
-    APPEND lev2_sort TO display_profile-lev2_sort.
-
-  ENDMETHOD.
-
 ENDCLASS.
