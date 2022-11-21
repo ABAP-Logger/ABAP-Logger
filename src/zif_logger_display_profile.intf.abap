@@ -1,35 +1,35 @@
-interface ZIF_LOGGER_DISPLAY_PROFILE
-  public .
+INTERFACE zif_logger_display_profile
+  PUBLIC .
 
 
-  methods SET
-    importing
-      !I_DETLEVEL type CLIKE optional
-      !I_NO_TREE type CLIKE optional
-      !I_POPUP type CLIKE optional
-      !I_SINGLE_LOG type CLIKE optional
-      !I_STANDARD type CLIKE default ABAP_TRUE
-    returning
-      value(R_SELF) type ref to ZIF_LOGGER_DISPLAY_PROFILE .
-  methods GET
-    returning
-      value(R_DISPLAY_PROFILE) type BAL_S_PROF .
-  methods SET_GRID
-    importing
-      !I_GRID_MODE type CLIKE
-    returning
-      value(R_SELF) type ref to ZIF_LOGGER_DISPLAY_PROFILE .
-  methods SET_VALUE
-    importing
-      !I_FLD type CLIKE
-      !I_VAL type ANY
-    returning
-      value(R_SELF) type ref to ZIF_LOGGER_DISPLAY_PROFILE .
-  methods SET_CONTEXT_TREE
-    importing
-      !I_CONTEXT_STRUCTURE type CLIKE
-      !I_UNDER_LOG type CLIKE default SPACE .
-  methods SET_CONTEXT_MESSAGE
-    importing
-      !I_CONTEXT_STRUCTURE type CLIKE .
-endinterface.
+  METHODS set
+    IMPORTING
+      !i_detlevel   TYPE clike OPTIONAL
+      !i_no_tree    TYPE clike OPTIONAL
+      !i_popup      TYPE clike OPTIONAL
+      !i_single_log TYPE clike OPTIONAL
+      !i_standard   TYPE clike DEFAULT abap_true
+    RETURNING
+      VALUE(r_self) TYPE REF TO zif_logger_display_profile .
+  METHODS get
+    RETURNING
+      VALUE(r_display_profile) TYPE bal_s_prof .
+  METHODS set_grid
+    IMPORTING
+      !i_grid_mode  TYPE clike
+    RETURNING
+      VALUE(r_self) TYPE REF TO zif_logger_display_profile .
+  METHODS set_value
+    IMPORTING
+      !i_fld        TYPE clike
+      !i_val        TYPE any
+    RETURNING
+      VALUE(r_self) TYPE REF TO zif_logger_display_profile .
+  METHODS set_context_tree
+    IMPORTING
+      !i_context_structure TYPE clike
+      !i_under_log         TYPE clike DEFAULT space .
+  METHODS set_context_message
+    IMPORTING
+      !i_context_structure TYPE clike .
+ENDINTERFACE.
