@@ -8,13 +8,13 @@ CLASS zcl_logger_display_profile DEFINITION
     INTERFACES zif_logger_display_profile.
   PROTECTED SECTION.
     DATA display_profile TYPE bal_s_prof.
-private section.
+  PRIVATE SECTION.
 
-  methods GET_STRUCTURE_COMPONENTS
-    importing
-      !I_STRUCTURE_NAME type CLIKE
-    returning
-      value(R_COMPONENTS) type CL_ABAP_STRUCTDESCR=>COMPONENT_TABLE .
+    METHODS get_structure_components
+      IMPORTING
+        !i_structure_name   TYPE clike
+      RETURNING
+        VALUE(r_components) TYPE cl_abap_structdescr=>component_table .
 ENDCLASS.
 
 
@@ -68,13 +68,12 @@ CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
 
     CHECK display_profile IS NOT INITIAL.
 
-    DATA colpos TYPE i VALUE 100.
-    DATA sortpos TYPE i VALUE 1.
-
+    DATA colpos    TYPE i VALUE 100.
+    DATA sortpos   TYPE i VALUE 1.
     DATA mess_fcat LIKE LINE OF display_profile-mess_fcat.
+    DATA component TYPE cl_abap_structdescr=>component.
 
-
-    LOOP AT get_structure_components( i_context_structure ) INTO data(component).
+    LOOP AT get_structure_components( i_context_structure ) INTO component.
 
       CLEAR mess_fcat.
       mess_fcat-ref_table = i_context_structure.
@@ -109,14 +108,13 @@ CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
     CLEAR <lev2_sort>.
 
 
-    DATA colpos  TYPE i VALUE 100.
-    DATA sortpos TYPE i VALUE 1.
+    DATA colpos    TYPE i VALUE 100.
+    DATA sortpos   TYPE i VALUE 1.
+    DATA lev_fcat  LIKE LINE OF display_profile-lev1_fcat.
+    DATA lev_sort  LIKE LINE OF display_profile-lev2_sort.
+    DATA component TYPE cl_abap_structdescr=>component.
 
-    DATA lev_fcat LIKE LINE OF display_profile-lev1_fcat.
-    DATA lev_sort LIKE LINE OF display_profile-lev2_sort.
-
-
-    LOOP AT get_structure_components( i_context_structure ) INTO DATA(component).
+    LOOP AT get_structure_components( i_context_structure ) INTO component.
 
       CLEAR lev_fcat.
 
