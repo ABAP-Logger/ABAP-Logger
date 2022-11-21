@@ -32,7 +32,9 @@ CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
 
 
   METHOD zif_logger_display_profile~get.
+
     r_display_profile = display_profile.
+
   ENDMETHOD.
 
 
@@ -173,5 +175,6 @@ CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
         EXPORTING
           info = |field { i_fld } does not exist| ##no_text.
     ENDIF.
+
   ENDMETHOD.
 ENDCLASS.
