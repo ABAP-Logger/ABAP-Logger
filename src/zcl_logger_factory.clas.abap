@@ -36,6 +36,16 @@ CLASS zcl_logger_factory DEFINITION
     CLASS-METHODS create_collection
       RETURNING
         VALUE(r_collection) TYPE REF TO zif_logger_collection .
+
+    CLASS-METHODS create_display_profile
+      IMPORTING
+        i_detlevel               TYPE clike OPTIONAL
+        i_no_tree                TYPE clike OPTIONAL
+        i_popup                  TYPE clike OPTIONAL
+        i_single_log             TYPE clike OPTIONAL
+        i_standard               TYPE clike DEFAULT abap_true
+      RETURNING
+        VALUE(r_display_profile) TYPE REF TO zif_logger_display_profile.
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -183,6 +193,16 @@ CLASS zcl_logger_factory IMPLEMENTATION.
 
   METHOD create_collection.
     CREATE OBJECT r_collection TYPE zcl_logger_collection.
+  ENDMETHOD.
+
+  METHOD create_display_profile.
+    CREATE OBJECT r_display_profile TYPE zcl_logger_display_profile.
+    r_display_profile->set(
+     i_detlevel    = i_detlevel
+     i_no_tree     = i_no_tree
+     i_popup       = i_popup
+     i_single_log  = i_single_log
+     i_standard    = i_standard ).
   ENDMETHOD.
 
 ENDCLASS.
