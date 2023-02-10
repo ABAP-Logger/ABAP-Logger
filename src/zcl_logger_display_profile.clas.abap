@@ -71,7 +71,6 @@ CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
     CHECK display_profile IS NOT INITIAL.
 
     DATA colpos     TYPE i VALUE 100.
-    DATA sortpos    TYPE i VALUE 1.
     DATA mess_fcat  LIKE LINE OF display_profile-mess_fcat.
     DATA component  TYPE cl_abap_structdescr=>component.
     DATA components TYPE cl_abap_structdescr=>component_table.
@@ -94,10 +93,10 @@ CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
 
   METHOD zif_logger_display_profile~set_context_tree.
 
-    FIELD-SYMBOLS <lev1_fcat> type bal_T_fcat.
-    FIELD-SYMBOLS <lev2_fcat> type bal_T_fcat.
-    FIELD-SYMBOLS <lev1_sort> type bal_T_sort.
-    FIELD-SYMBOLS <lev2_sort> type bal_T_sort.
+    FIELD-SYMBOLS <lev1_fcat> TYPE bal_t_fcat.
+    FIELD-SYMBOLS <lev2_fcat> TYPE bal_t_fcat.
+    FIELD-SYMBOLS <lev1_sort> TYPE bal_t_sort.
+    FIELD-SYMBOLS <lev2_sort> TYPE bal_t_sort.
 
     CHECK display_profile IS NOT INITIAL.
 
