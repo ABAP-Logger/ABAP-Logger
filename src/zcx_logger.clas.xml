@@ -3,9 +3,9 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <VSEOCLASS>
-    <CLSNAME>ZCX_LOGGER_DISPLAY_PROFILE</CLSNAME>
+    <CLSNAME>ZCX_LOGGER</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>ABAP Logger: display profile exceptions</DESCRIPT>
+    <DESCRIPT>ABAP Logger: general exceptions</DESCRIPT>
     <CATEGORY>40</CATEGORY>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
@@ -37,7 +37,7 @@
     <SOTR_USE>
      <PGMID>LIMU</PGMID>
      <OBJECT>CPUB</OBJECT>
-     <OBJ_NAME>ZCX_LOGGER_DISPLAY_PROFILE</OBJ_NAME>
+     <OBJ_NAME>ZCX_LOGGER</OBJ_NAME>
      <CONCEPT>B9D98DB24EAF1EDD8ED3241224D60A6A</CONCEPT>
      <LFD_NUM>0001</LFD_NUM>
     </SOTR_USE>

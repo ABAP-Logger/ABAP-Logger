@@ -70,12 +70,15 @@ CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
 
     CHECK display_profile IS NOT INITIAL.
 
-    DATA colpos    TYPE i VALUE 100.
-    DATA sortpos   TYPE i VALUE 1.
-    DATA mess_fcat LIKE LINE OF display_profile-mess_fcat.
-    DATA component TYPE cl_abap_structdescr=>component.
+    DATA colpos     TYPE i VALUE 100.
+    DATA sortpos    TYPE i VALUE 1.
+    DATA mess_fcat  LIKE LINE OF display_profile-mess_fcat.
+    DATA component  TYPE cl_abap_structdescr=>component.
+    DATA components TYPE cl_abap_structdescr=>component_table.
 
-    LOOP AT get_structure_components( i_context_structure ) INTO component.
+    components = get_structure_components( i_context_structure ).
+
+    LOOP AT components INTO component.
 
       CLEAR mess_fcat.
       mess_fcat-ref_table = i_context_structure.
@@ -91,13 +94,18 @@ CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
 
   METHOD zif_logger_display_profile~set_context_tree.
 
+    FIELD-SYMBOLS <lev1_fcat> type bal_T_fcat.
+    FIELD-SYMBOLS <lev2_fcat> type bal_T_fcat.
+    FIELD-SYMBOLS <lev1_sort> type bal_T_sort.
+    FIELD-SYMBOLS <lev2_sort> type bal_T_sort.
+
     CHECK display_profile IS NOT INITIAL.
 
     IF i_under_log IS INITIAL.
-      ASSIGN display_profile-lev1_fcat TO FIELD-SYMBOL(<lev1_fcat>).
-      ASSIGN display_profile-lev2_fcat TO FIELD-SYMBOL(<lev2_fcat>).
-      ASSIGN display_profile-lev1_sort TO FIELD-SYMBOL(<lev1_sort>).
-      ASSIGN display_profile-lev2_sort TO FIELD-SYMBOL(<lev2_sort>).
+      ASSIGN display_profile-lev1_fcat TO <lev1_fcat>.
+      ASSIGN display_profile-lev2_fcat TO <lev2_fcat>.
+      ASSIGN display_profile-lev1_sort TO <lev1_sort>.
+      ASSIGN display_profile-lev2_sort TO <lev2_sort>.
     ELSE.
       ASSIGN display_profile-lev2_fcat TO <lev1_fcat>.
       ASSIGN display_profile-lev3_fcat TO <lev2_fcat>.
@@ -110,13 +118,16 @@ CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
     CLEAR <lev2_sort>.
 
 
-    DATA colpos    TYPE i VALUE 100.
-    DATA sortpos   TYPE i VALUE 1.
-    DATA lev_fcat  LIKE LINE OF display_profile-lev1_fcat.
-    DATA lev_sort  LIKE LINE OF display_profile-lev2_sort.
-    DATA component TYPE cl_abap_structdescr=>component.
+    DATA colpos     TYPE i VALUE 100.
+    DATA sortpos    TYPE i VALUE 1.
+    DATA lev_fcat   LIKE LINE OF display_profile-lev1_fcat.
+    DATA lev_sort   LIKE LINE OF display_profile-lev2_sort.
+    DATA component  TYPE cl_abap_structdescr=>component.
+    DATA components TYPE cl_abap_structdescr=>component_table.
 
-    LOOP AT get_structure_components( i_context_structure ) INTO component.
+    components = get_structure_components( i_context_structure ).
+
+    LOOP AT components INTO component.
 
       CLEAR lev_fcat.
 

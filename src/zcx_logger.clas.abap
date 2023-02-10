@@ -1,11 +1,12 @@
-class ZCX_LOGGER_DISPLAY_PROFILE definition
+class ZCX_LOGGER definition
   public
-  inheriting from ZCX_LOGGER
+  inheriting from CX_NO_CHECK
   create public .
 
 public section.
 
-  constants ZCX_LOGGER_DISPLAY_PROFILE type SOTR_CONC value 'B9D98DB24EAF1EDD8ED3241224D60A6A' ##NO_TEXT.
+  constants ZCX_LOGGER type SOTR_CONC value 'B9D98DB24EAF1EDD8ED3241224D60A6A' ##NO_TEXT.
+  data INFO type STRING .
 
   methods CONSTRUCTOR
     importing
@@ -18,7 +19,7 @@ ENDCLASS.
 
 
 
-CLASS ZCX_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
+CLASS ZCX_LOGGER IMPLEMENTATION.
 
 
   method CONSTRUCTOR.
@@ -26,10 +27,10 @@ CALL METHOD SUPER->CONSTRUCTOR
 EXPORTING
 TEXTID = TEXTID
 PREVIOUS = PREVIOUS
-INFO = INFO
 .
  IF textid IS INITIAL.
-   me->textid = ZCX_LOGGER_DISPLAY_PROFILE .
+   me->textid = ZCX_LOGGER .
  ENDIF.
+me->INFO = INFO .
   endmethod.
 ENDCLASS.
