@@ -469,7 +469,8 @@ CLASS zcl_logger IMPLEMENTATION.
         IF sy-tabix = 1.
           zif_logger~add(
               obj_to_log    = <message_line>
-              context       = context ).
+              context       = context
+              importance    = importance ).
         ELSE.
           zif_logger~add( obj_to_log = <message_line> ).
         ENDIF.
