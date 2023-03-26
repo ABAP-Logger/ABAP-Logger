@@ -383,7 +383,6 @@ CLASS zcl_logger IMPLEMENTATION.
 
     " Remember system message since it might get changed inadvertently
     syst_buffer = syst.
-    
     IF context IS NOT INITIAL.
       ASSIGN context TO <context_val>.
       formatted_context-value = <context_val>.
