@@ -64,10 +64,10 @@ CLASS zcl_logger DEFINITION
 
     CONSTANTS:
       BEGIN OF c_struct_kind,
-                 syst  TYPE i VALUE 1,
-                 bapi  TYPE i VALUE 2,
-                 bdc   TYPE i VALUE 3,
-                 sprot TYPE i VALUE 4,
+        syst  TYPE i VALUE 1,
+        bapi  TYPE i VALUE 2,
+        bdc   TYPE i VALUE 3,
+        sprot TYPE i VALUE 4,
       END OF c_struct_kind .
 
 *"* private components of class ZCL_LOGGER
@@ -359,16 +359,16 @@ CLASS zcl_logger IMPLEMENTATION.
 
   METHOD zif_logger~add.
 
-    DATA: detailed_msg         TYPE bal_s_msg,
-          exception_data_table TYPE tty_exception_data,
-          free_text_msg        TYPE char200,
-          ctx_type             TYPE REF TO cl_abap_typedescr,
-          ctx_ddic_header      TYPE x030l,
-          msg_type             TYPE REF TO cl_abap_typedescr,
-          struct_kind          TYPE i,
-          formatted_context    TYPE bal_s_cont,
-          formatted_params     TYPE bal_s_parm,
-          message_type         TYPE symsgty,
+    DATA: detailed_msg             TYPE bal_s_msg,
+          exception_data_table     TYPE tty_exception_data,
+          free_text_msg            TYPE char200,
+          ctx_type                 TYPE REF TO cl_abap_typedescr,
+          ctx_ddic_header          TYPE x030l,
+          msg_type                 TYPE REF TO cl_abap_typedescr,
+          struct_kind              TYPE i,
+          formatted_context        TYPE bal_s_cont,
+          formatted_params         TYPE bal_s_parm,
+          message_type             TYPE symsgty,
           "these objects could be moved into their own method
           "see adt://***/sap/bc/adt/oo/classes/zcl_logger/source/main#start=391,10;end=415,61
           symsg                    TYPE symsg,
@@ -385,13 +385,13 @@ CLASS zcl_logger IMPLEMENTATION.
       formatted_context-value = <context_val>.
       ctx_type                = cl_abap_typedescr=>describe_by_data( context ).
 
-      CALL METHOD ctx_type->get_ddic_header
+      ctx_type->get_ddic_header(
         RECEIVING
           p_header     = ctx_ddic_header
         EXCEPTIONS
           not_found    = 1
           no_ddic_type = 2
-          OTHERS       = 3.
+          OTHERS       = 3 ).
       IF sy-subrc = 0.
         formatted_context-tabname = ctx_ddic_header-tabname.
       ENDIF.
@@ -470,31 +470,30 @@ CLASS zcl_logger IMPLEMENTATION.
           zif_logger~add(
               obj_to_log    = <message_line>
               context       = context
-              importance    = importance ).
+              importance    = importance
+              type          = type ).
         ELSE.
-          zif_logger~add( obj_to_log = <message_line> ).
+          zif_logger~add(
+              obj_to_log    = <message_line>
+              importance    = importance
+              type          = type ).
         ENDIF.
       ENDLOOP.
     ELSEIF msg_type->type_kind = cl_abap_typedescr=>typekind_struct1     "flat structure
         OR msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.    "deep structure (already when string is used)
-      add_structure(
-        EXPORTING
+      self = add_structure(
           obj_to_log    = obj_to_log
           context       = context
           callback_form = callback_form
           callback_prog = callback_prog
           callback_fm   = callback_fm
           type          = type
-          importance    = importance
-        RECEIVING
-          self          = self
-      ).
+          importance    = importance ).
     ELSE.
       free_text_msg = obj_to_log.
     ENDIF.
 
     IF free_text_msg IS NOT INITIAL.
-
       message_type = type.
       IF message_type IS INITIAL.
         message_type = if_msg_output=>msgtype_success.
@@ -520,6 +519,10 @@ CLASS zcl_logger IMPLEMENTATION.
       detailed_msg-context   = formatted_context.
       detailed_msg-params    = formatted_params.
       detailed_msg-probclass = importance.
+      IF type IS NOT INITIAL.
+        detailed_msg-msgty   = type.
+      ENDIF.
+
       CALL FUNCTION 'BAL_LOG_MSG_ADD'
         EXPORTING
           i_log_handle = me->handle
@@ -552,18 +555,14 @@ CLASS zcl_logger IMPLEMENTATION.
           string_to_log = |{ to_lower( component-name ) } = { <component> }|.
           add( string_to_log ).
         ELSEIF msg_type->kind = cl_abap_typedescr=>kind_struct.
-          add_structure(
-            EXPORTING
+          self = add_structure(
               obj_to_log    = <component>
               context       = context
               callback_form = callback_form
               callback_prog = callback_prog
               callback_fm   = callback_fm
               type          = type
-              importance    = importance
-            RECEIVING
-              self          = self
-          ).
+              importance    = importance ).
         ENDIF.
       ENDIF.
     ENDLOOP.
@@ -628,8 +627,8 @@ CLASS zcl_logger IMPLEMENTATION.
   METHOD zif_logger~fullscreen.
 
     DATA:
-          profile        TYPE bal_s_prof,
-          lt_log_handles TYPE bal_t_logh.
+      profile        TYPE bal_s_prof,
+      lt_log_handles TYPE bal_t_logh.
 
     INSERT me->handle INTO TABLE lt_log_handles.
 
