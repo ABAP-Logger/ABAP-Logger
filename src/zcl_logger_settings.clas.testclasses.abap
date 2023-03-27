@@ -20,7 +20,7 @@ ENDCLASS.
 CLASS lcl_logger_settings_should IMPLEMENTATION.
 
   METHOD setup.
-    cut = NEW zcl_logger_settings( ).
+    CREATE OBJECT cut.
   ENDMETHOD.
 
   METHOD have_correct_defaults.

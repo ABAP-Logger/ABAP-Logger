@@ -1094,7 +1094,7 @@ CLASS lcl_test IMPLEMENTATION.
     DATA dummy            TYPE string.
 
     DATA loggable         TYPE REF TO ltd_loggable_object.
-    loggable = NEW ltd_loggable_object( ).
+    CREATE OBJECT loggable.
 
     MESSAGE s001(00) WITH 'I' 'test' 'the' 'logger.' INTO dummy.
     MOVE-CORRESPONDING sy TO loggable_message-symsg.
