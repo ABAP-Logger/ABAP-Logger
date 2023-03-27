@@ -12,9 +12,9 @@ CLASS zcl_logger_display_profile DEFINITION
 
     METHODS get_structure_components
       IMPORTING
-        i_structure_name   TYPE clike
+        i_structure_name    TYPE clike
       RETURNING
-        VALUE(r_components) TYPE cl_abap_structdescr=>component_table .
+        VALUE(r_components) TYPE cl_abap_structdescr=>component_table.
 ENDCLASS.
 
 

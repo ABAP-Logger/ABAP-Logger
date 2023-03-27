@@ -85,7 +85,7 @@ CLASS zcl_logger DEFINITION
         IMPORTING
           msgtype                   TYPE symsgty OPTIONAL
         RETURNING
-          VALUE(rt_message_handles) TYPE bal_t_msgh ,
+          VALUE(rt_message_handles) TYPE bal_t_msgh,
 
       add_structure
         IMPORTING
@@ -201,7 +201,8 @@ CLASS zcl_logger IMPLEMENTATION.
     ENDWHILE.
 
     FIELD-SYMBOLS <ret> LIKE LINE OF rt_exception_data_table.
-     "Display the deepest exception first
+
+    "Display the deepest exception first
     SORT exceptions BY level DESCENDING.
     LOOP AT exceptions ASSIGNING <ex>.
       APPEND INITIAL LINE TO rt_exception_data_table ASSIGNING <ret>.

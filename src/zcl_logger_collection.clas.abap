@@ -30,7 +30,7 @@ CLASS zcl_logger_collection IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD zif_logger_collection~display_logs.
-    DATA  display_profile  TYPE bal_s_prof.
+    DATA display_profile TYPE bal_s_prof.
     display_profile = get_display_profile(
       display_profile_head_size = display_profile_head_size
       display_profile_tree_size = display_profile_tree_size ).
@@ -39,7 +39,7 @@ CLASS zcl_logger_collection IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD zif_logger_collection~display_logs_using_profile.
-    DATA  log_handles  TYPE bal_t_logh.
+    DATA log_handles TYPE bal_t_logh.
     log_handles = get_log_handles( ).
 
     CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'

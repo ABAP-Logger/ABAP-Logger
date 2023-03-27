@@ -22,9 +22,9 @@ CLASS zcx_logger_display_profile IMPLEMENTATION.
   METHOD constructor.
     CALL METHOD super->constructor
       EXPORTING
-      textid = textid
-      previous = previous
-      info = info.
+        textid = textid
+        previous = previous
+        info = info.
     IF textid IS INITIAL.
       me->textid = zcx_logger_display_profile.
     ENDIF.

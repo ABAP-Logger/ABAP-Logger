@@ -80,7 +80,7 @@ CLASS zcl_logger_factory IMPLEMENTATION.
       lo_log->sec_connect_commit = abap_true.
     ENDIF.
 
-  " Set deletion date and set if log can be deleted before deletion date is reached.
+    " Set deletion date and set if log can be deleted before deletion date is reached.
     lo_log->header-aldate_del = lo_log->settings->get_expiry_date( ).
     lo_log->header-del_before = lo_log->settings->get_must_be_kept_until_expiry( ).
 
