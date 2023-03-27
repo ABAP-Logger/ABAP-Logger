@@ -39,8 +39,7 @@ CLASS zcl_logger_collection IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD zif_logger_collection~display_logs_using_profile.
-
-    DATA  log_handles  TYPE bal_t_logh  .
+    DATA  log_handles  TYPE bal_t_logh.
     log_handles = get_log_handles( ).
 
     CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
@@ -57,32 +56,27 @@ CLASS zcl_logger_collection IMPLEMENTATION.
       "Todo "Raise Exception Error?
       MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno
         WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4 DISPLAY LIKE sy-msgty.
-    ENDIF .
-
+    ENDIF.
   ENDMETHOD.
 
   METHOD get_log_handles.
-
     DATA logger TYPE REF TO zif_logger.
     LOOP AT loggers INTO logger.
       INSERT logger->handle INTO TABLE r_return.
     ENDLOOP.
-
   ENDMETHOD.
 
   METHOD get_display_profile.
-
     CALL FUNCTION 'BAL_DSP_PROFILE_STANDARD_GET'
       IMPORTING
         e_s_display_profile = r_return.
 
-    r_return-head_size = display_profile_head_size .
-    r_return-tree_size = display_profile_tree_size .
+    r_return-head_size = display_profile_head_size.
+    r_return-tree_size = display_profile_tree_size.
     "interesting fact - I can't remember why I needed to move the hidden columns....
     IF r_return-mess_fcat IS NOT INITIAL.
       SORT r_return-mess_fcat BY no_out ASCENDING col_pos DESCENDING.
     ENDIF.
-
   ENDMETHOD.
 
 ENDCLASS.

@@ -21,12 +21,29 @@
   },
   "rules": {
     "begin_end_names": true,
+    "check_comments": {
+        "allowEndOfLine": true
+    },
     "check_ddic": true,
     "check_include": true,
     "check_syntax": true,
+    "functional_writing": {
+        "ignoreExceptions": true
+    },
+    "exporting": true,
     "global_class": true,
     "implement_methods": true,
+    "indentation": {
+        "alignTryCatch": false,
+        "ignoreExceptions": false,
+        "globalClassSkipFirst": false,
+        "ignoreGlobalClassDefinition": false,
+        "ignoreGlobalInterface": false,
+        "selectionScreenBlockIndentation": false
+    },
+    "in_statement_indentation": true,
     "keyword_case": true,
+    "omit_receiving": true,
     "method_implemented_twice": true,
     "parser_error": true,
     "parser_missing_space": true,

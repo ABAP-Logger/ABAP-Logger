@@ -1,4 +1,4 @@
-INTERFACE zif_logger_settings PUBLIC .
+INTERFACE zif_logger_settings PUBLIC.
 
   "! Is the log automatically saved when adding messages?
   "! See setter for more details.

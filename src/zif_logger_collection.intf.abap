@@ -1,5 +1,5 @@
 INTERFACE zif_logger_collection
-  PUBLIC .
+  PUBLIC.
 
   METHODS add_logger
     IMPORTING

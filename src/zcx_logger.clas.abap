@@ -1,36 +1,35 @@
-class ZCX_LOGGER definition
-  public
-  inheriting from CX_NO_CHECK
-  create public .
+CLASS zcx_logger DEFINITION
+  PUBLIC
+  INHERITING FROM cx_no_check
+  CREATE PUBLIC.
 
-public section.
+  PUBLIC SECTION.
 
-  constants ZCX_LOGGER type SOTR_CONC value 'B9D98DB24EAF1EDD8ED3241224D60A6A' ##NO_TEXT.
-  data INFO type STRING .
+    CONSTANTS zcx_logger TYPE sotr_conc VALUE 'B9D98DB24EAF1EDD8ED3241224D60A6A' ##NO_TEXT.
+    DATA info TYPE string .
 
-  methods CONSTRUCTOR
-    importing
-      !TEXTID like TEXTID optional
-      !PREVIOUS like PREVIOUS optional
-      !INFO type STRING optional .
-protected section.
-private section.
+    METHODS constructor
+    IMPORTING
+      !textid LIKE textid OPTIONAL
+      !previous LIKE previous OPTIONAL
+      !info TYPE string OPTIONAL.
+  PROTECTED SECTION.
+  PRIVATE SECTION.
 ENDCLASS.
 
 
 
-CLASS ZCX_LOGGER IMPLEMENTATION.
+CLASS zcx_logger IMPLEMENTATION.
 
+  METHOD constructor.
+    CALL METHOD super->constructor
+      EXPORTING
+      textid = textid
+      previous = previous.
+    IF textid IS INITIAL.
+      me->textid = zcx_logger.
+    ENDIF.
+    me->info = info.
+  ENDMETHOD.
 
-  method CONSTRUCTOR.
-CALL METHOD SUPER->CONSTRUCTOR
-EXPORTING
-TEXTID = TEXTID
-PREVIOUS = PREVIOUS
-.
- IF textid IS INITIAL.
-   me->textid = ZCX_LOGGER .
- ENDIF.
-me->INFO = INFO .
-  endmethod.
 ENDCLASS.

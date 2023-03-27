@@ -1,35 +1,33 @@
-class ZCX_LOGGER_DISPLAY_PROFILE definition
-  public
-  inheriting from ZCX_LOGGER
-  create public .
+CLASS zcx_logger_display_profile DEFINITION
+  PUBLIC
+  INHERITING FROM zcx_logger
+  CREATE PUBLIC.
 
-public section.
+  PUBLIC SECTION.
+    CONSTANTS zcx_logger_display_profile TYPE sotr_conc VALUE 'B9D98DB24EAF1EDD8ED3241224D60A6A' ##NO_TEXT.
 
-  constants ZCX_LOGGER_DISPLAY_PROFILE type SOTR_CONC value 'B9D98DB24EAF1EDD8ED3241224D60A6A' ##NO_TEXT.
-
-  methods CONSTRUCTOR
-    importing
-      !TEXTID like TEXTID optional
-      !PREVIOUS like PREVIOUS optional
-      !INFO type STRING optional .
-protected section.
-private section.
+    METHODS constructor
+    IMPORTING
+      textid LIKE textid OPTIONAL
+      previous LIKE previous OPTIONAL
+      info TYPE string OPTIONAL.
+  PROTECTED SECTION.
+  PRIVATE SECTION.
 ENDCLASS.
 
 
 
-CLASS ZCX_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
+CLASS zcx_logger_display_profile IMPLEMENTATION.
 
+  METHOD constructor.
+    CALL METHOD super->constructor
+      EXPORTING
+      textid = textid
+      previous = previous
+      info = info.
+    IF textid IS INITIAL.
+      me->textid = zcx_logger_display_profile.
+    ENDIF.
+  ENDMETHOD.
 
-  method CONSTRUCTOR.
-CALL METHOD SUPER->CONSTRUCTOR
-EXPORTING
-TEXTID = TEXTID
-PREVIOUS = PREVIOUS
-INFO = INFO
-.
- IF textid IS INITIAL.
-   me->textid = ZCX_LOGGER_DISPLAY_PROFILE .
- ENDIF.
-  endmethod.
 ENDCLASS.
