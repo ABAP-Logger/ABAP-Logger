@@ -7,7 +7,7 @@ INTERFACE zif_logger
   METHODS add
     IMPORTING
       obj_to_log          TYPE any OPTIONAL
-      context             TYPE simple OPTIONAL
+      context             TYPE any OPTIONAL
       callback_form       TYPE csequence OPTIONAL
       callback_prog       TYPE csequence OPTIONAL
       callback_fm         TYPE csequence OPTIONAL
