@@ -39,7 +39,7 @@ CLASS zcl_logger DEFINITION
         !object         TYPE csequence OPTIONAL
         !subobject      TYPE csequence OPTIONAL
         !desc           TYPE csequence OPTIONAL
-        !context        TYPE simple OPTIONAL
+        !context        TYPE any OPTIONAL
         !auto_save      TYPE abap_bool OPTIONAL
         !second_db_conn TYPE abap_bool DEFAULT abap_true
       RETURNING
@@ -95,7 +95,7 @@ CLASS zcl_logger DEFINITION
       add_structure
         IMPORTING
           obj_to_log    TYPE any OPTIONAL
-          context       TYPE simple OPTIONAL
+          context       TYPE any OPTIONAL
           callback_form TYPE csequence OPTIONAL
           callback_prog TYPE csequence OPTIONAL
           callback_fm   TYPE csequence OPTIONAL
