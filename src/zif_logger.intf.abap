@@ -21,7 +21,7 @@ INTERFACE zif_logger
   METHODS a
     IMPORTING
       obj_to_log          TYPE any OPTIONAL
-      context             TYPE simple OPTIONAL
+      context             TYPE any OPTIONAL
       callback_form       TYPE csequence OPTIONAL
       callback_prog       TYPE csequence OPTIONAL
       callback_fm         TYPE csequence OPTIONAL
@@ -34,7 +34,7 @@ INTERFACE zif_logger
   METHODS e
     IMPORTING
       obj_to_log          TYPE any OPTIONAL
-      context             TYPE simple OPTIONAL
+      context             TYPE any OPTIONAL
       callback_form       TYPE csequence OPTIONAL
       callback_prog       TYPE csequence OPTIONAL
       callback_fm         TYPE csequence OPTIONAL
@@ -47,7 +47,7 @@ INTERFACE zif_logger
   METHODS w
     IMPORTING
       obj_to_log          TYPE any OPTIONAL
-      context             TYPE simple OPTIONAL
+      context             TYPE any OPTIONAL
       callback_form       TYPE csequence OPTIONAL
       callback_prog       TYPE csequence OPTIONAL
       callback_fm         TYPE csequence OPTIONAL
@@ -60,7 +60,7 @@ INTERFACE zif_logger
   METHODS i
     IMPORTING
       obj_to_log          TYPE any OPTIONAL
-      context             TYPE simple OPTIONAL
+      context             TYPE any OPTIONAL
       callback_form       TYPE csequence OPTIONAL
       callback_prog       TYPE csequence OPTIONAL
       callback_fm         TYPE csequence OPTIONAL
@@ -73,7 +73,7 @@ INTERFACE zif_logger
   METHODS s
     IMPORTING
       obj_to_log          TYPE any OPTIONAL
-      context             TYPE simple OPTIONAL
+      context             TYPE any OPTIONAL
       callback_form       TYPE csequence OPTIONAL
       callback_prog       TYPE csequence OPTIONAL
       callback_fm         TYPE csequence OPTIONAL
