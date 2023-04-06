@@ -11,7 +11,7 @@ CLASS zcl_logger_factory DEFINITION
         object       TYPE csequence OPTIONAL
         subobject    TYPE csequence OPTIONAL
         desc         TYPE csequence OPTIONAL
-        context      TYPE simple OPTIONAL
+        context      TYPE any OPTIONAL
         settings     TYPE REF TO zif_logger_settings OPTIONAL
       RETURNING
         VALUE(r_log) TYPE REF TO zif_logger .
