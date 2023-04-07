@@ -12,31 +12,24 @@ CLASS zcl_logger_display_profile DEFINITION
 
     METHODS get_structure_components
       IMPORTING
-        !i_structure_name   TYPE clike
+        i_structure_name    TYPE clike
       RETURNING
-        VALUE(r_components) TYPE cl_abap_structdescr=>component_table .
+        VALUE(r_components) TYPE cl_abap_structdescr=>component_table.
 ENDCLASS.
 
 
 
-CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
-
+CLASS zcl_logger_display_profile IMPLEMENTATION.
 
   METHOD get_structure_components.
-
     DATA strucdescr TYPE REF TO cl_abap_structdescr.
     strucdescr ?= cl_abap_structdescr=>describe_by_name( i_structure_name ).
     r_components = strucdescr->get_components( ).
-
   ENDMETHOD.
-
 
   METHOD zif_logger_display_profile~get.
-
     r_display_profile = display_profile.
-
   ENDMETHOD.
-
 
   METHOD zif_logger_display_profile~set.
     CASE abap_true.
@@ -65,9 +58,7 @@ CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
     r_self = me.
   ENDMETHOD.
 
-
   METHOD zif_logger_display_profile~set_context_message.
-
     CHECK display_profile IS NOT INITIAL.
 
     DATA colpos     TYPE i VALUE 100.
@@ -87,12 +78,9 @@ CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
       colpos = colpos + 1.
 
     ENDLOOP.
-
   ENDMETHOD.
 
-
   METHOD zif_logger_display_profile~set_context_tree.
-
     FIELD-SYMBOLS <lev1_fcat> TYPE bal_t_fcat.
     FIELD-SYMBOLS <lev2_fcat> TYPE bal_t_fcat.
     FIELD-SYMBOLS <lev1_sort> TYPE bal_t_sort.
@@ -116,7 +104,6 @@ CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
     CLEAR <lev1_sort>.
     CLEAR <lev2_sort>.
 
-
     DATA colpos     TYPE i VALUE 100.
     DATA sortpos    TYPE i VALUE 1.
     DATA lev_fcat   LIKE LINE OF display_profile-lev1_fcat.
@@ -127,7 +114,6 @@ CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
     components = get_structure_components( i_context_structure ).
 
     LOOP AT components INTO component.
-
       CLEAR lev_fcat.
 
       lev_fcat-ref_table = i_context_structure.
@@ -145,7 +131,6 @@ CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
       APPEND lev_sort TO <lev1_sort>.
 
       sortpos = sortpos + 1.
-
     ENDLOOP.
 
     CLEAR lev_fcat.
@@ -160,9 +145,7 @@ CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
     lev_sort-up        = 'X'.
     lev_sort-spos      = 1.
     APPEND lev_sort TO <lev2_sort>.
-
   ENDMETHOD.
-
 
   METHOD zif_logger_display_profile~set_grid.
     zif_logger_display_profile~set_value(
@@ -172,9 +155,7 @@ CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
     r_self = me.
   ENDMETHOD.
 
-
   METHOD zif_logger_display_profile~set_value.
-
     FIELD-SYMBOLS <value> TYPE any.
     ASSIGN COMPONENT i_fld OF STRUCTURE display_profile TO <value>.
     IF sy-subrc = 0.
@@ -187,4 +168,5 @@ CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
     ENDIF.
 
   ENDMETHOD.
+
 ENDCLASS.

@@ -57,15 +57,11 @@ CLASS lcl_test DEFINITION FOR TESTING
       can_create_expiring_log_days FOR TESTING,
       can_create_expiring_log_date FOR TESTING,
       can_open_or_create FOR TESTING,
-
       can_add_log_context FOR TESTING,
-
       can_add_to_log FOR TESTING,
       can_add_to_named_log FOR TESTING,
-
       auto_saves_named_log FOR TESTING,
       auto_saves_reopened_log FOR TESTING,
-
       can_log_string FOR TESTING,
       can_log_char   FOR TESTING,
       can_log_symsg FOR TESTING,
@@ -83,15 +79,11 @@ CLASS lcl_test DEFINITION FOR TESTING
       can_log_any_simple_structure FOR TESTING,
       can_log_any_deep_structure FOR TESTING,
       can_log_loggable_object FOR TESTING,
-
       can_add_msg_context FOR TESTING,
       can_add_callback_sub FOR TESTING,
       can_add_callback_fm  FOR TESTING,
-
       must_use_factory FOR TESTING,
-
       can_use_and_chain_aliases FOR TESTING,
-
       return_proper_status FOR TESTING,
       return_proper_length FOR TESTING,
       can_add_table_msg_context FOR TESTING RAISING cx_static_check,
@@ -99,7 +91,7 @@ CLASS lcl_test DEFINITION FOR TESTING
       can_change_description FOR TESTING RAISING cx_static_check,
       can_log_callback_params FOR TESTING RAISING cx_static_check.
 
-ENDCLASS.       "lcl_Test
+ENDCLASS.
 
 CLASS lcl_test IMPLEMENTATION.
 
@@ -121,13 +113,13 @@ CLASS lcl_test IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD can_create_anon_log.
-    cl_aunit_assert=>assert_bound(
+    cl_abap_unit_assert=>assert_bound(
       act = anon_log
       msg = 'Cannot Instantiate Anonymous Log' ).
   ENDMETHOD.
 
   METHOD can_create_named_log.
-    cl_aunit_assert=>assert_bound(
+    cl_abap_unit_assert=>assert_bound(
       act = named_log
       msg = 'Cannot Instantiate Named Log' ).
   ENDMETHOD.
@@ -143,10 +135,9 @@ CLASS lcl_test IMPLEMENTATION.
       desc      = 'Log that is not deletable and expiring'
       settings  = zcl_logger_factory=>create_settings(
         )->set_expiry_in_days( days_until_log_can_be_deleted
-        )->set_must_be_kept_until_expiry( abap_true )
-    ).
+        )->set_must_be_kept_until_expiry( abap_true ) ).
 
-    cl_aunit_assert=>assert_bound(
+    cl_abap_unit_assert=>assert_bound(
       act = expiring_log
       msg = 'Cannot Instantiate Expiring Log' ).
 
@@ -159,19 +150,14 @@ CLASS lcl_test IMPLEMENTATION.
     DATA lv_exp TYPE d.
     lv_exp = sy-datum + days_until_log_can_be_deleted.
 
-    cl_aunit_assert=>assert_equals(
-      EXPORTING
-        exp     = lv_exp
-        act     = act_header-aldate_del
-        msg     = 'Log is not expiring in correct amount of days'
-    ).
-
-    cl_aunit_assert=>assert_equals(
-      EXPORTING
-        exp     = abap_true
-        act     = act_header-del_before
-        msg     = 'Log should not be deletable before expiry date'
-    ).
+    cl_abap_unit_assert=>assert_equals(
+      exp     = lv_exp
+      act     = act_header-aldate_del
+      msg     = 'Log is not expiring in correct amount of days' ).
+    cl_abap_unit_assert=>assert_equals(
+      exp     = abap_true
+      act     = act_header-del_before
+      msg     = 'Log should not be deletable before expiry date' ).
   ENDMETHOD.
 
   METHOD can_create_expiring_log_date.
@@ -188,10 +174,9 @@ CLASS lcl_test IMPLEMENTATION.
       desc      = 'Log that is not deletable and expiring'
       settings  = zcl_logger_factory=>create_settings(
         )->set_expiry_date( lv_expire
-        )->set_must_be_kept_until_expiry( abap_true )
-    ).
+        )->set_must_be_kept_until_expiry( abap_true ) ).
 
-    cl_aunit_assert=>assert_bound(
+    cl_abap_unit_assert=>assert_bound(
       act = expiring_log
       msg = 'Cannot Instantiate Expiring Log' ).
 
@@ -201,23 +186,18 @@ CLASS lcl_test IMPLEMENTATION.
       IMPORTING
         e_s_log      = act_header.
 
-    cl_aunit_assert=>assert_equals(
-      EXPORTING
-        exp     = lv_expire
-        act     = act_header-aldate_del
-        msg     = 'Log is not expiring on correct date'
-    ).
-
-    cl_aunit_assert=>assert_equals(
-      EXPORTING
-        exp     = abap_true
-        act     = act_header-del_before
-        msg     = 'Log should not be deletable before expiry date'
-    ).
+    cl_abap_unit_assert=>assert_equals(
+      exp     = lv_expire
+      act     = act_header-aldate_del
+      msg     = 'Log is not expiring on correct date' ).
+    cl_abap_unit_assert=>assert_equals(
+      exp     = abap_true
+      act     = act_header-del_before
+      msg     = 'Log should not be deletable before expiry date' ).
   ENDMETHOD.
 
   METHOD can_reopen_log.
-    cl_aunit_assert=>assert_bound(
+    cl_abap_unit_assert=>assert_bound(
       act = reopened_log
       msg = 'Cannot Reopen Log from DB' ).
   ENDMETHOD.
@@ -238,15 +218,13 @@ CLASS lcl_test IMPLEMENTATION.
       IMPORTING
         e_t_log_handle = handles.
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 2
       act = lines( handles )
       msg = 'Did not create nonexistent log from OPEN' ).
-
   ENDMETHOD.
 
   METHOD can_add_log_context.
-
     DATA: log                 TYPE REF TO zif_logger,
           random_country_data TYPE t005t,
           act_header          TYPE bal_s_log.
@@ -263,29 +241,25 @@ CLASS lcl_test IMPLEMENTATION.
       IMPORTING
         e_s_log      = act_header.
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'T005T'
       act = act_header-context-tabname
       msg = 'Did not add context to log' ).
-
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = random_country_data
       act = act_header-context-value
       msg = 'Did not add context to log' ).
-
   ENDMETHOD.
 
   METHOD can_add_to_log.
     DATA: dummy TYPE c.
-
     MESSAGE s001(00) WITH 'I' 'test' 'the' 'logger.' INTO dummy.
     anon_log->add( ).
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'Itestthelogger.'
       act = get_first_message( anon_log->handle )
       msg = 'Did not log system message properly' ).
-
   ENDMETHOD.
 
   METHOD can_add_to_named_log.
@@ -294,12 +268,11 @@ CLASS lcl_test IMPLEMENTATION.
     MESSAGE s001(00) WITH 'Testing' 'a' 'named' 'logger.' INTO dummy.
     named_log->add( ).
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'Testinganamedlogger.'
       act = get_first_message( named_log->handle )
       msg = 'Did not write to named log' ).
   ENDMETHOD.
-
 
   METHOD auto_saves_named_log.
     DATA: dummy       TYPE c,
@@ -317,11 +290,10 @@ CLASS lcl_test IMPLEMENTATION.
       EXPORTING
         i_t_lognumber = log_numbers.
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = msg
       act = get_first_message( named_log->handle )
       msg = 'Did not write to named log' ).
-
   ENDMETHOD.
 
   METHOD auto_saves_reopened_log.
@@ -340,35 +312,33 @@ CLASS lcl_test IMPLEMENTATION.
                   IMPORTING texts       = act_texts ).
 
     READ TABLE act_texts INDEX 1 INTO act_text.
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'This message is in the database'
       act = act_text
       msg = 'Did not autosave to reopened log' ).
 
     READ TABLE act_texts INDEX 2 INTO act_text.
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'This is another message in the database'
       act = act_text
       msg = 'Did not autosave to reopened log' ).
-
   ENDMETHOD.
 
   METHOD can_log_string.
     DATA: stringmessage TYPE string VALUE `Logging a string, guys!`.
     anon_log->add( stringmessage ).
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = stringmessage
       act = get_first_message( anon_log->handle )
       msg = 'Did not log system message properly' ).
-
   ENDMETHOD.
 
   METHOD can_log_char.
     DATA: charmessage TYPE char70 VALUE 'Logging a char sequence!'.
     anon_log->add( charmessage ).
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = charmessage
       act = get_first_message( anon_log->handle )
       msg = 'Did not log system message properly' ).
@@ -401,29 +371,25 @@ CLASS lcl_test IMPLEMENTATION.
         e_s_msg        = actual_details
         e_txt_msg      = actual_text.
 
-    cl_aunit_assert=>assert_not_initial(
+    cl_abap_unit_assert=>assert_not_initial(
       act = actual_details-time_stmp
       msg = 'Did not log system message properly' ).
 
     expected_details-msg_count = 1.
     CLEAR actual_details-time_stmp.
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = expected_details
       act = actual_details
       msg = 'Did not log system message properly' ).
-
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'This is a test'
       act = condense( actual_text )
       msg = 'Did not log system message properly' ).
-
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = abap_true
       act = anon_log->has_warnings( )
-      msg = 'Did not log or fetch system message properly'
-    ).
-
+      msg = 'Did not log or fetch system message properly' ).
   ENDMETHOD.
 
   METHOD can_log_bapiret1.
@@ -453,29 +419,25 @@ CLASS lcl_test IMPLEMENTATION.
         e_s_msg        = actual_details
         e_txt_msg      = actual_text.
 
-    cl_aunit_assert=>assert_not_initial(
+    cl_abap_unit_assert=>assert_not_initial(
       act = actual_details-time_stmp
       msg = 'Did not log system message properly' ).
 
     expected_details-msg_count = 1.
     CLEAR actual_details-time_stmp.
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = expected_details
       act = actual_details
       msg = 'Did not log system message properly' ).
-
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'This is a test'
       act = condense( actual_text )
       msg = 'Did not log system message properly' ).
-
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = abap_true
       act = anon_log->has_warnings( )
-      msg = 'Did not log or fetch system message properly'
-    ).
-
+      msg = 'Did not log or fetch system message properly' ).
   ENDMETHOD.
 
   METHOD can_log_bapiret2.
@@ -505,28 +467,27 @@ CLASS lcl_test IMPLEMENTATION.
         e_s_msg        = actual_details
         e_txt_msg      = actual_text.
 
-    cl_aunit_assert=>assert_not_initial(
+    cl_abap_unit_assert=>assert_not_initial(
       act = actual_details-time_stmp
       msg = 'Did not log system message properly' ).
 
     expected_details-msg_count = 1.
     CLEAR actual_details-time_stmp.
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = expected_details
       act = actual_details
       msg = 'Did not log system message properly' ).
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'This is a test'
       act = condense( actual_text )
       msg = 'Did not log system message properly' ).
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = abap_true
       act = anon_log->has_warnings( )
-      msg = 'Did not log or fetch system message properly'
-    ).
+      msg = 'Did not log or fetch system message properly' ).
   ENDMETHOD.
 
   METHOD can_log_bapi_coru_return.
@@ -556,28 +517,25 @@ CLASS lcl_test IMPLEMENTATION.
         e_s_msg        = actual_details
         e_txt_msg      = actual_text.
 
-    cl_aunit_assert=>assert_not_initial(
+    cl_abap_unit_assert=>assert_not_initial(
       act = actual_details-time_stmp
       msg = 'Did not log system message properly' ).
 
     expected_details-msg_count = 1.
     CLEAR actual_details-time_stmp.
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = expected_details
       act = actual_details
       msg = 'Did not log system message properly' ).
-
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'This is a test'
       act = condense( actual_text )
       msg = 'Did not log system message properly' ).
-
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = abap_true
       act = anon_log->has_warnings( )
-      msg = 'Did not log or fetch system message properly'
-    ).
+      msg = 'Did not log or fetch system message properly' ).
   ENDMETHOD.
 
   METHOD can_log_bapi_order_return.
@@ -617,28 +575,27 @@ CLASS lcl_test IMPLEMENTATION.
         e_s_msg        = actual_details
         e_txt_msg      = actual_text.
 
-    cl_aunit_assert=>assert_not_initial(
+    cl_abap_unit_assert=>assert_not_initial(
       act = actual_details-time_stmp
       msg = 'Did not log system message properly' ).
 
     expected_details-msg_count = 1.
     CLEAR actual_details-time_stmp.
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = expected_details
       act = actual_details
       msg = 'Did not log system message properly' ).
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'This is a test'
       act = condense( actual_text )
       msg = 'Did not log system message properly' ).
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = abap_true
       act = anon_log->has_errors( )
-      msg = 'Did not log or fetch system message properly'
-    ).
+      msg = 'Did not log or fetch system message properly' ).
   ENDMETHOD.
 
   METHOD can_log_rcomp.
@@ -680,28 +637,27 @@ CLASS lcl_test IMPLEMENTATION.
         e_s_msg        = actual_details
         e_txt_msg      = actual_text.
 
-    cl_aunit_assert=>assert_not_initial(
+    cl_abap_unit_assert=>assert_not_initial(
       act = actual_details-time_stmp
       msg = 'Did not log system message properly' ).
 
     expected_details-msg_count = 1.
     CLEAR actual_details-time_stmp.
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = expected_details
       act = actual_details
       msg = 'Did not log system message properly' ).
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'This is a test'
       act = condense( actual_text )
       msg = 'Did not log system message properly' ).
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = abap_true
       act = anon_log->has_errors( )
-      msg = 'Did not log or fetch system message properly'
-    ).
+      msg = 'Did not log or fetch system message properly' ).
   ENDMETHOD.
 
   METHOD can_log_prott.
@@ -743,32 +699,28 @@ CLASS lcl_test IMPLEMENTATION.
         e_s_msg        = actual_details
         e_txt_msg      = actual_text.
 
-    cl_aunit_assert=>assert_not_initial(
+    cl_abap_unit_assert=>assert_not_initial(
       act = actual_details-time_stmp
       msg = 'Did not log system message properly' ).
 
     expected_details-msg_count = 1.
     CLEAR actual_details-time_stmp.
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = expected_details
       act = actual_details
       msg = 'Did not log system message properly' ).
-
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'This is a test'
       act = condense( actual_text )
       msg = 'Did not log system message properly' ).
-
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = abap_true
       act = anon_log->has_warnings( )
-      msg = 'Did not log or fetch system message properly'
-    ).
+      msg = 'Did not log or fetch system message properly' ).
   ENDMETHOD.
 
   METHOD can_log_sprot.
-
     DATA: sprot_msg        TYPE pat_sprot,
           msg_handle       TYPE balmsghndl,
           expected_details TYPE bal_s_msg,
@@ -795,28 +747,25 @@ CLASS lcl_test IMPLEMENTATION.
         e_s_msg        = actual_details
         e_txt_msg      = actual_text.
 
-    cl_aunit_assert=>assert_not_initial(
+    cl_abap_unit_assert=>assert_not_initial(
       act = actual_details-time_stmp
       msg = 'Did not log system message properly' ).
 
     expected_details-msg_count = 1.
     CLEAR actual_details-time_stmp.
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = expected_details
       act = actual_details
       msg = 'Did not log system message properly' ).
-
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'This is a test'
       act = condense( actual_text )
       msg = 'Did not log system message properly' ).
-
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = abap_true
       act = anon_log->has_warnings( )
-      msg = 'Did not log or fetch system message properly'
-    ).
+      msg = 'Did not log or fetch system message properly' ).
   ENDMETHOD.
 
   METHOD can_log_bapirettab.
@@ -860,21 +809,21 @@ CLASS lcl_test IMPLEMENTATION.
       READ TABLE act_details INTO act_detail INDEX sy-index.
       READ TABLE exp_details INTO exp_detail INDEX sy-index.
 
-      cl_aunit_assert=>assert_not_initial(
+      cl_abap_unit_assert=>assert_not_initial(
         act = act_detail-time_stmp
         msg = 'Did not log system message properly' ).
 
       exp_detail-msg_count = 1.
       CLEAR act_detail-time_stmp.
 
-      cl_aunit_assert=>assert_equals(
+      cl_abap_unit_assert=>assert_equals(
         exp = exp_detail
         act = act_detail
         msg = 'Did not log bapirettab properly' ).
 
       READ TABLE act_texts INTO act_text INDEX sy-index.
       READ TABLE exp_texts INTO exp_text INDEX sy-index.
-      cl_aunit_assert=>assert_equals(
+      cl_abap_unit_assert=>assert_equals(
         exp = exp_text
         act = condense( act_text )
         msg = 'Did not log bapirettab properly' ).
@@ -906,15 +855,13 @@ CLASS lcl_test IMPLEMENTATION.
       IMPORTING
         e_txt_msg      = act_txt.
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = exp_txt "'Division by zero'
       act = act_txt
       msg = 'Did not log throwable correctly' ).
-
   ENDMETHOD.
 
   METHOD can_log_chained_exceptions.
-
     CONSTANTS c_chained_exception TYPE string VALUE 'Did not log chained exception correctly'.
 
     DATA: main_exception     TYPE REF TO lcx_t100,
@@ -978,12 +925,9 @@ CLASS lcl_test IMPLEMENTATION.
       exp = 'SABP_UNIT000Thisistestmessage'                " 'Message: This is test message'
       act = bal_msg-msgid && bal_msg-msgno && bal_msg-msgv1 && bal_msg-msgv2 && bal_msg-msgv3 && bal_msg-msgv4
       msg = c_chained_exception ).
-
   ENDMETHOD.
 
-
   METHOD can_log_batch_msgs.
-
     CONSTANTS c_bdc_message TYPE string VALUE 'Did not log BDC return messages correctly'.
 
     DATA: batch_msgs TYPE TABLE OF bdcmsgcoll,
@@ -1014,7 +958,7 @@ CLASS lcl_test IMPLEMENTATION.
                   IMPORTING msg_details = bal_msgs ).
 
     DESCRIBE TABLE bal_msgs LINES msg_count.
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 3
       act = msg_count
       msg = c_bdc_message ).
@@ -1036,9 +980,7 @@ CLASS lcl_test IMPLEMENTATION.
       exp = 'SABP_UNIT000Thisistestmessage'                " 'Message: This is test message'
       act = bal_msg-msgid && bal_msg-msgno && bal_msg-msgv1 && bal_msg-msgv2 && bal_msg-msgv3 && bal_msg-msgv4
       msg = c_bdc_message ).
-
   ENDMETHOD.
-
 
   METHOD can_log_any_simple_structure.
     TYPES: BEGIN OF ty_struct,
@@ -1068,13 +1010,11 @@ CLASS lcl_test IMPLEMENTATION.
     exp_line = '--- End of structure ---'.
     APPEND exp_line TO exp_table.
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = exp_table
       act = act_table
-      msg = 'Simple structure was not logged correctly'
-    ).
+      msg = 'Simple structure was not logged correctly' ).
   ENDMETHOD.
-
 
   METHOD can_log_any_deep_structure.
     TYPES: BEGIN OF ty_struct,
@@ -1115,13 +1055,11 @@ CLASS lcl_test IMPLEMENTATION.
     exp_line = '--- End of structure ---'.
     APPEND exp_line TO exp_table.
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = exp_table
       act = act_table
-      msg = 'Deep structure was not logged correctly'
-    ).
+      msg = 'Deep structure was not logged correctly' ).
   ENDMETHOD.
-
 
   METHOD can_add_msg_context.
     DATA: addl_context TYPE bezei20 VALUE 'Berlin',        "data element from dictionary!
@@ -1139,24 +1077,24 @@ CLASS lcl_test IMPLEMENTATION.
       IMPORTING
         e_s_msg        = act_details.
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = addl_context
       act = act_details-context-value
       msg = 'Did not add context correctly' ).
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'BEZEI20'
       act = act_details-context-tabname
       msg = 'Did not add context correctly' ).
-
   ENDMETHOD.
 
 
   METHOD can_log_loggable_object.
     "given
     DATA loggable_message TYPE zif_loggable_object=>ty_message.
-    DATA loggable         TYPE REF TO ltd_loggable_object.
     DATA dummy            TYPE string.
-    CREATE OBJECT loggable TYPE ltd_loggable_object.
+
+    DATA loggable         TYPE REF TO ltd_loggable_object.
+    CREATE OBJECT loggable.
 
     MESSAGE s001(00) WITH 'I' 'test' 'the' 'logger.' INTO dummy.
     MOVE-CORRESPONDING sy TO loggable_message-symsg.
@@ -1167,12 +1105,11 @@ CLASS lcl_test IMPLEMENTATION.
     named_log->add( obj_to_log = loggable ).
 
     "then
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'Itestthelogger.'
       act = get_first_message( named_log->handle )
       msg = 'Did not add loggable message correctly' ).
   ENDMETHOD.
-
 
   METHOD can_add_table_msg_context.
     DATA: addl_context TYPE bezei20 VALUE 'Berlin',        "data element from dictionary!
@@ -1195,15 +1132,14 @@ CLASS lcl_test IMPLEMENTATION.
       IMPORTING
         e_s_msg        = act_details.
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = addl_context
       act = act_details-context-value
       msg = 'Did not add context correctly' ).
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'BEZEI20'
       act = act_details-context-tabname
       msg = 'Did not add context correctly' ).
-
 
     msg_handle-msgnumber  = '000002'.
     CALL FUNCTION 'BAL_LOG_MSG_READ'
@@ -1212,11 +1148,10 @@ CLASS lcl_test IMPLEMENTATION.
       IMPORTING
         e_s_msg        = act_details.
 
-    cl_aunit_assert=>assert_initial(
+    cl_abap_unit_assert=>assert_initial(
         act = act_details-context-value
         msg = 'Context should only be added to first line'  ).
-
-    cl_aunit_assert=>assert_initial(
+    cl_abap_unit_assert=>assert_initial(
         act = act_details-context-tabname
         msg = 'Context should only be added to first line'  ).
   ENDMETHOD.
@@ -1243,11 +1178,10 @@ CLASS lcl_test IMPLEMENTATION.
     exp_callback-userexitp = 'PROGRAM'.
     exp_callback-userexitt = ' '.
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = exp_callback
       act = msg_detail-params-callback
       msg = 'Did not add callback correctly' ).
-
   ENDMETHOD.
 
   METHOD can_add_callback_fm.
@@ -1271,7 +1205,7 @@ CLASS lcl_test IMPLEMENTATION.
     exp_callback-userexitp = ' '.
     exp_callback-userexitt = 'F'.
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = exp_callback
       act = msg_detail-params-callback
       msg = 'Did not add callback correctly' ).
@@ -1281,7 +1215,7 @@ CLASS lcl_test IMPLEMENTATION.
     DATA: log TYPE REF TO object.
     TRY.
         CREATE OBJECT log TYPE ('ZCL_LOGGER').
-        cl_aunit_assert=>fail( 'Did not force creation via factory' ).
+        cl_abap_unit_assert=>fail( 'Did not force creation via factory' ).
       CATCH cx_sy_create_object_error.
         "PASSED
     ENDTRY.
@@ -1302,55 +1236,54 @@ CLASS lcl_test IMPLEMENTATION.
                             msg_details = msg_details ).
     READ TABLE texts INDEX 1 INTO text.
     READ TABLE msg_details INDEX 1 INTO msg_detail.
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'A'
       act = msg_detail-msgty
       msg = 'Didn''t log by alias' ).
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'Severe Abort Error!'
       act = text
       msg = 'Didn''t log by alias' ).
     READ TABLE texts INDEX 2 INTO text.
     READ TABLE msg_details INDEX 2 INTO msg_detail.
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'E'
       act = msg_detail-msgty
       msg = 'Didn''t log by alias' ).
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'Here''s an error!'
       act = text
       msg = 'Didn''t log by alias' ).
     READ TABLE texts INDEX 3 INTO text.
     READ TABLE msg_details INDEX 3 INTO msg_detail.
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'W'
       act = msg_detail-msgty
       msg = 'Didn''t log by alias' ).
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'This is a warning'
       act = text
       msg = 'Didn''t log by alias' ).
     READ TABLE texts INDEX 4 INTO text.
     READ TABLE msg_details INDEX 4 INTO msg_detail.
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'I'
       act = msg_detail-msgty
       msg = 'Didn''t log by alias' ).
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'Helpful Information'
       act = text
       msg = 'Didn''t log by alias' ).
     READ TABLE texts INDEX 5 INTO text.
     READ TABLE msg_details INDEX 5 INTO msg_detail.
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'S'
       act = msg_detail-msgty
       msg = 'Didn''t log by alias' ).
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 'GreatSuccess'
       act = text
       msg = 'Didn''t log by alias' ).
-
   ENDMETHOD.
 
   METHOD get_first_message.
@@ -1366,7 +1299,6 @@ CLASS lcl_test IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_messages.
-
     DATA: handle_as_table TYPE bal_t_logh,
           message_handles TYPE bal_t_msgh,
           msg_handle      TYPE balmsghndl,
@@ -1390,7 +1322,6 @@ CLASS lcl_test IMPLEMENTATION.
       APPEND msg_detail TO msg_details.
       APPEND msg_text TO texts.
     ENDLOOP.
-
   ENDMETHOD.
 
   METHOD format_message.
@@ -1416,42 +1347,36 @@ CLASS lcl_test IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD return_proper_status.
-
-    cl_aunit_assert=>assert_not_initial(
+    cl_abap_unit_assert=>assert_not_initial(
       act = anon_log->is_empty( )
       msg = 'Not empty at start' ).
 
     anon_log->s( 'success' ).
     anon_log->i( 'info' ).
 
-    cl_aunit_assert=>assert_initial(
+    cl_abap_unit_assert=>assert_initial(
       act = anon_log->is_empty( )
       msg = 'Empty after add' ).
-
-    cl_aunit_assert=>assert_initial(
+    cl_abap_unit_assert=>assert_initial(
       act = anon_log->has_errors( )
       msg = 'Has errors when there were no errors' ).
-
-    cl_aunit_assert=>assert_initial(
+    cl_abap_unit_assert=>assert_initial(
       act = anon_log->has_warnings( )
       msg = 'Has warnings when there were no warnings' ).
 
     anon_log->e( 'error' ).
     anon_log->w( 'warning' ).
 
-    cl_aunit_assert=>assert_not_initial(
+    cl_abap_unit_assert=>assert_not_initial(
       act = anon_log->has_errors( )
       msg = 'Has no errors when there were errors' ).
-
-    cl_aunit_assert=>assert_not_initial(
+    cl_abap_unit_assert=>assert_not_initial(
       act = anon_log->has_warnings( )
       msg = 'Has no warnings when there were warnings' ).
-
   ENDMETHOD.
 
   METHOD return_proper_length.
-
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 0
       act = anon_log->length( )
       msg = 'Did not return 0 length at start' ).
@@ -1460,16 +1385,13 @@ CLASS lcl_test IMPLEMENTATION.
     anon_log->i( 'info' ).
     anon_log->w( 'warning' ).
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 3
       act = anon_log->length( )
       msg = 'Did not return right length after add' ).
-
   ENDMETHOD.
 
-
   METHOD can_log_string_and_export.
-
     DATA: stringmessage TYPE string VALUE `Logging a string, guys!`,
           table         TYPE bapirettab.
 
@@ -1477,12 +1399,11 @@ CLASS lcl_test IMPLEMENTATION.
 
     table = anon_log->export_to_table( ).
 
-    cl_aunit_assert=>assert_equals(
+    cl_abap_unit_assert=>assert_equals(
       exp = 1
       act = lines( table )
       msg = 'Did not log system message properly' ).
   ENDMETHOD.
-
 
   METHOD can_change_description.
 
@@ -1516,12 +1437,9 @@ CLASS lcl_test IMPLEMENTATION.
         exp = desc
         act = reopened_log->header-extnumber
         msg = 'Did not return new desc' ).
-
   ENDMETHOD.
 
-
   METHOD can_log_callback_params.
-
     DATA:
       callback_parameters TYPE bal_t_par,
       parameter           LIKE LINE OF callback_parameters,
@@ -1575,8 +1493,6 @@ CLASS lcl_test IMPLEMENTATION.
           act = <detail>-params-t_par ).
 
     ENDLOOP.
-
   ENDMETHOD.
 
-
-ENDCLASS.       "lcl_Test
+ENDCLASS.
