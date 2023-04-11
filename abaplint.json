@@ -47,6 +47,7 @@
     "method_implemented_twice": true,
     "parser_error": true,
     "parser_missing_space": true,
+    "pragma_style": true,
     "superclass_final": true,
     "unknown_types": true,
     "unused_variables": true,
