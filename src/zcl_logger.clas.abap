@@ -24,6 +24,7 @@ CLASS zcl_logger DEFINITION
              fullscreen FOR zif_logger~fullscreen,
              popup FOR zif_logger~popup,
              handle FOR zif_logger~handle,
+             control_handle FOR zif_logger~control_handle,
              db_number FOR zif_logger~db_number,
              header FOR zif_logger~header.
 
@@ -725,6 +726,47 @@ CLASS zcl_logger IMPLEMENTATION.
     ASSERT sy-subrc = 0.
 
     self = me.
+  ENDMETHOD.
+
+
+  METHOD zif_logger~container.
+
+    DATA display_profile TYPE bal_s_prof.
+    DATA log_handles     TYPE bal_t_logh.
+
+    "define amount of data to be displayed
+    INSERT me->handle INTO TABLE log_handles.
+
+    IF me->control_handle IS INITIAL.
+
+      INSERT me->handle INTO TABLE log_handles.
+      IF i_display_profile IS NOT SUPPLIED OR i_display_profile IS INITIAL.
+        " get a display profile if not supplied or empty
+        CALL FUNCTION 'BAL_DSP_PROFILE_NO_TREE_GET'
+          IMPORTING
+            e_s_display_profile = display_profile.
+      ELSE.
+        display_profile = i_display_profile.
+      ENDIF.
+
+
+      "create control to display data
+      CALL FUNCTION 'BAL_CNTL_CREATE'
+        EXPORTING
+          i_container         = i_container
+          i_s_display_profile = display_profile
+          i_t_log_handle      = log_handles
+        IMPORTING
+          e_control_handle    = me->control_handle
+        EXCEPTIONS
+          OTHERS              = 1.
+    ELSE.
+      "refresh control
+      CALL FUNCTION 'BAL_CNTL_REFRESH'
+        EXPORTING
+          i_control_handle = me->control_handle
+          i_t_log_handle   = log_handles.
+    ENDIF.
   ENDMETHOD.
 
 ENDCLASS.

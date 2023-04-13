@@ -1,8 +1,9 @@
 INTERFACE zif_logger
   PUBLIC.
-  DATA handle    TYPE balloghndl READ-ONLY.
-  DATA db_number TYPE balognr READ-ONLY.
-  DATA header    TYPE bal_s_log READ-ONLY.
+  DATA handle          TYPE balloghndl READ-ONLY.
+  DATA db_number       TYPE balognr READ-ONLY.
+  DATA header          TYPE bal_s_log READ-ONLY.
+  DATA control_handle  TYPE balcnthndl READ-ONLY.
 
   METHODS add
     IMPORTING
@@ -122,5 +123,10 @@ INTERFACE zif_logger
       description TYPE bal_s_log-extnumber
     RETURNING
       VALUE(self) TYPE REF TO zif_logger.
+
+  METHODS container
+    IMPORTING
+      i_container       TYPE REF TO cl_gui_container
+      i_display_profile TYPE bal_s_prof OPTIONAL.
 
 ENDINTERFACE.
