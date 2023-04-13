@@ -21,10 +21,13 @@ CLASS lcl_test DEFINITION FOR TESTING
   RISK LEVEL HARMLESS.
   PRIVATE SECTION.
 
+    TYPES:
+      ty_bal_tt_msg TYPE STANDARD TABLE OF bal_s_msg.
+
     DATA:
-          anon_log     TYPE REF TO zif_logger,
-          named_log    TYPE REF TO zif_logger,
-          reopened_log TYPE REF TO zif_logger.
+      anon_log     TYPE REF TO zif_logger,
+      named_log    TYPE REF TO zif_logger,
+      reopened_log TYPE REF TO zif_logger.
 
     CLASS-METHODS:
       class_setup.
@@ -40,7 +43,7 @@ CLASS lcl_test DEFINITION FOR TESTING
           log_handle  TYPE balloghndl
         EXPORTING
           texts       TYPE table_of_strings
-          msg_details TYPE bal_tt_msg,
+          msg_details TYPE ty_bal_tt_msg,
 
       format_message
         IMPORTING id         LIKE sy-msgid DEFAULT sy-msgid
@@ -773,11 +776,11 @@ CLASS lcl_test IMPLEMENTATION.
           bapi_msg      TYPE bapiret2,
           exp_texts     TYPE table_of_strings,
           exp_text      TYPE string,
-          exp_details   TYPE bal_tt_msg,
+          exp_details   TYPE ty_bal_tt_msg,
           exp_detail    TYPE bal_s_msg,
           act_texts     TYPE table_of_strings,
           act_text      TYPE string,
-          act_details   TYPE bal_tt_msg,
+          act_details   TYPE ty_bal_tt_msg,
           act_detail    TYPE bal_s_msg.
 
     DEFINE bapiret_messages_are.
@@ -868,7 +871,7 @@ CLASS lcl_test IMPLEMENTATION.
           previous_exception TYPE REF TO lcx_t100,
           caught_exception   TYPE REF TO lcx_t100,
           msg_count          TYPE i,
-          bal_msgs           TYPE bal_tt_msg,
+          bal_msgs           TYPE ty_bal_tt_msg,
           bal_msg            TYPE bal_s_msg.
 
     DEFINE exceptions_are.
@@ -932,7 +935,7 @@ CLASS lcl_test IMPLEMENTATION.
 
     DATA: batch_msgs TYPE TABLE OF bdcmsgcoll,
           batch_msg  TYPE bdcmsgcoll,
-          bal_msgs   TYPE bal_tt_msg,
+          bal_msgs   TYPE ty_bal_tt_msg,
           bal_msg    TYPE bal_s_msg,
           msg_count  TYPE i.
 
@@ -991,7 +994,7 @@ CLASS lcl_test IMPLEMENTATION.
           act_table   TYPE table_of_strings,
           exp_table   TYPE table_of_strings,
           exp_line    LIKE LINE OF exp_table,
-          msg_details TYPE bal_tt_msg.
+          msg_details TYPE ty_bal_tt_msg.
 
     struct-comp1 = 'Demo'.
     struct-comp2 = 5.
@@ -1029,7 +1032,7 @@ CLASS lcl_test IMPLEMENTATION.
           act_table   TYPE table_of_strings,
           exp_table   TYPE table_of_strings,
           exp_line    LIKE LINE OF exp_table,
-          msg_details TYPE bal_tt_msg.
+          msg_details TYPE ty_bal_tt_msg.
 
     struct-comp1      = 'Demo'.
     struct-deep-comp1 = 'Inner component'.
@@ -1224,7 +1227,7 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD can_use_and_chain_aliases.
     DATA: texts       TYPE table_of_strings,
           text        TYPE string,
-          msg_details TYPE bal_tt_msg,
+          msg_details TYPE ty_bal_tt_msg,
           msg_detail  TYPE bal_s_msg.
 
     anon_log->a( 'Severe Abort Error!' )->e( |Here's an error!| ).
@@ -1443,7 +1446,7 @@ CLASS lcl_test IMPLEMENTATION.
     DATA:
       callback_parameters TYPE bal_t_par,
       parameter           LIKE LINE OF callback_parameters,
-      act_details         TYPE bal_tt_msg.
+      act_details         TYPE ty_bal_tt_msg.
     FIELD-SYMBOLS: <detail> TYPE bal_s_msg.
 
     parameter-parname  = 'DATE'.
