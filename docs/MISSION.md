@@ -64,6 +64,9 @@ do you wish the ABAP example above looked like?  How about this:
 
 ## Usage
 
+You can find many Demonstration programs that illustrate the use in [this Repo](https://github.com/ABAP-Logger/demos).
+
+
 ```abap
 DATA: log TYPE REF TO zif_logger.
 
