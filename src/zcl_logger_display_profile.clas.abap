@@ -78,6 +78,8 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
       colpos = colpos + 1.
 
     ENDLOOP.
+
+    r_self = me.
   ENDMETHOD.
 
   METHOD zif_logger_display_profile~set_context_tree.
@@ -145,6 +147,8 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
     lev_sort-up        = 'X'.
     lev_sort-spos      = 1.
     APPEND lev_sort TO <lev2_sort>.
+
+    r_self = me.
   ENDMETHOD.
 
   METHOD zif_logger_display_profile~set_grid.
