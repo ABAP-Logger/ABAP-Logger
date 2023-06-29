@@ -1524,13 +1524,9 @@ CLASS lcl_test IMPLEMENTATION.
     named_log->add( obj_to_log = anon_log ).
 
     "then
-    get_messages(
-      EXPORTING
-        log_handle  = named_log->handle
-      IMPORTING
-        texts       = texts
-        msg_details = msg_details
-    ).
+    get_messages( EXPORTING log_handle  = named_log->handle
+                  IMPORTING texts       = texts
+                            msg_details = msg_details ).
 
     READ TABLE texts INDEX 1 INTO text.
     READ TABLE msg_details INDEX 1 INTO msg_detail.
