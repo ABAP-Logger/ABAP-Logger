@@ -737,7 +737,7 @@ CLASS zcl_logger IMPLEMENTATION.
 
     DATA: message_handles TYPE bal_t_msgh,
           message         TYPE bal_s_msg,
-          message_result  TYPE ty_message.
+          message_result  TYPE zif_loggable_object~ty_message.
 
     FIELD-SYMBOLS <msg_handle> TYPE balmsghndl.
 
