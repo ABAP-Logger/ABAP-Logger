@@ -24,14 +24,17 @@ CLASS lcl_logger_settings_should IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD have_correct_defaults.
-    cl_abap_unit_assert=>assert_true(
+    cl_abap_unit_assert=>assert_equals(
       act     = cut->zif_logger_settings~get_autosave( )
+      exp     = abap_true
       msg     = |Auto save should be on by default| ).
-    cl_abap_unit_assert=>assert_true(
+    cl_abap_unit_assert=>assert_equals(
       act     = cut->zif_logger_settings~get_usage_of_secondary_db_conn( )
+      exp     = abap_true
       msg     = |2nd database connection should be used by default| ).
-    cl_abap_unit_assert=>assert_false(
+    cl_abap_unit_assert=>assert_equals(
       act     = cut->zif_logger_settings~get_must_be_kept_until_expiry( )
+      exp     = abap_false
       msg     = |Log should be deletable before expiry date is reached by default| ).
     cl_abap_unit_assert=>assert_initial(
       act     = cut->zif_logger_settings~get_expiry_date( )
@@ -44,8 +47,9 @@ CLASS lcl_logger_settings_should IMPLEMENTATION.
 
   METHOD set_autosave.
     cut->zif_logger_settings~set_autosave( abap_false ).
-    cl_abap_unit_assert=>assert_false(
+    cl_abap_unit_assert=>assert_equals(
       act     = cut->zif_logger_settings~get_autosave( )
+      exp     = abap_false
       msg     = |Auto save was not deactivated correctly| ).
   ENDMETHOD.
 
@@ -76,15 +80,17 @@ CLASS lcl_logger_settings_should IMPLEMENTATION.
 
   METHOD set_flag_to_keep_until_expiry.
     cut->zif_logger_settings~set_must_be_kept_until_expiry( abap_true ).
-    cl_abap_unit_assert=>assert_true(
+    cl_abap_unit_assert=>assert_equals(
       act     = cut->zif_logger_settings~get_must_be_kept_until_expiry( )
+      exp     = abap_true
       msg     = |Setter for keeping log until expiry is not working correctly.| ).
   ENDMETHOD.
 
   METHOD set_usage_of_2nd_db_connection.
     cut->zif_logger_settings~set_usage_of_secondary_db_conn( abap_false ).
-    cl_abap_unit_assert=>assert_false(
+    cl_abap_unit_assert=>assert_equals(
       act     = cut->zif_logger_settings~get_usage_of_secondary_db_conn( )
+      exp     = abap_false
       msg     = |Setter for using 2nd db connection is not working correctly.| ).
   ENDMETHOD.
 
