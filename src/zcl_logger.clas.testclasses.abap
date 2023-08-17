@@ -101,17 +101,17 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD class_setup.
     zcl_logger=>new(
       object = 'ABAPUNIT'
-      subobject = 'LOGGER'
+      subobject = ''
       desc = 'Log saved in database' )->add( 'This message is in the database' ).
   ENDMETHOD.
 
   METHOD setup.
     anon_log  = zcl_logger=>new( ).
     named_log = zcl_logger=>new( object = 'ABAPUNIT'
-                                 subobject = 'LOGGER'
+                                 subobject = ''
                                  desc = `Hey it's a log` ).
     reopened_log = zcl_logger=>open( object = 'ABAPUNIT'
-                                     subobject = 'LOGGER'
+                                     subobject = ''
                                      desc = 'Log saved in database' ).
   ENDMETHOD.
 
@@ -134,7 +134,7 @@ CLASS lcl_test IMPLEMENTATION.
 
     expiring_log = zcl_logger_factory=>create_log(
       object    = 'ABAPUNIT'
-      subobject = 'LOGGER'
+      subobject = ''
       desc      = 'Log that is not deletable and expiring'
       settings  = zcl_logger_factory=>create_settings(
         )->set_expiry_in_days( days_until_log_can_be_deleted
@@ -173,7 +173,7 @@ CLASS lcl_test IMPLEMENTATION.
 
     expiring_log = zcl_logger_factory=>create_log(
       object    = 'ABAPUNIT'
-      subobject = 'LOGGER'
+      subobject = ''
       desc      = 'Log that is not deletable and expiring'
       settings  = zcl_logger_factory=>create_settings(
         )->set_expiry_date( lv_expire
@@ -210,11 +210,11 @@ CLASS lcl_test IMPLEMENTATION.
           handles     TYPE bal_t_logh.
     CALL FUNCTION 'BAL_GLB_MEMORY_REFRESH'.                "Close Logs
     reopened_log = zcl_logger=>open( object = 'ABAPUNIT'
-                                     subobject = 'LOGGER'
+                                     subobject = ''
                                      desc = 'Log saved in database'
                                      create_if_does_not_exist = abap_true ).
     created_log = zcl_logger=>open( object = 'ABAPUNIT'
-                                    subobject = 'LOGGER'
+                                    subobject = ''
                                     desc = 'Log not in database'
                                     create_if_does_not_exist = abap_true ).
     CALL FUNCTION 'BAL_GLB_SEARCH_LOG'
@@ -1415,7 +1415,7 @@ CLASS lcl_test IMPLEMENTATION.
     desc = cl_system_uuid=>create_uuid_c32_static( ).
 
     named_log = zcl_logger=>new( object    = 'ABAPUNIT'
-                                 subobject = 'LOGGER'
+                                 subobject = ''
                                  auto_save = abap_false ).
 
     named_log->set_header( desc ).
@@ -1429,7 +1429,7 @@ CLASS lcl_test IMPLEMENTATION.
 
     CALL FUNCTION 'BAL_GLB_MEMORY_REFRESH'.                "Close Logs
     reopened_log = zcl_logger=>open( object    = 'ABAPUNIT'
-                                     subobject = 'LOGGER'
+                                     subobject = ''
                                      desc      = desc ).
 
     cl_abap_unit_assert=>assert_bound(
