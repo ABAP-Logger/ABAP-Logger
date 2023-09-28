@@ -27,8 +27,12 @@ INTERFACE zif_logger_display_profile
   METHODS set_context_tree
     IMPORTING
       i_context_structure TYPE clike
-      i_under_log         TYPE clike DEFAULT space.
+      i_under_log         TYPE clike DEFAULT space
+    RETURNING
+      VALUE(r_self) TYPE REF TO zif_logger_display_profile.
   METHODS set_context_message
     IMPORTING
-      i_context_structure TYPE clike.
+      i_context_structure TYPE clike
+    RETURNING
+      VALUE(r_self) TYPE REF TO zif_logger_display_profile.
 ENDINTERFACE.
