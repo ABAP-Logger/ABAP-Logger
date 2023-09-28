@@ -92,7 +92,8 @@ CLASS lcl_test DEFINITION FOR TESTING
       can_add_table_msg_context FOR TESTING RAISING cx_static_check,
       can_log_string_and_export FOR TESTING,
       can_change_description FOR TESTING RAISING cx_static_check,
-      can_log_callback_params FOR TESTING RAISING cx_static_check.
+      can_log_callback_params FOR TESTING RAISING cx_static_check,
+      can_log_log.
 
 ENDCLASS.
 
@@ -1496,6 +1497,94 @@ CLASS lcl_test IMPLEMENTATION.
           act = <detail>-params-t_par ).
 
     ENDLOOP.
+  ENDMETHOD.
+
+  METHOD can_log_log.
+    "given
+    DATA: message_i TYPE string,
+          message_s TYPE string,
+          message_w TYPE string,
+          message_e TYPE string,
+          message_a TYPE string.
+    DATA: texts TYPE table_of_strings,
+          text  TYPE string.
+    DATA: msg_details TYPE bal_tt_msg,
+          msg_detail  TYPE bal_s_msg.
+
+    message_i = 'Info message from appended log'.
+    message_s = 'Success message from appended log'.
+    message_w = 'Warning message from appended log'.
+    message_e = 'Error message from appended log'.
+    message_a = 'Abort message from appended log'.
+
+    anon_log->i( obj_to_log = message_i ).
+    anon_log->s( obj_to_log = message_s ).
+    anon_log->w( obj_to_log = message_w ).
+    anon_log->e( obj_to_log = message_e ).
+    anon_log->a( obj_to_log = message_a ).
+
+    "when
+    named_log->add( obj_to_log = anon_log ).
+
+    "then
+    get_messages( EXPORTING log_handle  = named_log->handle
+                  IMPORTING texts       = texts
+                            msg_details = msg_details ).
+
+    READ TABLE texts INDEX 1 INTO text.
+    READ TABLE msg_details INDEX 1 INTO msg_detail.
+    cl_abap_unit_assert=>assert_equals(
+      exp = message_i
+      act = text
+      msg = 'Did not add logger message correctly' ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = 'I'
+      act = msg_detail-msgty
+      msg = 'Did not return correct message type' ).
+
+    READ TABLE texts INDEX 2 INTO text.
+    READ TABLE msg_details INDEX 2 INTO msg_detail.
+    cl_abap_unit_assert=>assert_equals(
+      exp = message_s
+      act = text
+      msg = 'Did not add logger message correctly' ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = 'S'
+      act = msg_detail-msgty
+      msg = 'Did not return correct message type' ).
+
+    READ TABLE texts INDEX 3 INTO text.
+    READ TABLE msg_details INDEX 3 INTO msg_detail.
+    cl_abap_unit_assert=>assert_equals(
+      exp = message_w
+      act = text
+      msg = 'Did not add logger message correctly' ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = 'W'
+      act = msg_detail-msgty
+      msg = 'Did not return correct message type' ).
+
+    READ TABLE texts INDEX 4 INTO text.
+    READ TABLE msg_details INDEX 4 INTO msg_detail.
+    cl_abap_unit_assert=>assert_equals(
+      exp = message_e
+      act = text
+      msg = 'Did not add logger message correctly' ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = 'E'
+      act = msg_detail-msgty
+      msg = 'Did not return correct message type' ).
+
+    READ TABLE texts INDEX 5 INTO text.
+    READ TABLE msg_details INDEX 5 INTO msg_detail.
+    cl_abap_unit_assert=>assert_equals(
+      exp = message_a
+      act = text
+      msg = 'Did not add logger message correctly' ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = 'A'
+      act = msg_detail-msgty
+      msg = 'Did not return correct message type' ).
   ENDMETHOD.
 
 ENDCLASS.

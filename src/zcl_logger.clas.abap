@@ -9,6 +9,7 @@ CLASS zcl_logger DEFINITION
     TYPE-POOLS abap.
 
     INTERFACES zif_logger.
+    INTERFACES zif_loggable_object.
     ALIASES: add FOR zif_logger~add,
              a FOR zif_logger~a,
              e FOR zif_logger~e,
@@ -25,7 +26,12 @@ CLASS zcl_logger DEFINITION
              popup FOR zif_logger~popup,
              handle FOR zif_logger~handle,
              db_number FOR zif_logger~db_number,
-             header FOR zif_logger~header.
+             header FOR zif_logger~header,
+             set_header FOR zif_logger~set_header,
+             ty_symsg FOR zif_loggable_object~ty_symsg,
+             ty_message FOR zif_loggable_object~ty_message,
+             tty_messages FOR zif_loggable_object~tty_messages,
+             get_message_table FOR zif_loggable_object~get_message_table.
 
     "! Starts a new log.
     "! For backwards compatibility only! Use ZCL_LOGGER_FACTORY instead.
@@ -725,6 +731,38 @@ CLASS zcl_logger IMPLEMENTATION.
     ASSERT sy-subrc = 0.
 
     self = me.
+  ENDMETHOD.
+
+  METHOD zif_loggable_object~get_message_table.
+
+    DATA: message_handles TYPE bal_t_msgh,
+          message         TYPE bal_s_msg,
+          message_result  TYPE zif_loggable_object~ty_message.
+
+    FIELD-SYMBOLS <msg_handle> TYPE balmsghndl.
+
+    message_handles = get_message_handles( ).
+
+    LOOP AT message_handles ASSIGNING <msg_handle>.
+      CALL FUNCTION 'BAL_LOG_MSG_READ'
+        EXPORTING
+          i_s_msg_handle = <msg_handle>
+        IMPORTING
+          e_s_msg        = message
+        EXCEPTIONS
+          OTHERS         = 3.
+      IF sy-subrc IS INITIAL.
+        message_result-type = message-msgty.
+        message_result-symsg-msgid = message-msgid.
+        message_result-symsg-msgno = message-msgno.
+        message_result-symsg-msgv1 = message-msgv1.
+        message_result-symsg-msgv2 = message-msgv2.
+        message_result-symsg-msgv3 = message-msgv3.
+        message_result-symsg-msgv4 = message-msgv4.
+        APPEND message_result TO r_result.
+      ENDIF.
+    ENDLOOP.
+
   ENDMETHOD.
 
 ENDCLASS.
