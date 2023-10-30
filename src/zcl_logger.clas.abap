@@ -715,6 +715,13 @@ CLASS zcl_logger IMPLEMENTATION.
       READ TABLE log_numbers INDEX 1 INTO log_number.
       me->db_number = log_number-lognumber.
     ENDIF.
+    IF sy-batch = abap_true.
+      CALL FUNCTION 'BP_ADD_APPL_LOG_HANDLE'
+        EXPORTING
+          loghandle = me->handle
+        EXCEPTIONS
+          OTHERS    = 0.
+    ENDIF.
   ENDMETHOD.
 
   METHOD zif_logger~set_header.
