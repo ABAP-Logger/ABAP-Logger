@@ -22,8 +22,6 @@ CLASS zcl_logger DEFINITION
              length FOR zif_logger~length,
              save FOR zif_logger~save,
              export_to_table FOR zif_logger~export_to_table,
-             fullscreen FOR zif_logger~display_fullscreen, " for downward compatibility
-             popup FOR zif_logger~display_as_popup, " for downward compatibility
              display_fullscreen FOR zif_logger~display_fullscreen,
              display_as_popup FOR zif_logger~display_as_popup,
              handle FOR zif_logger~handle,
@@ -711,6 +709,12 @@ CLASS zcl_logger IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD zif_logger~fullscreen.
+    " deprecated, use display_fullscreen
+    display_fullscreen( ).
+  ENDMETHOD.
+
+
   METHOD zif_logger~has_errors.
     rv_yes = boolc( lines( get_message_handles( msgtype = 'E' ) ) > 0 ).
   ENDMETHOD.
@@ -741,6 +745,12 @@ CLASS zcl_logger IMPLEMENTATION.
 
   METHOD zif_logger~length.
     rv_length = lines( get_message_handles( ) ).
+  ENDMETHOD.
+
+
+  METHOD zif_logger~popup.
+    " deprecated, use display_as_popup
+    display_as_popup( profile ).
   ENDMETHOD.
 
 

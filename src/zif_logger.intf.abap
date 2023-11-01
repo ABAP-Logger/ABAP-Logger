@@ -111,7 +111,13 @@ INTERFACE zif_logger
     RETURNING
       VALUE(rt_bapiret) TYPE bapirettab.
 
+  METHODS fullscreen. " deprecated, use display_fullscreen
+
   METHODS display_fullscreen.
+
+  METHODS popup " deprecated, use display_as_popup
+    IMPORTING
+      profile TYPE bal_s_prof OPTIONAL.
 
   METHODS display_as_popup
     IMPORTING
