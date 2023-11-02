@@ -775,6 +775,33 @@ CLASS zcl_logger IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD save_log.
+    DATA log_handles TYPE bal_t_logh.
+    DATA log_numbers TYPE bal_t_lgnm.
+    DATA log_number  TYPE bal_s_lgnm.
+
+    INSERT me->handle INTO TABLE log_handles.
+    CALL FUNCTION 'BAL_DB_SAVE'
+      EXPORTING
+        i_t_log_handle       = log_handles
+        i_2th_connection     = me->sec_connection
+        i_2th_connect_commit = me->sec_connect_commit
+      IMPORTING
+        e_new_lognumbers     = log_numbers.
+    IF me->db_number IS INITIAL.
+      READ TABLE log_numbers INDEX 1 INTO log_number.
+      me->db_number = log_number-lognumber.
+    ENDIF.
+    IF sy-batch = abap_true.
+      CALL FUNCTION 'BP_ADD_APPL_LOG_HANDLE'
+        EXPORTING
+          loghandle = me->handle
+        EXCEPTIONS
+          OTHERS    = 0.
+    ENDIF.
+  ENDMETHOD.
+
+
   METHOD zif_logger~set_header.
     me->header-extnumber = description.
 
