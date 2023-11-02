@@ -12,25 +12,53 @@ CLASS zcl_logger_display_profile DEFINITION
 
     METHODS get_structure_components
       IMPORTING
-        i_structure_name    TYPE clike
+        !i_structure_name   TYPE clike
       RETURNING
-        VALUE(r_components) TYPE cl_abap_structdescr=>component_table.
+        VALUE(r_components) TYPE cl_abap_structdescr=>component_table .
 ENDCLASS.
 
 
 
-CLASS zcl_logger_display_profile IMPLEMENTATION.
+CLASS ZCL_LOGGER_DISPLAY_PROFILE IMPLEMENTATION.
 
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Private Method ZCL_LOGGER_DISPLAY_PROFILE->GET_STRUCTURE_COMPONENTS
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_STRUCTURE_NAME               TYPE        CLIKE
+* | [<-()] R_COMPONENTS                   TYPE        CL_ABAP_STRUCTDESCR=>COMPONENT_TABLE
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD get_structure_components.
+
     DATA strucdescr TYPE REF TO cl_abap_structdescr.
     strucdescr ?= cl_abap_structdescr=>describe_by_name( i_structure_name ).
     r_components = strucdescr->get_components( ).
+
   ENDMETHOD.
 
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_LOGGER_DISPLAY_PROFILE->ZIF_LOGGER_DISPLAY_PROFILE~GET
+* +-------------------------------------------------------------------------------------------------+
+* | [<-()] R_DISPLAY_PROFILE              TYPE        BAL_S_PROF
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD zif_logger_display_profile~get.
+
     r_display_profile = display_profile.
+
   ENDMETHOD.
 
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_LOGGER_DISPLAY_PROFILE->ZIF_LOGGER_DISPLAY_PROFILE~SET
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_DETLEVEL                     TYPE        CLIKE(optional)
+* | [--->] I_NO_TREE                      TYPE        CLIKE(optional)
+* | [--->] I_POPUP                        TYPE        CLIKE(optional)
+* | [--->] I_SINGLE_LOG                   TYPE        CLIKE(optional)
+* | [--->] I_STANDARD                     TYPE        CLIKE (default =ABAP_TRUE)
+* | [<-()] R_SELF                         TYPE REF TO ZIF_LOGGER_DISPLAY_PROFILE
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD zif_logger_display_profile~set.
     CASE abap_true.
       WHEN i_detlevel.
@@ -58,7 +86,14 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
     r_self = me.
   ENDMETHOD.
 
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_LOGGER_DISPLAY_PROFILE->ZIF_LOGGER_DISPLAY_PROFILE~SET_CONTEXT_MESSAGE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_CONTEXT_STRUCTURE            TYPE        CLIKE
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD zif_logger_display_profile~set_context_message.
+
     CHECK display_profile IS NOT INITIAL.
 
     DATA colpos     TYPE i VALUE 100.
@@ -79,10 +114,17 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
 
     ENDLOOP.
 
-    r_self = me.
   ENDMETHOD.
 
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_LOGGER_DISPLAY_PROFILE->ZIF_LOGGER_DISPLAY_PROFILE~SET_CONTEXT_TREE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_CONTEXT_STRUCTURE            TYPE        CLIKE
+* | [--->] I_UNDER_LOG                    TYPE        CLIKE (default =SPACE)
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD zif_logger_display_profile~set_context_tree.
+
     FIELD-SYMBOLS <lev1_fcat> TYPE bal_t_fcat.
     FIELD-SYMBOLS <lev2_fcat> TYPE bal_t_fcat.
     FIELD-SYMBOLS <lev1_sort> TYPE bal_t_sort.
@@ -106,6 +148,7 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
     CLEAR <lev1_sort>.
     CLEAR <lev2_sort>.
 
+
     DATA colpos     TYPE i VALUE 100.
     DATA sortpos    TYPE i VALUE 1.
     DATA lev_fcat   LIKE LINE OF display_profile-lev1_fcat.
@@ -116,6 +159,7 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
     components = get_structure_components( i_context_structure ).
 
     LOOP AT components INTO component.
+
       CLEAR lev_fcat.
 
       lev_fcat-ref_table = i_context_structure.
@@ -133,6 +177,7 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
       APPEND lev_sort TO <lev1_sort>.
 
       sortpos = sortpos + 1.
+
     ENDLOOP.
 
     CLEAR lev_fcat.
@@ -148,9 +193,15 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
     lev_sort-spos      = 1.
     APPEND lev_sort TO <lev2_sort>.
 
-    r_self = me.
   ENDMETHOD.
 
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_LOGGER_DISPLAY_PROFILE->ZIF_LOGGER_DISPLAY_PROFILE~SET_GRID
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_GRID_MODE                    TYPE        CLIKE
+* | [<-()] R_SELF                         TYPE REF TO ZIF_LOGGER_DISPLAY_PROFILE
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD zif_logger_display_profile~set_grid.
     zif_logger_display_profile~set_value(
       i_fld = 'USE_GRID'
@@ -159,7 +210,16 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
     r_self = me.
   ENDMETHOD.
 
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_LOGGER_DISPLAY_PROFILE->ZIF_LOGGER_DISPLAY_PROFILE~SET_VALUE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_FLD                          TYPE        CLIKE
+* | [--->] I_VAL                          TYPE        ANY
+* | [<-()] R_SELF                         TYPE REF TO ZIF_LOGGER_DISPLAY_PROFILE
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD zif_logger_display_profile~set_value.
+
     FIELD-SYMBOLS <value> TYPE any.
     ASSIGN COMPONENT i_fld OF STRUCTURE display_profile TO <value>.
     IF sy-subrc = 0.
@@ -168,9 +228,8 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
     ELSE.
       RAISE EXCEPTION TYPE zcx_logger_display_profile
         EXPORTING
-          info = |field { i_fld } does not exist| ##NO_TEXT.
+          info = |field { i_fld } does not exist| ##no_text.
     ENDIF.
 
   ENDMETHOD.
-
 ENDCLASS.
