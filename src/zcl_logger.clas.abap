@@ -623,7 +623,7 @@ CLASS zcl_logger IMPLEMENTATION.
     INSERT me->handle INTO TABLE lt_log_handles.
 
     IF profile IS SUPPLIED.
-        relevant_profile = profile.
+      relevant_profile = profile.
     ELSE.
     CALL FUNCTION 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
       IMPORTING
