@@ -1,13 +1,13 @@
 INTERFACE zif_logger
-  PUBLIC .
-  DATA handle    TYPE balloghndl READ-ONLY .
-  DATA db_number TYPE balognr READ-ONLY .
-  DATA header    TYPE bal_s_log READ-ONLY .
+  PUBLIC.
+  DATA handle    TYPE balloghndl READ-ONLY.
+  DATA db_number TYPE balognr READ-ONLY.
+  DATA header    TYPE bal_s_log READ-ONLY.
 
   METHODS add
     IMPORTING
       obj_to_log          TYPE any OPTIONAL
-      context             TYPE simple OPTIONAL
+      context             TYPE any OPTIONAL
       callback_form       TYPE csequence OPTIONAL
       callback_prog       TYPE csequence OPTIONAL
       callback_fm         TYPE csequence OPTIONAL
@@ -17,12 +17,12 @@ INTERFACE zif_logger
       detlevel            TYPE ballevel DEFAULT '1'
         PREFERRED PARAMETER obj_to_log
     RETURNING
-      VALUE(self)         TYPE REF TO zif_logger .
+      VALUE(self)         TYPE REF TO zif_logger.
 
   METHODS a
     IMPORTING
       obj_to_log          TYPE any OPTIONAL
-      context             TYPE simple OPTIONAL
+      context             TYPE any OPTIONAL
       callback_form       TYPE csequence OPTIONAL
       callback_prog       TYPE csequence OPTIONAL
       callback_fm         TYPE csequence OPTIONAL
@@ -31,12 +31,12 @@ INTERFACE zif_logger
       detlevel            TYPE ballevel DEFAULT '1'
         PREFERRED PARAMETER obj_to_log
     RETURNING
-      VALUE(self)         TYPE REF TO zif_logger .
+      VALUE(self)         TYPE REF TO zif_logger.
 
   METHODS e
     IMPORTING
       obj_to_log          TYPE any OPTIONAL
-      context             TYPE simple OPTIONAL
+      context             TYPE any OPTIONAL
       callback_form       TYPE csequence OPTIONAL
       callback_prog       TYPE csequence OPTIONAL
       callback_fm         TYPE csequence OPTIONAL
@@ -45,12 +45,12 @@ INTERFACE zif_logger
       detlevel            TYPE ballevel DEFAULT '1'
         PREFERRED PARAMETER obj_to_log
     RETURNING
-      VALUE(self)         TYPE REF TO zif_logger .
+      VALUE(self)         TYPE REF TO zif_logger.
 
   METHODS w
     IMPORTING
       obj_to_log          TYPE any OPTIONAL
-      context             TYPE simple OPTIONAL
+      context             TYPE any OPTIONAL
       callback_form       TYPE csequence OPTIONAL
       callback_prog       TYPE csequence OPTIONAL
       callback_fm         TYPE csequence OPTIONAL
@@ -59,12 +59,12 @@ INTERFACE zif_logger
       detlevel            TYPE ballevel DEFAULT '1'
         PREFERRED PARAMETER obj_to_log
     RETURNING
-      VALUE(self)         TYPE REF TO zif_logger .
+      VALUE(self)         TYPE REF TO zif_logger.
 
   METHODS i
     IMPORTING
       obj_to_log          TYPE any OPTIONAL
-      context             TYPE simple OPTIONAL
+      context             TYPE any OPTIONAL
       callback_form       TYPE csequence OPTIONAL
       callback_prog       TYPE csequence OPTIONAL
       callback_fm         TYPE csequence OPTIONAL
@@ -73,12 +73,12 @@ INTERFACE zif_logger
       detlevel            TYPE ballevel DEFAULT '1'
         PREFERRED PARAMETER obj_to_log
     RETURNING
-      VALUE(self)         TYPE REF TO zif_logger .
+      VALUE(self)         TYPE REF TO zif_logger.
 
   METHODS s
     IMPORTING
       obj_to_log          TYPE any OPTIONAL
-      context             TYPE simple OPTIONAL
+      context             TYPE any OPTIONAL
       callback_form       TYPE csequence OPTIONAL
       callback_prog       TYPE csequence OPTIONAL
       callback_fm         TYPE csequence OPTIONAL
@@ -87,23 +87,23 @@ INTERFACE zif_logger
       detlevel            TYPE ballevel DEFAULT '1'
         PREFERRED PARAMETER obj_to_log
     RETURNING
-      VALUE(self)         TYPE REF TO zif_logger .
+      VALUE(self)         TYPE REF TO zif_logger.
 
   METHODS has_errors
     RETURNING
-      VALUE(rv_yes) TYPE abap_bool .
+      VALUE(rv_yes) TYPE abap_bool.
 
   METHODS has_warnings
     RETURNING
-      VALUE(rv_yes) TYPE abap_bool .
+      VALUE(rv_yes) TYPE abap_bool.
 
   METHODS is_empty
     RETURNING
-      VALUE(rv_yes) TYPE abap_bool .
+      VALUE(rv_yes) TYPE abap_bool.
 
   METHODS length
     RETURNING
-      VALUE(rv_length) TYPE i .
+      VALUE(rv_length) TYPE i.
 
   "! Saves the log on demand. Intended to be called at the
   "! end of the log processing so that logs can be saved depending
@@ -111,14 +111,15 @@ INTERFACE zif_logger
   "! If there are no error messages, it may not be desirable to save
   "! a log.
   "! If auto save is enabled, save will do nothing.
-  METHODS save .
+  METHODS save.
 
   METHODS export_to_table
     RETURNING
-      VALUE(rt_bapiret) TYPE bapirettab .
+      VALUE(rt_bapiret) TYPE bapirettab.
 
   METHODS fullscreen
-  importing profile  type bal_s_prof optional.
+    IMPORTING
+      profile TYPE bal_s_prof OPTIONAL.
 
   METHODS popup
     IMPORTING
@@ -128,6 +129,6 @@ INTERFACE zif_logger
     IMPORTING
       description TYPE bal_s_log-extnumber
     RETURNING
-      VALUE(self) TYPE REF TO zif_logger .
+      VALUE(self) TYPE REF TO zif_logger.
 
 ENDINTERFACE.
