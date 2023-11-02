@@ -626,7 +626,7 @@ CLASS zcl_logger IMPLEMENTATION.
       relevant_profile = profile.
     ELSE.
       CALL FUNCTION 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
-      IMPORTING
+        IMPORTING
         e_s_display_profile = relevant_profile.
     ENDIF.
 
