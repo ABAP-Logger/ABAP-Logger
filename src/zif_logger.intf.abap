@@ -113,7 +113,9 @@ INTERFACE zif_logger
 
   METHODS fullscreen. " deprecated, use display_fullscreen
 
-  METHODS display_fullscreen.
+  METHODS display_fullscreen
+    IMPORTING
+      profile TYPE bal_s_prof OPTIONAL.
 
   METHODS popup " deprecated, use display_as_popup
     IMPORTING
