@@ -649,18 +649,22 @@ CLASS zcl_logger IMPLEMENTATION.
 
   METHOD zif_logger~display_fullscreen.
     DATA:
-      profile        TYPE bal_s_prof,
-      lt_log_handles TYPE bal_t_logh.
+      relevant_profile TYPE bal_s_prof.
+      lt_log_handles   TYPE bal_t_logh.
 
     INSERT me->handle INTO TABLE lt_log_handles.
 
-    CALL FUNCTION 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
-      IMPORTING
-        e_s_display_profile = profile.
+    IF profile IS SUPPLIED AND profile IS NOT INITIAL.
+      relevant_profile = profile.
+    ELSE.
+      CALL FUNCTION 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
+        IMPORTING
+          e_s_display_profile = relevant_profile.
+    ENDIF.
 
     CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
       EXPORTING
-        i_s_display_profile = profile
+        i_s_display_profile = relevant_profile
         i_t_log_handle      = lt_log_handles.
   ENDMETHOD.
 
