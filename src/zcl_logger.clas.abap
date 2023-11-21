@@ -649,7 +649,7 @@ CLASS zcl_logger IMPLEMENTATION.
 
   METHOD zif_logger~display_fullscreen.
     DATA:
-      relevant_profile TYPE bal_s_prof.
+      relevant_profile TYPE bal_s_prof,
       lt_log_handles   TYPE bal_t_logh.
 
     INSERT me->handle INTO TABLE lt_log_handles.
