@@ -78,6 +78,8 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
       colpos = colpos + 1.
 
     ENDLOOP.
+
+    r_self = me.
   ENDMETHOD.
 
   METHOD zif_logger_display_profile~set_context_tree.
@@ -145,6 +147,8 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
     lev_sort-up        = 'X'.
     lev_sort-spos      = 1.
     APPEND lev_sort TO <lev2_sort>.
+
+    r_self = me.
   ENDMETHOD.
 
   METHOD zif_logger_display_profile~set_grid.
@@ -164,7 +168,7 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
     ELSE.
       RAISE EXCEPTION TYPE zcx_logger_display_profile
         EXPORTING
-          info = |field { i_fld } does not exist| ##no_text.
+          info = |field { i_fld } does not exist| ##NO_TEXT.
     ENDIF.
 
   ENDMETHOD.

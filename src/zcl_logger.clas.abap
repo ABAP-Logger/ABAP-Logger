@@ -9,6 +9,7 @@ CLASS zcl_logger DEFINITION
     TYPE-POOLS abap.
 
     INTERFACES zif_logger.
+    INTERFACES zif_loggable_object.
     ALIASES: add FOR zif_logger~add,
              a FOR zif_logger~a,
              e FOR zif_logger~e,
@@ -22,11 +23,19 @@ CLASS zcl_logger DEFINITION
              save FOR zif_logger~save,
              export_to_table FOR zif_logger~export_to_table,
              fullscreen FOR zif_logger~fullscreen,
+             display_fullscreen FOR zif_logger~display_fullscreen,
              popup FOR zif_logger~popup,
+             display_as_popup FOR zif_logger~display_as_popup,
              handle FOR zif_logger~handle,
              control_handle FOR zif_logger~control_handle,
+             display_in_container FOR zif_logger~display_in_container,
              db_number FOR zif_logger~db_number,
-             header FOR zif_logger~header.
+             header FOR zif_logger~header,
+             set_header FOR zif_logger~set_header,
+             ty_symsg FOR zif_loggable_object~ty_symsg,
+             ty_message FOR zif_loggable_object~ty_message,
+             tty_messages FOR zif_loggable_object~tty_messages,
+             get_message_table FOR zif_loggable_object~get_message_table.
 
     "! Starts a new log.
     "! For backwards compatibility only! Use ZCL_LOGGER_FACTORY instead.
@@ -132,6 +141,7 @@ ENDCLASS.
 
 
 CLASS ZCL_LOGGER IMPLEMENTATION.
+
 
 
   METHOD add_bapi_msg.
@@ -381,6 +391,46 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       READ TABLE log_numbers INDEX 1 INTO log_number.
       me->db_number = log_number-lognumber.
     ENDIF.
+    IF sy-batch = abap_true.
+      CALL FUNCTION 'BP_ADD_APPL_LOG_HANDLE'
+        EXPORTING
+          loghandle = me->handle
+        EXCEPTIONS
+          OTHERS    = 0.
+    ENDIF.
+  ENDMETHOD.
+
+
+  METHOD zif_loggable_object~get_message_table.
+
+    DATA: message_handles TYPE bal_t_msgh,
+          message         TYPE bal_s_msg,
+          message_result  TYPE zif_loggable_object~ty_message.
+
+    FIELD-SYMBOLS <msg_handle> TYPE balmsghndl.
+
+    message_handles = get_message_handles( ).
+
+    LOOP AT message_handles ASSIGNING <msg_handle>.
+      CALL FUNCTION 'BAL_LOG_MSG_READ'
+        EXPORTING
+          i_s_msg_handle = <msg_handle>
+        IMPORTING
+          e_s_msg        = message
+        EXCEPTIONS
+          OTHERS         = 3.
+      IF sy-subrc IS INITIAL.
+        message_result-type = message-msgty.
+        message_result-symsg-msgid = message-msgid.
+        message_result-symsg-msgno = message-msgno.
+        message_result-symsg-msgv1 = message-msgv1.
+        message_result-symsg-msgv2 = message-msgv2.
+        message_result-symsg-msgv3 = message-msgv3.
+        message_result-symsg-msgv4 = message-msgv4.
+        APPEND message_result TO r_result.
+      ENDIF.
+    ENDLOOP.
+
   ENDMETHOD.
 
 
@@ -578,49 +628,96 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD zif_logger~container.
+  METHOD zif_logger~display_as_popup.
+    " See SBAL_DEMO_04_POPUP for ideas
+    DATA:
+      relevant_profile TYPE bal_s_prof,
+      log_handles      TYPE bal_t_logh.
+    
+    INSERT handle INTO TABLE log_handles.
 
-    DATA display_profile TYPE bal_s_prof.
-    DATA log_handles     TYPE bal_t_logh.
+    IF profile IS SUPPLIED AND profile IS NOT INITIAL.
+      relevant_profile = profile.
+    ELSE.
+      CALL FUNCTION 'BAL_DSP_PROFILE_POPUP_GET'
+        IMPORTING
+          e_s_display_profile = relevant_profile.
+    ENDIF.
+
+    CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
+      EXPORTING
+        i_s_display_profile = relevant_profile
+        i_t_log_handle      = log_handles.
+  ENDMETHOD.
+
+
+  METHOD zif_logger~display_fullscreen.
+    DATA:
+      relevant_profile TYPE bal_s_prof,
+      log_handles      TYPE bal_t_logh.
+
+    INSERT handle INTO TABLE log_handles.
+
+    IF profile IS SUPPLIED AND profile IS NOT INITIAL.
+      relevant_profile = profile.
+    ELSE.
+      CALL FUNCTION 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
+        IMPORTING
+          e_s_display_profile = relevant_profile.
+    ENDIF.
+
+    CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
+      EXPORTING
+        i_s_display_profile = relevant_profile
+        i_t_log_handle      = log_handles.
+  ENDMETHOD.
+
+
+  METHOD zif_logger~display_in_container.
+    DATA:
+      relevant_profile TYPE bal_s_prof,
+      log_handles      TYPE bal_t_logh.
 
     "define amount of data to be displayed
-    INSERT me->handle INTO TABLE log_handles.
+    INSERT handle INTO TABLE log_handles.
 
-    IF me->control_handle IS INITIAL.
+    IF control_handle IS INITIAL.
 
-      INSERT me->handle INTO TABLE log_handles.
-      IF i_display_profile IS NOT SUPPLIED OR i_display_profile IS INITIAL.
-        " get a display profile if not supplied or empty
+      INSERT handle INTO TABLE log_handles.
+      
+      IF profile IS SUPPLIED AND profile IS NOT INITIAL.
+        relevant_profile = profile.
+      ELSE.
         CALL FUNCTION 'BAL_DSP_PROFILE_NO_TREE_GET'
           IMPORTING
-            e_s_display_profile = display_profile.
-      ELSE.
-        display_profile = i_display_profile.
+            e_s_display_profile = relevant_profile.
       ENDIF.
 
-
-      "create control to display data
+      "create control to display log
       CALL FUNCTION 'BAL_CNTL_CREATE'
         EXPORTING
-          i_container          = i_container
-          i_s_display_profile  = display_profile
+          i_container          = container
+          i_s_display_profile  = relevant_profile
           i_t_log_handle       = log_handles
         IMPORTING
-          e_control_handle     = me->control_handle
+          e_control_handle     = control_handle
         EXCEPTIONS
           profile_inconsistent = 1
           internal_error       = 2.
       ASSERT sy-subrc = 0.
+      
     ELSE.
+      
       "refresh control
       CALL FUNCTION 'BAL_CNTL_REFRESH'
         EXPORTING
-          i_control_handle  = me->control_handle
+          i_control_handle  = control_handle
           i_t_log_handle    = log_handles
         EXCEPTIONS
           control_not_found = 1
           internal_error    = 2.
       ASSERT sy-subrc = 0.
+    
     ENDIF.
 
   ENDMETHOD.
@@ -680,20 +777,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 
 
   METHOD zif_logger~fullscreen.
-    DATA:
-      profile        TYPE bal_s_prof,
-      lt_log_handles TYPE bal_t_logh.
-
-    INSERT me->handle INTO TABLE lt_log_handles.
-
-    CALL FUNCTION 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
-      IMPORTING
-        e_s_display_profile = profile.
-
-    CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
-      EXPORTING
-        i_s_display_profile = profile
-        i_t_log_handle      = lt_log_handles.
+    " deprecated, use display_fullscreen
+    display_fullscreen( ).
   ENDMETHOD.
 
 
@@ -731,24 +816,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 
 
   METHOD zif_logger~popup.
-* See SBAL_DEMO_04_POPUP for ideas
-    DATA relevant_profile TYPE bal_s_prof.
-    DATA lt_log_handles   TYPE bal_t_logh.
-
-    INSERT me->handle INTO TABLE lt_log_handles.
-
-    IF profile IS SUPPLIED AND profile IS NOT INITIAL.
-      relevant_profile = profile.
-    ELSE.
-      CALL FUNCTION 'BAL_DSP_PROFILE_POPUP_GET'
-        IMPORTING
-          e_s_display_profile = relevant_profile.
-    ENDIF.
-
-    CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
-      EXPORTING
-        i_s_display_profile = relevant_profile
-        i_t_log_handle      = lt_log_handles.
+    " deprecated, use display_as_popup
+    display_as_popup( profile ).
   ENDMETHOD.
 
 
