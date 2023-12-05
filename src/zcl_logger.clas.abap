@@ -143,7 +143,6 @@ ENDCLASS.
 CLASS zcl_logger IMPLEMENTATION.
 
 
-
   METHOD add_bapi_msg.
     DATA bapi_message TYPE bapiret1.
     MOVE-CORRESPONDING obj_to_log TO bapi_message.
