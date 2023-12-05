@@ -126,15 +126,15 @@ INTERFACE zif_logger
     IMPORTING
       profile TYPE bal_s_prof OPTIONAL.
 
+  METHODS display_in_container
+    IMPORTING
+      container TYPE REF TO cl_gui_container
+      profile   TYPE bal_s_prof OPTIONAL.
+
   METHODS set_header
     IMPORTING
       description TYPE bal_s_log-extnumber
     RETURNING
       VALUE(self) TYPE REF TO zif_logger.
-
-  METHODS container
-    IMPORTING
-      i_container       TYPE REF TO cl_gui_container
-      i_display_profile TYPE bal_s_prof OPTIONAL.
 
 ENDINTERFACE.
