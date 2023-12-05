@@ -140,7 +140,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_LOGGER IMPLEMENTATION.
+CLASS zcl_logger IMPLEMENTATION.
 
 
 
@@ -633,7 +633,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     DATA:
       relevant_profile TYPE bal_s_prof,
       log_handles      TYPE bal_t_logh.
-    
+
     INSERT handle INTO TABLE log_handles.
 
     IF profile IS SUPPLIED AND profile IS NOT INITIAL.
@@ -684,7 +684,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     IF control_handle IS INITIAL.
 
       INSERT handle INTO TABLE log_handles.
-      
+
       IF profile IS SUPPLIED AND profile IS NOT INITIAL.
         relevant_profile = profile.
       ELSE.
@@ -705,9 +705,9 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
           profile_inconsistent = 1
           internal_error       = 2.
       ASSERT sy-subrc = 0.
-      
+
     ELSE.
-      
+
       "refresh control
       CALL FUNCTION 'BAL_CNTL_REFRESH'
         EXPORTING
@@ -717,7 +717,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
           control_not_found = 1
           internal_error    = 2.
       ASSERT sy-subrc = 0.
-    
+
     ENDIF.
 
   ENDMETHOD.
