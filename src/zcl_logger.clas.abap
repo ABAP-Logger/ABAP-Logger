@@ -677,12 +677,9 @@ CLASS zcl_logger IMPLEMENTATION.
       relevant_profile TYPE bal_s_prof,
       log_handles      TYPE bal_t_logh.
 
-    "define amount of data to be displayed
     INSERT handle INTO TABLE log_handles.
 
     IF control_handle IS INITIAL.
-
-      INSERT handle INTO TABLE log_handles.
 
       IF profile IS SUPPLIED AND profile IS NOT INITIAL.
         relevant_profile = profile.
