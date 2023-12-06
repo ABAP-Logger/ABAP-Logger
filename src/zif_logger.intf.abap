@@ -131,4 +131,6 @@ INTERFACE zif_logger
     RETURNING
       VALUE(self) TYPE REF TO zif_logger.
 
+  METHODS free.
+
 ENDINTERFACE.
