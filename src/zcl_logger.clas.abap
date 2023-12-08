@@ -10,6 +10,7 @@ CLASS zcl_logger DEFINITION
 
     INTERFACES zif_logger.
     INTERFACES zif_loggable_object.
+
     ALIASES: add FOR zif_logger~add,
              a FOR zif_logger~a,
              e FOR zif_logger~e,
@@ -30,6 +31,7 @@ CLASS zcl_logger DEFINITION
              db_number FOR zif_logger~db_number,
              header FOR zif_logger~header,
              set_header FOR zif_logger~set_header,
+             free FOR zif_logger~free,
              ty_symsg FOR zif_loggable_object~ty_symsg,
              ty_message FOR zif_loggable_object~ty_message,
              tty_messages FOR zif_loggable_object~tty_messages,
@@ -719,6 +721,23 @@ CLASS zcl_logger IMPLEMENTATION.
         APPEND bapiret2 TO rt_bapiret.
       ENDIF.
     ENDLOOP.
+  ENDMETHOD.
+
+
+  METHOD zif_logger~free.
+
+    " Save any messages (safety)
+    zif_logger~save( ).
+
+    " Clear log from memory
+    CALL FUNCTION 'BAL_LOG_REFRESH'
+      EXPORTING
+        i_log_handle  = handle
+      EXCEPTIONS
+        log_not_found = 1
+        OTHERS        = 2.
+    ASSERT sy-subrc = 0.
+
   ENDMETHOD.
 
 
