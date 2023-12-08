@@ -201,7 +201,7 @@ CLASS zcl_logger IMPLEMENTATION.
       ASSIGN COMPONENT component_name OF STRUCTURE obj_to_log TO <component>.
       IF sy-subrc <> 0.
         " It might be an unnamed component like .INCLUDE
-        component_name = |#{ sy-tabix }|.
+        component_name = |Include { sy-tabix }|.
         ASSIGN COMPONENT sy-tabix OF STRUCTURE obj_to_log TO <component>.
       ENDIF.
       IF sy-subrc = 0.
