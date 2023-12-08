@@ -28,6 +28,8 @@ CLASS zcl_logger DEFINITION
              popup FOR zif_logger~popup,
              display_as_popup FOR zif_logger~display_as_popup,
              handle FOR zif_logger~handle,
+             control_handle FOR zif_logger~control_handle,
+             display_in_container FOR zif_logger~display_in_container,
              db_number FOR zif_logger~db_number,
              header FOR zif_logger~header,
              set_header FOR zif_logger~set_header,
@@ -628,11 +630,12 @@ CLASS zcl_logger IMPLEMENTATION.
 
 
   METHOD zif_logger~display_as_popup.
-* See SBAL_DEMO_04_POPUP for ideas
-    DATA relevant_profile TYPE bal_s_prof.
-    DATA lt_log_handles   TYPE bal_t_logh.
+    " See SBAL_DEMO_04_POPUP for ideas
+    DATA:
+      relevant_profile TYPE bal_s_prof,
+      log_handles      TYPE bal_t_logh.
 
-    INSERT me->handle INTO TABLE lt_log_handles.
+    INSERT handle INTO TABLE log_handles.
 
     IF profile IS SUPPLIED AND profile IS NOT INITIAL.
       relevant_profile = profile.
@@ -645,16 +648,16 @@ CLASS zcl_logger IMPLEMENTATION.
     CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
       EXPORTING
         i_s_display_profile = relevant_profile
-        i_t_log_handle      = lt_log_handles.
+        i_t_log_handle      = log_handles.
   ENDMETHOD.
 
 
   METHOD zif_logger~display_fullscreen.
     DATA:
       relevant_profile TYPE bal_s_prof,
-      lt_log_handles   TYPE bal_t_logh.
+      log_handles      TYPE bal_t_logh.
 
-    INSERT me->handle INTO TABLE lt_log_handles.
+    INSERT handle INTO TABLE log_handles.
 
     IF profile IS SUPPLIED AND profile IS NOT INITIAL.
       relevant_profile = profile.
@@ -667,7 +670,54 @@ CLASS zcl_logger IMPLEMENTATION.
     CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
       EXPORTING
         i_s_display_profile = relevant_profile
-        i_t_log_handle      = lt_log_handles.
+        i_t_log_handle      = log_handles.
+  ENDMETHOD.
+
+
+  METHOD zif_logger~display_in_container.
+    DATA:
+      relevant_profile TYPE bal_s_prof,
+      log_handles      TYPE bal_t_logh.
+
+    INSERT handle INTO TABLE log_handles.
+
+    IF control_handle IS INITIAL.
+
+      IF profile IS SUPPLIED AND profile IS NOT INITIAL.
+        relevant_profile = profile.
+      ELSE.
+        CALL FUNCTION 'BAL_DSP_PROFILE_NO_TREE_GET'
+          IMPORTING
+            e_s_display_profile = relevant_profile.
+      ENDIF.
+
+      "create control to display log
+      CALL FUNCTION 'BAL_CNTL_CREATE'
+        EXPORTING
+          i_container          = container
+          i_s_display_profile  = relevant_profile
+          i_t_log_handle       = log_handles
+        IMPORTING
+          e_control_handle     = control_handle
+        EXCEPTIONS
+          profile_inconsistent = 1
+          internal_error       = 2.
+      ASSERT sy-subrc = 0.
+
+    ELSE.
+
+      "refresh control
+      CALL FUNCTION 'BAL_CNTL_REFRESH'
+        EXPORTING
+          i_control_handle  = control_handle
+          i_t_log_handle    = log_handles
+        EXCEPTIONS
+          control_not_found = 1
+          internal_error    = 2.
+      ASSERT sy-subrc = 0.
+
+    ENDIF.
+
   ENDMETHOD.
 
 
