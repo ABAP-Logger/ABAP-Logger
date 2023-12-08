@@ -189,6 +189,7 @@ CLASS zcl_logger IMPLEMENTATION.
           msg_struct_type TYPE REF TO cl_abap_structdescr,
           components      TYPE abap_compdescr_tab,
           component       LIKE LINE OF components,
+          component_name  LIKE component-name,
           string_to_log   TYPE string.
     FIELD-SYMBOLS: <component>   TYPE any.
 
@@ -196,11 +197,17 @@ CLASS zcl_logger IMPLEMENTATION.
     components = msg_struct_type->components.
     add( '--- Begin of structure ---' ).
     LOOP AT components INTO component.
-      ASSIGN COMPONENT component-name OF STRUCTURE obj_to_log TO <component>.
+      component_name = component-name.
+      ASSIGN COMPONENT component_name OF STRUCTURE obj_to_log TO <component>.
+      IF sy-subrc <> 0.
+        " It might be an unnamed component like .INCLUDE
+        component_name = |#{ sy-tabix }|.
+        ASSIGN COMPONENT sy-tabix OF STRUCTURE obj_to_log TO <component>.
+      ENDIF.
       IF sy-subrc = 0.
         msg_type = cl_abap_typedescr=>describe_by_data( <component> ).
         IF msg_type->kind = cl_abap_typedescr=>kind_elem.
-          string_to_log = |{ to_lower( component-name ) } = { <component> }|.
+          string_to_log = |{ to_lower( component_name ) } = { <component> }|.
           add( string_to_log ).
         ELSEIF msg_type->kind = cl_abap_typedescr=>kind_struct.
           self = add_structure(
