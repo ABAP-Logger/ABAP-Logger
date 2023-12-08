@@ -4,9 +4,6 @@ CLASS zcl_logger DEFINITION
   GLOBAL FRIENDS zcl_logger_factory.
 
   PUBLIC SECTION.
-*"* public components of class ZCL_LOGGER
-*"* do not include other source files here!!!
-    TYPE-POOLS abap.
 
     INTERFACES zif_logger.
     INTERFACES zif_loggable_object.
@@ -65,8 +62,6 @@ CLASS zcl_logger DEFINITION
         VALUE(r_log)              TYPE REF TO zcl_logger.
 
   PROTECTED SECTION.
-*"* protected components of class ZCL_LOGGER
-*"* do not include other source files here!!!
   PRIVATE SECTION.
 
     CONSTANTS:
@@ -77,8 +72,6 @@ CLASS zcl_logger DEFINITION
         sprot TYPE i VALUE 4,
       END OF c_struct_kind.
 
-*"* private components of class ZCL_LOGGER
-*"* do not include other source files here!!!
     DATA sec_connection     TYPE abap_bool.
     DATA sec_connect_commit TYPE abap_bool.
     DATA settings           TYPE REF TO zif_logger_settings.
@@ -190,7 +183,8 @@ CLASS zcl_logger IMPLEMENTATION.
           components      TYPE abap_compdescr_tab,
           component       LIKE LINE OF components,
           string_to_log   TYPE string.
-    FIELD-SYMBOLS: <component>   TYPE any.
+
+    FIELD-SYMBOLS <component> TYPE any.
 
     msg_struct_type ?= cl_abap_typedescr=>describe_by_data( obj_to_log ).
     components = msg_struct_type->components.
@@ -231,6 +225,8 @@ CLASS zcl_logger IMPLEMENTATION.
           exceptions         TYPE tty_exception.
 
     FIELD-SYMBOLS <ex> LIKE LINE OF exceptions.
+    FIELD-SYMBOLS <ret> LIKE LINE OF rt_exception_data_table.
+
     APPEND INITIAL LINE TO exceptions ASSIGNING <ex>.
     <ex>-level     = 1.
     <ex>-exception = exception.
@@ -249,8 +245,6 @@ CLASS zcl_logger IMPLEMENTATION.
       <ex>-exception = previous_exception.
       i              = i + 1.
     ENDWHILE.
-
-    FIELD-SYMBOLS <ret> LIKE LINE OF rt_exception_data_table.
 
     "Display the deepest exception first
     SORT exceptions BY level DESCENDING.
