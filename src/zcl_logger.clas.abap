@@ -737,13 +737,15 @@ CLASS zcl_logger IMPLEMENTATION.
   METHOD zif_logger~export_to_table.
     DATA: message_handles TYPE bal_t_msgh,
           message         TYPE bal_s_msg,
-          bapiret2        TYPE bapiret2.
+          bapiret2        TYPE bapiret2,
+          exception_msg   TYPE c LENGTH 255.
 
     FIELD-SYMBOLS <msg_handle> TYPE balmsghndl.
 
     message_handles = get_message_handles( ).
 
     LOOP AT message_handles ASSIGNING <msg_handle>.
+      CLEAR bapiret2.
       CALL FUNCTION 'BAL_LOG_MSG_READ'
         EXPORTING
           i_s_msg_handle = <msg_handle>
@@ -769,6 +771,25 @@ CLASS zcl_logger IMPLEMENTATION.
         bapiret2-message_v4 = message-msgv4.
         bapiret2-system     = sy-sysid.
         APPEND bapiret2 TO rt_bapiret.
+      ELSE.
+        CALL FUNCTION 'BAL_LOG_EXCEPTION_READ'
+          EXPORTING
+            i_s_msg_handle = <msg_handle>
+            i_langu        = sy-langu
+          IMPORTING
+            e_txt_msg      = exception_msg
+          EXCEPTIONS
+            log_not_found  = 1
+            msg_not_found  = 2
+            OTHERS         = 3.
+        IF sy-subrc = 0.
+          bapiret2-type       = message-msgty.
+          bapiret2-log_no     = <msg_handle>-log_handle.
+          bapiret2-log_msg_no = <msg_handle>-msgnumber.
+          bapiret2-message    = exception_msg.
+          bapiret2-system     = sy-sysid.
+          APPEND bapiret2 TO rt_bapiret.
+        ENDIF.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.
