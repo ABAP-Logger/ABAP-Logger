@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_LOGGER_DISPLAY_PROFILE</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>ABAP Logger: Display profile</DESCRIPT>
+    <DESCRIPT>ABAP Logger: Display Profile</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>
@@ -16,7 +16,7 @@
      <CMPNAME>GET_STRUCTURE_COMPONENTS</CMPNAME>
      <SCONAME>R_COMPONENTS</SCONAME>
      <LANGU>E</LANGU>
-     <DESCRIPT>Komponentenbeschreibungstabelle</DESCRIPT>
+     <DESCRIPT>Component Descriptions</DESCRIPT>
     </SEOSUBCOTX>
    </DESCRIPTIONS_SUB>
   </asx:values>

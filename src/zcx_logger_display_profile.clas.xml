@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCX_LOGGER_DISPLAY_PROFILE</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>ABAP Logger: display profile exceptions</DESCRIPT>
+    <DESCRIPT>ABAP Logger: Display Profile Exceptions</DESCRIPT>
     <CATEGORY>40</CATEGORY>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
