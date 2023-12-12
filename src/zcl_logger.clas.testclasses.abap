@@ -91,9 +91,10 @@ CLASS lcl_test DEFINITION FOR TESTING
       return_proper_length FOR TESTING,
       can_add_table_msg_context FOR TESTING RAISING cx_static_check,
       can_log_string_and_export FOR TESTING,
+      can_log_exception_and_export FOR TESTING,
       can_change_description FOR TESTING RAISING cx_static_check,
       can_log_callback_params FOR TESTING RAISING cx_static_check,
-      can_log_log.
+      can_log_log FOR TESTING.
 
 ENDCLASS.
 
@@ -604,10 +605,10 @@ CLASS lcl_test IMPLEMENTATION.
 
   METHOD can_log_rcomp.
     DATA:
-          msg_handle       TYPE balmsghndl,
-          expected_details TYPE bal_s_msg,
-          actual_details   TYPE bal_s_msg,
-          actual_text      TYPE char200.
+      msg_handle       TYPE balmsghndl,
+      expected_details TYPE bal_s_msg,
+      actual_details   TYPE bal_s_msg,
+      actual_text      TYPE char200.
 
     "Solution manager doens't have PROTT. Therefore avoid using the concrete type
     DATA rcomp_data_ref TYPE REF TO data.
@@ -1025,10 +1026,10 @@ CLASS lcl_test IMPLEMENTATION.
              comp1 TYPE string,
              comp2 TYPE i,
            END   OF ty_struct,
-             BEGIN OF ty_deep_struct,
+           BEGIN OF ty_deep_struct,
              comp1 TYPE string,
              deep  TYPE ty_struct,
-             END OF ty_deep_struct.
+           END OF ty_deep_struct.
     DATA: struct      TYPE ty_deep_struct,
           act_table   TYPE table_of_strings,
           exp_table   TYPE table_of_strings,
@@ -1407,6 +1408,25 @@ CLASS lcl_test IMPLEMENTATION.
       exp = 1
       act = lines( table )
       msg = 'Did not log system message properly' ).
+  ENDMETHOD.
+
+  METHOD can_log_exception_and_export.
+    DATA:
+      table TYPE bapirettab,
+      error TYPE REF TO cx_sy_zerodivide.
+
+    TRY.
+        RAISE EXCEPTION TYPE cx_sy_zerodivide.
+      CATCH cx_sy_zerodivide INTO error.
+        anon_log->add( error ).
+    ENDTRY.
+
+    table = anon_log->export_to_table( ).
+
+    cl_abap_unit_assert=>assert_equals(
+      exp = 1
+      act = lines( table )
+      msg = 'Did not log exception message properly' ).
   ENDMETHOD.
 
   METHOD can_change_description.
