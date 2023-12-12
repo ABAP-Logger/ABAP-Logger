@@ -4,9 +4,6 @@ CLASS zcl_logger DEFINITION
   GLOBAL FRIENDS zcl_logger_factory.
 
   PUBLIC SECTION.
-*"* public components of class ZCL_LOGGER
-*"* do not include other source files here!!!
-    TYPE-POOLS abap.
 
     INTERFACES zif_logger.
     INTERFACES zif_loggable_object.
@@ -65,8 +62,6 @@ CLASS zcl_logger DEFINITION
         VALUE(r_log)              TYPE REF TO zcl_logger.
 
   PROTECTED SECTION.
-*"* protected components of class ZCL_LOGGER
-*"* do not include other source files here!!!
   PRIVATE SECTION.
 
     CONSTANTS:
@@ -78,8 +73,6 @@ CLASS zcl_logger DEFINITION
         bapi_alm TYPE i VALUE 5,
       END OF c_struct_kind.
 
-*"* private components of class ZCL_LOGGER
-*"* do not include other source files here!!!
     DATA sec_connection     TYPE abap_bool.
     DATA sec_connect_commit TYPE abap_bool.
     DATA settings           TYPE REF TO zif_logger_settings.
@@ -217,18 +210,26 @@ CLASS zcl_logger IMPLEMENTATION.
           msg_struct_type TYPE REF TO cl_abap_structdescr,
           components      TYPE abap_compdescr_tab,
           component       LIKE LINE OF components,
+          component_name  LIKE component-name,
           string_to_log   TYPE string.
-    FIELD-SYMBOLS: <component>   TYPE any.
+
+    FIELD-SYMBOLS <component> TYPE any.
 
     msg_struct_type ?= cl_abap_typedescr=>describe_by_data( obj_to_log ).
     components = msg_struct_type->components.
     add( '--- Begin of structure ---' ).
     LOOP AT components INTO component.
-      ASSIGN COMPONENT component-name OF STRUCTURE obj_to_log TO <component>.
+      component_name = component-name.
+      ASSIGN COMPONENT component_name OF STRUCTURE obj_to_log TO <component>.
+      IF sy-subrc <> 0.
+        " It might be an unnamed component like .INCLUDE
+        component_name = |Include { sy-tabix }|.
+        ASSIGN COMPONENT sy-tabix OF STRUCTURE obj_to_log TO <component>.
+      ENDIF.
       IF sy-subrc = 0.
         msg_type = cl_abap_typedescr=>describe_by_data( <component> ).
         IF msg_type->kind = cl_abap_typedescr=>kind_elem.
-          string_to_log = |{ to_lower( component-name ) } = { <component> }|.
+          string_to_log = |{ to_lower( component_name ) } = { <component> }|.
           add( string_to_log ).
         ELSEIF msg_type->kind = cl_abap_typedescr=>kind_struct.
           self = add_structure(
@@ -259,6 +260,8 @@ CLASS zcl_logger IMPLEMENTATION.
           exceptions         TYPE tty_exception.
 
     FIELD-SYMBOLS <ex> LIKE LINE OF exceptions.
+    FIELD-SYMBOLS <ret> LIKE LINE OF rt_exception_data_table.
+
     APPEND INITIAL LINE TO exceptions ASSIGNING <ex>.
     <ex>-level     = 1.
     <ex>-exception = exception.
@@ -277,8 +280,6 @@ CLASS zcl_logger IMPLEMENTATION.
       <ex>-exception = previous_exception.
       i              = i + 1.
     ENDWHILE.
-
-    FIELD-SYMBOLS <ret> LIKE LINE OF rt_exception_data_table.
 
     "Display the deepest exception first
     SORT exceptions BY level DESCENDING.
@@ -773,13 +774,15 @@ CLASS zcl_logger IMPLEMENTATION.
   METHOD zif_logger~export_to_table.
     DATA: message_handles TYPE bal_t_msgh,
           message         TYPE bal_s_msg,
-          bapiret2        TYPE bapiret2.
+          bapiret2        TYPE bapiret2,
+          exception_msg   TYPE c LENGTH 255.
 
     FIELD-SYMBOLS <msg_handle> TYPE balmsghndl.
 
     message_handles = get_message_handles( ).
 
     LOOP AT message_handles ASSIGNING <msg_handle>.
+      CLEAR bapiret2.
       CALL FUNCTION 'BAL_LOG_MSG_READ'
         EXPORTING
           i_s_msg_handle = <msg_handle>
@@ -805,6 +808,25 @@ CLASS zcl_logger IMPLEMENTATION.
         bapiret2-message_v4 = message-msgv4.
         bapiret2-system     = sy-sysid.
         APPEND bapiret2 TO rt_bapiret.
+      ELSE.
+        CALL FUNCTION 'BAL_LOG_EXCEPTION_READ'
+          EXPORTING
+            i_s_msg_handle = <msg_handle>
+            i_langu        = sy-langu
+          IMPORTING
+            e_txt_msg      = exception_msg
+          EXCEPTIONS
+            log_not_found  = 1
+            msg_not_found  = 2
+            OTHERS         = 3.
+        IF sy-subrc = 0.
+          bapiret2-type       = message-msgty.
+          bapiret2-log_no     = <msg_handle>-log_handle.
+          bapiret2-log_msg_no = <msg_handle>-msgnumber.
+          bapiret2-message    = exception_msg.
+          bapiret2-system     = sy-sysid.
+          APPEND bapiret2 TO rt_bapiret.
+        ENDIF.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.

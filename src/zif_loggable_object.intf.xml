@@ -5,7 +5,7 @@
    <VSEOINTERF>
     <CLSNAME>ZIF_LOGGABLE_OBJECT</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>Loggable Object Interface</DESCRIPT>
+    <DESCRIPT>ABAP Logger: Loggable Object Interface</DESCRIPT>
     <EXPOSURE>2</EXPOSURE>
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>
