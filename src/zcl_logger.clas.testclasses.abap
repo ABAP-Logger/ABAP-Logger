@@ -1588,7 +1588,7 @@ CLASS lcl_test IMPLEMENTATION.
       msg = 'Did not return correct message type' ).
   ENDMETHOD.
 
-METHOD can_log_bapi_alm_return.
+  METHOD can_log_bapi_alm_return.
     DATA: msg_handle       TYPE balmsghndl,
           expected_details TYPE bal_s_msg,
           actual_details   TYPE bal_s_msg,
