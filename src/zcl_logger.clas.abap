@@ -71,10 +71,11 @@ CLASS zcl_logger DEFINITION
 
     CONSTANTS:
       BEGIN OF c_struct_kind,
-        syst  TYPE i VALUE 1,
-        bapi  TYPE i VALUE 2,
-        bdc   TYPE i VALUE 3,
-        sprot TYPE i VALUE 4,
+        syst     TYPE i VALUE 1,
+        bapi     TYPE i VALUE 2,
+        bdc      TYPE i VALUE 3,
+        sprot    TYPE i VALUE 4,
+        bapi_alm TYPE i VALUE 5,
       END OF c_struct_kind.
 
 *"* private components of class ZCL_LOGGER
@@ -138,11 +139,38 @@ CLASS zcl_logger DEFINITION
         !obj_to_log         TYPE any
       RETURNING
         VALUE(detailed_msg) TYPE bal_s_msg.
+    METHODS add_bapi_alm_msg
+      IMPORTING
+        !obj_to_log         TYPE any
+      RETURNING
+        VALUE(detailed_msg) TYPE bal_s_msg.
 ENDCLASS.
 
 
 
 CLASS zcl_logger IMPLEMENTATION.
+
+
+  METHOD add_bapi_alm_msg.
+    DATA: "Avoid using concrete type as certain systems may not have BAPI_ALM_RETURN
+      BEGIN OF bapi_alm_message,
+        type           TYPE bapi_mtype,
+        message_id     TYPE symsgid,
+        message_number TYPE symsgno,
+        message_v1     TYPE symsgv,
+        message_v2     TYPE symsgv,
+        message_v3     TYPE symsgv,
+        message_v4     TYPE symsgv,
+      END OF bapi_alm_message.
+    MOVE-CORRESPONDING obj_to_log TO bapi_alm_message.
+    detailed_msg-msgty = bapi_alm_message-type.
+    detailed_msg-msgid = bapi_alm_message-message_id.
+    detailed_msg-msgno = bapi_alm_message-message_number.
+    detailed_msg-msgv1 = bapi_alm_message-message_v1.
+    detailed_msg-msgv2 = bapi_alm_message-message_v2.
+    detailed_msg-msgv3 = bapi_alm_message-message_v3.
+    detailed_msg-msgv4 = bapi_alm_message-message_v4.
+  ENDMETHOD.
 
 
   METHOD add_bapi_msg.
@@ -296,7 +324,8 @@ CLASS zcl_logger IMPLEMENTATION.
           syst_count      TYPE i,
           bapi_count      TYPE i,
           bdc_count       TYPE i,
-          sprot_count     TYPE i.
+          sprot_count     TYPE i,
+          bapi_alm_count  TYPE i.
 
     IF msg_type->type_kind = cl_abap_typedescr=>typekind_struct1
         OR msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.
@@ -318,6 +347,9 @@ CLASS zcl_logger IMPLEMENTATION.
         IF 'SEVERITY,AG,MSGNR,VAR1,VAR2,VAR3,VAR4,' CS |{ component-name },|.
           sprot_count = sprot_count + 1.
         ENDIF.
+        IF 'TYPE,MESSAGE_ID,MESSAGE_NUMBER,MESSAGE_V1,MESSAGE_V2,MESSAGE_V3,MESSAGE_V4,' CS |{ component-name },|.
+          bapi_alm_count = bapi_alm_count + 1.
+        ENDIF.
       ENDLOOP.
 
       " Set message type if all expected fields are present
@@ -329,6 +361,8 @@ CLASS zcl_logger IMPLEMENTATION.
         result = c_struct_kind-bdc.
       ELSEIF sprot_count = 7.
         result = c_struct_kind-sprot.
+      ELSEIF bapi_alm_count = 7.
+        result = c_struct_kind-bapi_alm.
       ENDIF.
     ENDIF.
   ENDMETHOD.
@@ -515,6 +549,8 @@ CLASS zcl_logger IMPLEMENTATION.
       detailed_msg = add_bdc_msg( obj_to_log ).
     ELSEIF struct_kind = c_struct_kind-sprot.
       detailed_msg = add_sprot_msg( obj_to_log ).
+    ELSEIF struct_kind = c_struct_kind-bapi_alm.
+      detailed_msg = add_bapi_alm_msg( obj_to_log ).
     ELSEIF msg_type->type_kind = cl_abap_typedescr=>typekind_oref.
       TRY.
           "BEGIN this could/should be moved into its own method
