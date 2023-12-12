@@ -94,7 +94,8 @@ CLASS lcl_test DEFINITION FOR TESTING
       can_log_exception_and_export FOR TESTING,
       can_change_description FOR TESTING RAISING cx_static_check,
       can_log_callback_params FOR TESTING RAISING cx_static_check,
-      can_log_log FOR TESTING.
+      can_log_log FOR TESTING,
+      can_log_bapi_alm_return FOR TESTING.
 
 ENDCLASS.
 
@@ -1605,6 +1606,72 @@ CLASS lcl_test IMPLEMENTATION.
       exp = 'A'
       act = msg_detail-msgty
       msg = 'Did not return correct message type' ).
+  ENDMETHOD.
+
+  METHOD can_log_bapi_alm_return.
+    DATA: msg_handle       TYPE balmsghndl,
+          expected_details TYPE bal_s_msg,
+          actual_details   TYPE bal_s_msg,
+          actual_text      TYPE char200.
+
+    DATA bapi_alm_return_data_ref TYPE REF TO data.
+    DATA: "Avoid using concrete type as certain systems may not have BAPI_ALM_RETURN
+      BEGIN OF bapi_alm_return_temp,
+        type           TYPE bapi_mtype,
+        message_id     TYPE symsgid,
+        message_number TYPE symsgno,
+        message_v1     TYPE symsgv,
+        message_v2     TYPE symsgv,
+        message_v3     TYPE symsgv,
+        message_v4     TYPE symsgv,
+      END OF bapi_alm_return_temp.
+    FIELD-SYMBOLS <bapi_alm_return_structure> TYPE any.
+    TRY.
+        CREATE DATA bapi_alm_return_data_ref TYPE ('BAPI_ALM_RETURN').
+      CATCH cx_sy_create_data_error.
+        RETURN."Non ECC System such as SolutionManager
+    ENDTRY.
+    ASSIGN bapi_alm_return_data_ref->* TO <bapi_alm_return_structure>.
+
+    expected_details-msgty = bapi_alm_return_temp-type = 'E'.
+    expected_details-msgid = bapi_alm_return_temp-message_id = 'BL'.
+    expected_details-msgno = bapi_alm_return_temp-message_number = '001'.
+    expected_details-msgv1 = bapi_alm_return_temp-message_v1 = 'This'.
+    expected_details-msgv2 = bapi_alm_return_temp-message_v2 = 'is'.
+    expected_details-msgv3 = bapi_alm_return_temp-message_v3 = 'a'.
+    expected_details-msgv4 = bapi_alm_return_temp-message_v4 = 'test'.
+    MOVE-CORRESPONDING bapi_alm_return_temp TO <bapi_alm_return_structure>.
+    anon_log->add( <bapi_alm_return_structure> ).
+
+    msg_handle-log_handle = anon_log->handle.
+    msg_handle-msgnumber  = '000001'.
+
+    CALL FUNCTION 'BAL_LOG_MSG_READ'
+      EXPORTING
+        i_s_msg_handle = msg_handle
+      IMPORTING
+        e_s_msg        = actual_details
+        e_txt_msg      = actual_text.
+
+    cl_abap_unit_assert=>assert_not_initial(
+      act = actual_details-time_stmp
+      msg = 'Did not log system message properly' ).
+
+    expected_details-msg_count = 1.
+    CLEAR actual_details-time_stmp.
+
+    cl_abap_unit_assert=>assert_equals(
+      exp = expected_details
+      act = actual_details
+      msg = 'Did not log system message properly' ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = 'This is a test'
+      act = condense( actual_text )
+      msg = 'Did not log system message properly' ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = abap_true
+      act = anon_log->has_errors( )
+      msg = 'Did not log or fetch system message properly' ).
   ENDMETHOD.
 
 ENDCLASS.
