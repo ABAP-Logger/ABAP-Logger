@@ -402,7 +402,7 @@ CLASS zcl_logger IMPLEMENTATION.
         ENDIF.
         IF 'METHOD,OBJECT_TYPE,INTERNAL_OBJECT_ID,EXTERNAL_OBJECT_ID,MESSAGE_ID,MESSAGE_NUMBER,MESSAGE_TYPE,MESSAGE_TEXT,' CS |{ component-name },|.
           bapi_meth_count = bapi_meth_count + 1.
-          endif.
+        endif.
         IF 'OBJECTKEY,STATUS_ACTION,STATUS_TYPE,MESSAGE_ID,MESSAGE_NUMBER,MESSAGE_TYPE,MESSAGE_TEXT,' CS |{ component-name },|.
           bapi_status_count = bapi_status_count + 1.
           endif.
