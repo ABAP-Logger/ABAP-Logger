@@ -139,12 +139,12 @@ CLASS zcl_logger DEFINITION
         !obj_to_log         TYPE any
       RETURNING
         VALUE(detailed_msg) TYPE bal_s_msg.
-    METHODS add_bapi_meth_msg
+    METHODS add_BAPI_METH_Msg
       IMPORTING
         !obj_to_log         TYPE any
       RETURNING
         VALUE(detailed_msg) TYPE bal_s_msg.
-    METHODS add_bapi_status_result
+    METHODS add_BAPI_STATUS_RESULT
       IMPORTING
         !obj_to_log         TYPE any
       RETURNING
@@ -153,7 +153,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_logger IMPLEMENTATION.
+CLASS ZCL_LOGGER IMPLEMENTATION.
 
 
   METHOD add_bapi_alm_msg.
@@ -196,22 +196,6 @@ CLASS zcl_logger IMPLEMENTATION.
     detailed_msg-msgno = bapi_meth_message-message_number.
   ENDMETHOD.
 
-  METHOD add_bapi_status_result.
-    data: "Avoid using concrete type as certain systems may not have BAPI_STATUS_RESULT
-      begin of bapi_status_result,
-        objectkey      type c length 90, "  OBJIDEXT,
-        status_action  type c length 1, "  BAPI_STATUS_ACTION,
-        status_type    type c length 6, "  BAPI_STATUS_TYPE,
-        message_id     type c length 20, "  BAPI_MSGID,
-        message_number type c length 3, "  MSGNO,
-        message_type   type c length 1, "  MSGTY,
-        message_text   type c length 72, "  BAPI_TEXT,
-      end of bapi_status_result.
-    MOVE-CORRESPONDING obj_to_log TO bapi_status_result.
-    detailed_msg-msgty = bapi_status_result-message_type.
-    detailed_msg-msgid = bapi_status_result-message_id.
-    detailed_msg-msgno = bapi_status_result-message_number.
-  ENDMETHOD.
 
   METHOD add_bapi_msg.
     DATA bapi_message TYPE bapiret1.
@@ -223,6 +207,24 @@ CLASS zcl_logger IMPLEMENTATION.
     detailed_msg-msgv2 = bapi_message-message_v2.
     detailed_msg-msgv3 = bapi_message-message_v3.
     detailed_msg-msgv4 = bapi_message-message_v4.
+  ENDMETHOD.
+
+
+  METHOD add_bapi_status_result.
+    DATA: "Avoid using concrete type as certain systems may not have BAPI_STATUS_RESULT
+      BEGIN OF bapi_status_result,
+        objectkey      TYPE c LENGTH 90, "  OBJIDEXT,
+        status_action  TYPE c LENGTH 1, "  BAPI_STATUS_ACTION,
+        status_type    TYPE c LENGTH 6, "  BAPI_STATUS_TYPE,
+        message_id     TYPE c LENGTH 20, "  BAPI_MSGID,
+        message_number TYPE c LENGTH 3, "  MSGNO,
+        message_type   TYPE c LENGTH 1, "  MSGTY,
+        message_text   TYPE c LENGTH 72, "  BAPI_TEXT,
+      END OF bapi_status_result.
+    MOVE-CORRESPONDING obj_to_log TO bapi_status_result.
+    detailed_msg-msgty = bapi_status_result-message_type.
+    detailed_msg-msgid = bapi_status_result-message_id.
+    detailed_msg-msgno = bapi_status_result-message_number.
   ENDMETHOD.
 
 
@@ -366,16 +368,16 @@ CLASS zcl_logger IMPLEMENTATION.
 
 
   METHOD get_struct_kind.
-    DATA: msg_struct_kind TYPE REF TO cl_abap_structdescr,
-          components      TYPE abap_compdescr_tab,
-          component       LIKE LINE OF components,
-          syst_count      TYPE i,
-          bapi_count      TYPE i,
-          bdc_count       TYPE i,
-          sprot_count     TYPE i,
-          bapi_alm_count  TYPE i,
-          bapi_meth_count type i,
-          bapi_status_count type i.
+    DATA: msg_struct_kind   TYPE REF TO cl_abap_structdescr,
+          components        TYPE abap_compdescr_tab,
+          component         LIKE LINE OF components,
+          syst_count        TYPE i,
+          bapi_count        TYPE i,
+          bdc_count         TYPE i,
+          sprot_count       TYPE i,
+          bapi_alm_count    TYPE i,
+          bapi_meth_count   TYPE i,
+          bapi_status_count TYPE i.
 
     IF msg_type->type_kind = cl_abap_typedescr=>typekind_struct1
         OR msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.
@@ -402,10 +404,10 @@ CLASS zcl_logger IMPLEMENTATION.
         ENDIF.
         IF 'METHOD,OBJECT_TYPE,INTERNAL_OBJECT_ID,EXTERNAL_OBJECT_ID,MESSAGE_ID,MESSAGE_NUMBER,MESSAGE_TYPE,MESSAGE_TEXT,' CS |{ component-name },|.
           bapi_meth_count = bapi_meth_count + 1.
-          endif.
+        ENDIF.
         IF 'OBJECTKEY,STATUS_ACTION,STATUS_TYPE,MESSAGE_ID,MESSAGE_NUMBER,MESSAGE_TYPE,MESSAGE_TEXT,' CS |{ component-name },|.
           bapi_status_count = bapi_status_count + 1.
-          endif.
+        ENDIF.
       ENDLOOP.
 
       " Set message type if all expected fields are present

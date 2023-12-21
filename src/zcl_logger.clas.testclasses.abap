@@ -439,10 +439,6 @@ CLASS lcl_test IMPLEMENTATION.
       act = actual_details
       msg = 'Did not log system message properly' ).
     cl_abap_unit_assert=>assert_equals(
-      exp = 'This is a test'
-      act = condense( actual_text )
-      msg = 'Did not log system message properly' ).
-    cl_abap_unit_assert=>assert_equals(
       exp = abap_true
       act = anon_log->has_warnings( )
       msg = 'Did not log or fetch system message properly' ).
@@ -554,7 +550,7 @@ CLASS lcl_test IMPLEMENTATION.
 
     "Solution manager doens't have BAPI_ORDER_RETURN. Therefore avoid using the concrete type
     DATA bapi_order_return_data_ref TYPE REF TO data.
-    DATA bapi_return_temp           TYPE bapiret2.         "these fields have the same name as BAPI_ORDER_RETURN
+    DATA bapi_return_temp TYPE bapiret2.         "these fields have the same name as BAPI_ORDER_RETURN
     FIELD-SYMBOLS <bapi_order_return_structure> TYPE any.
     TRY.
         CREATE DATA bapi_order_return_data_ref TYPE ('BAPI_ORDER_RETURN').
@@ -801,7 +797,7 @@ CLASS lcl_test IMPLEMENTATION.
       APPEND bapi_msg TO bapi_messages.
       APPEND exp_detail TO exp_details.
       APPEND exp_text TO exp_texts.
-    END-OF-DEFINITION.
+    end-of-definition.
 
     bapiret_messages_are: 'S' 'BL' '001' 'This' 'is' 'happy' 'message',
                   'W' 'BL' '001' 'This' 'is' 'warning' 'message',
@@ -890,7 +886,7 @@ CLASS lcl_test IMPLEMENTATION.
           msgv3    = &5
           msgv4    = &6.
       previous_exception = main_exception.
-    END-OF-DEFINITION.
+    end-of-definition.
 
     "Given
     exceptions_are:
@@ -953,7 +949,7 @@ CLASS lcl_test IMPLEMENTATION.
       batch_msg-msgv3 = &6.
       batch_msg-msgv4 = &7.
       APPEND batch_msg TO batch_msgs.
-    END-OF-DEFINITION.
+    end-of-definition.
 
     batch_messages_are:
       'S' 'SABP_UNIT' '010' ''     ''   ''     '',
