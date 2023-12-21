@@ -66,12 +66,12 @@ CLASS zcl_logger DEFINITION
 
     CONSTANTS:
       BEGIN OF c_struct_kind,
-        syst     TYPE i VALUE 1,
-        bapi     TYPE i VALUE 2,
-        bdc      TYPE i VALUE 3,
-        sprot    TYPE i VALUE 4,
-        bapi_alm TYPE i VALUE 5,
-        bapi_meth TYPE i VALUE 6,
+        syst               TYPE i VALUE 1,
+        bapi               TYPE i VALUE 2,
+        bdc                TYPE i VALUE 3,
+        sprot              TYPE i VALUE 4,
+        bapi_alm           TYPE i VALUE 5,
+        bapi_meth          TYPE i VALUE 6,
         bapi_status_result TYPE i VALUE 7,
       END OF c_struct_kind.
 
@@ -139,12 +139,12 @@ CLASS zcl_logger DEFINITION
         !obj_to_log         TYPE any
       RETURNING
         VALUE(detailed_msg) TYPE bal_s_msg.
-    METHODS add_BAPI_METH_Msg
+    METHODS add_bapi_meth_msg
       IMPORTING
         !obj_to_log         TYPE any
       RETURNING
         VALUE(detailed_msg) TYPE bal_s_msg.
-    METHODS add_BAPI_STATUS_RESULT
+    METHODS add_bapi_status_result
       IMPORTING
         !obj_to_log         TYPE any
       RETURNING
@@ -179,17 +179,17 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 
 
   METHOD add_bapi_meth_msg.
-    data: "Avoid using concrete type as certain systems may not have BAPI_METH_MESSAGE
-      begin of bapi_meth_message,
-        method             type c length 32, "bapi_method,
-        object_type        type c length 32, "obj_typ,
-        internal_object_id type c length 90, "objidint,
-        external_object_id type c length 90, "objidext,
-        message_id         type c length 20, "bapi_msgid,
-        message_number     type msgno,
-        message_type       type msgty,
-        message_text       type c length 72, "bapi_text,
-      end of bapi_meth_message.
+    DATA: "Avoid using concrete type as certain systems may not have BAPI_METH_MESSAGE
+      BEGIN OF bapi_meth_message,
+        method             TYPE c LENGTH 32, "bapi_method,
+        object_type        TYPE c LENGTH 32, "obj_typ,
+        internal_object_id TYPE c LENGTH 90, "objidint,
+        external_object_id TYPE c LENGTH 90, "objidext,
+        message_id         TYPE c LENGTH 20, "bapi_msgid,
+        message_number     TYPE msgno,
+        message_type       TYPE msgty,
+        message_text       TYPE c LENGTH 72, "bapi_text,
+      END OF bapi_meth_message.
     MOVE-CORRESPONDING obj_to_log TO bapi_meth_message.
     detailed_msg-msgty = bapi_meth_message-message_type.
     detailed_msg-msgid = bapi_meth_message-message_id.
