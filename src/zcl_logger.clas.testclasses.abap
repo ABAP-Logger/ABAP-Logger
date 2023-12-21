@@ -95,7 +95,9 @@ CLASS lcl_test DEFINITION FOR TESTING
       can_change_description FOR TESTING RAISING cx_static_check,
       can_log_callback_params FOR TESTING RAISING cx_static_check,
       can_log_log FOR TESTING,
-      can_log_bapi_alm_return FOR TESTING.
+      can_log_bapi_alm_return FOR TESTING,
+      can_log_bapi_meth_message FOR TESTING RAISING cx_static_check,
+      can_log_bapi_status_result FOR TESTING RAISING cx_static_check.
 
 ENDCLASS.
 
@@ -1674,4 +1676,122 @@ CLASS lcl_test IMPLEMENTATION.
       msg = 'Did not log or fetch system message properly' ).
   ENDMETHOD.
 
+
+  METHOD can_log_bapi_meth_message.
+    DATA: msg_handle       TYPE balmsghndl,
+          expected_details TYPE bal_s_msg,
+          actual_details   TYPE bal_s_msg,
+          actual_text      TYPE char200.
+
+    DATA bapi_meth_message_data_ref TYPE REF TO data.
+    DATA: "Avoid using concrete type as certain systems may not have BAPI_METH_MESSAGE
+      BEGIN OF bapi_meth_message_temp,
+        method             TYPE c LENGTH 32, "bapi_method,
+        object_type        TYPE c LENGTH 32, "obj_typ,
+        internal_object_id TYPE c LENGTH 90, "objidint,
+        external_object_id TYPE c LENGTH 90, "objidext,
+        message_id         TYPE c LENGTH 20, "bapi_msgid,
+        message_number     TYPE msgno,
+        message_type       TYPE msgty,
+        message_text       TYPE c LENGTH 72, "bapi_text,
+      END OF bapi_meth_message_temp.
+    FIELD-SYMBOLS <bapi_meth_message_structure> TYPE any.
+    TRY.
+        CREATE DATA bapi_meth_message_data_ref TYPE ('BAPI_METH_MESSAGE').
+      CATCH cx_sy_create_data_error.
+        RETURN."Non ECC System such as SolutionManager
+    ENDTRY.
+    ASSIGN bapi_meth_message_data_ref->* TO <bapi_meth_message_structure>.
+
+    expected_details-msgty = bapi_meth_message_temp-message_type = 'E'.
+    expected_details-msgid = bapi_meth_message_temp-message_id = 'CJ'.
+    expected_details-msgno = bapi_meth_message_temp-message_number = '036'.
+    MOVE-CORRESPONDING bapi_meth_message_temp TO <bapi_meth_message_structure>.
+    anon_log->add( <bapi_meth_message_structure> ).
+
+    msg_handle-log_handle = anon_log->handle.
+    msg_handle-msgnumber  = '000001'.
+
+    CALL FUNCTION 'BAL_LOG_MSG_READ'
+      EXPORTING
+        i_s_msg_handle = msg_handle
+      IMPORTING
+        e_s_msg        = actual_details
+        e_txt_msg      = actual_text.
+
+    cl_abap_unit_assert=>assert_not_initial(
+      act = actual_details-time_stmp
+      msg = 'Did not log system message properly' ).
+
+    expected_details-msg_count = 1.
+    CLEAR actual_details-time_stmp.
+
+    cl_abap_unit_assert=>assert_equals(
+      exp = expected_details
+      act = actual_details
+      msg = 'Did not log system message properly' ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = abap_true
+      act = anon_log->has_errors( )
+      msg = 'Did not log or fetch system message properly' ).
+  ENDMETHOD.
+
+
+  METHOD can_log_bapi_status_result.
+    DATA: msg_handle       TYPE balmsghndl,
+          expected_details TYPE bal_s_msg,
+          actual_details   TYPE bal_s_msg,
+          actual_text      TYPE char200.
+
+    DATA bapi_bapi_status_data_ref TYPE REF TO data.
+    DATA: "Avoid using concrete type as certain systems may not have BAPI_METH_MESSAGE
+      BEGIN OF bapi_status_result_temp,
+        objectkey      TYPE c LENGTH 90, "  OBJIDEXT,
+        status_action  TYPE c LENGTH 1, "  BAPI_STATUS_ACTION,
+        status_type    TYPE c LENGTH 6, "  BAPI_STATUS_TYPE,
+        message_id     TYPE c LENGTH 20, "  BAPI_MSGID,
+        message_number TYPE c LENGTH 3, "  MSGNO,
+        message_type   TYPE c LENGTH 1, "  MSGTY,
+        message_text   TYPE c LENGTH 72, "  BAPI_TEXT,
+      END OF bapi_status_result_temp.
+    FIELD-SYMBOLS <bapi_status_result_structure> TYPE any.
+    TRY.
+        CREATE DATA bapi_bapi_status_data_ref TYPE ('BAPI_STATUS_RESULT').
+      CATCH cx_sy_create_data_error.
+        RETURN."Non ECC System such as SolutionManager
+    ENDTRY.
+    ASSIGN bapi_bapi_status_data_ref->* TO <bapi_status_result_structure>.
+
+    expected_details-msgty = bapi_status_result_temp-message_type = 'E'.
+    expected_details-msgid = bapi_status_result_temp-message_id = 'CNIF_STATUS'.
+    expected_details-msgno = bapi_status_result_temp-message_number = '005'.
+    MOVE-CORRESPONDING bapi_status_result_temp TO <bapi_status_result_structure>.
+    anon_log->add( <bapi_status_result_structure> ).
+
+    msg_handle-log_handle = anon_log->handle.
+    msg_handle-msgnumber  = '000001'.
+
+    CALL FUNCTION 'BAL_LOG_MSG_READ'
+      EXPORTING
+        i_s_msg_handle = msg_handle
+      IMPORTING
+        e_s_msg        = actual_details
+        e_txt_msg      = actual_text.
+
+    cl_abap_unit_assert=>assert_not_initial(
+      act = actual_details-time_stmp
+      msg = 'Did not log system message properly' ).
+
+    expected_details-msg_count = 1.
+    CLEAR actual_details-time_stmp.
+
+    cl_abap_unit_assert=>assert_equals(
+      exp = expected_details
+      act = actual_details
+      msg = 'Did not log system message properly' ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = abap_true
+      act = anon_log->has_errors( )
+      msg = 'Did not log or fetch system message properly' ).
+  ENDMETHOD.
 ENDCLASS.
