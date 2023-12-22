@@ -66,11 +66,13 @@ CLASS zcl_logger DEFINITION
 
     CONSTANTS:
       BEGIN OF c_struct_kind,
-        syst     TYPE i VALUE 1,
-        bapi     TYPE i VALUE 2,
-        bdc      TYPE i VALUE 3,
-        sprot    TYPE i VALUE 4,
-        bapi_alm TYPE i VALUE 5,
+        syst               TYPE i VALUE 1,
+        bapi               TYPE i VALUE 2,
+        bdc                TYPE i VALUE 3,
+        sprot              TYPE i VALUE 4,
+        bapi_alm           TYPE i VALUE 5,
+        bapi_meth          TYPE i VALUE 6,
+        bapi_status_result TYPE i VALUE 7,
       END OF c_struct_kind.
 
     DATA sec_connection     TYPE abap_bool.
@@ -137,11 +139,21 @@ CLASS zcl_logger DEFINITION
         !obj_to_log         TYPE any
       RETURNING
         VALUE(detailed_msg) TYPE bal_s_msg.
+    METHODS add_bapi_meth_msg
+      IMPORTING
+        !obj_to_log         TYPE any
+      RETURNING
+        VALUE(detailed_msg) TYPE bal_s_msg.
+    METHODS add_bapi_status_result
+      IMPORTING
+        !obj_to_log         TYPE any
+      RETURNING
+        VALUE(detailed_msg) TYPE bal_s_msg.
 ENDCLASS.
 
 
 
-CLASS zcl_logger IMPLEMENTATION.
+CLASS ZCL_LOGGER IMPLEMENTATION.
 
 
   METHOD add_bapi_alm_msg.
@@ -166,6 +178,25 @@ CLASS zcl_logger IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD add_bapi_meth_msg.
+    DATA: "Avoid using concrete type as certain systems may not have BAPI_METH_MESSAGE
+      BEGIN OF bapi_meth_message,
+        method             TYPE c LENGTH 32, "bapi_method,
+        object_type        TYPE c LENGTH 32, "obj_typ,
+        internal_object_id TYPE c LENGTH 90, "objidint,
+        external_object_id TYPE c LENGTH 90, "objidext,
+        message_id         TYPE c LENGTH 20, "bapi_msgid,
+        message_number     TYPE msgno,
+        message_type       TYPE msgty,
+        message_text       TYPE c LENGTH 72, "bapi_text,
+      END OF bapi_meth_message.
+    MOVE-CORRESPONDING obj_to_log TO bapi_meth_message.
+    detailed_msg-msgty = bapi_meth_message-message_type.
+    detailed_msg-msgid = bapi_meth_message-message_id.
+    detailed_msg-msgno = bapi_meth_message-message_number.
+  ENDMETHOD.
+
+
   METHOD add_bapi_msg.
     DATA bapi_message TYPE bapiret1.
     MOVE-CORRESPONDING obj_to_log TO bapi_message.
@@ -176,6 +207,24 @@ CLASS zcl_logger IMPLEMENTATION.
     detailed_msg-msgv2 = bapi_message-message_v2.
     detailed_msg-msgv3 = bapi_message-message_v3.
     detailed_msg-msgv4 = bapi_message-message_v4.
+  ENDMETHOD.
+
+
+  METHOD add_bapi_status_result.
+    DATA: "Avoid using concrete type as certain systems may not have BAPI_STATUS_RESULT
+      BEGIN OF bapi_status_result,
+        objectkey      TYPE c LENGTH 90, "  OBJIDEXT,
+        status_action  TYPE c LENGTH 1, "  BAPI_STATUS_ACTION,
+        status_type    TYPE c LENGTH 6, "  BAPI_STATUS_TYPE,
+        message_id     TYPE c LENGTH 20, "  BAPI_MSGID,
+        message_number TYPE c LENGTH 3, "  MSGNO,
+        message_type   TYPE c LENGTH 1, "  MSGTY,
+        message_text   TYPE c LENGTH 72, "  BAPI_TEXT,
+      END OF bapi_status_result.
+    MOVE-CORRESPONDING obj_to_log TO bapi_status_result.
+    detailed_msg-msgty = bapi_status_result-message_type.
+    detailed_msg-msgid = bapi_status_result-message_id.
+    detailed_msg-msgno = bapi_status_result-message_number.
   ENDMETHOD.
 
 
@@ -319,14 +368,16 @@ CLASS zcl_logger IMPLEMENTATION.
 
 
   METHOD get_struct_kind.
-    DATA: msg_struct_kind TYPE REF TO cl_abap_structdescr,
-          components      TYPE abap_compdescr_tab,
-          component       LIKE LINE OF components,
-          syst_count      TYPE i,
-          bapi_count      TYPE i,
-          bdc_count       TYPE i,
-          sprot_count     TYPE i,
-          bapi_alm_count  TYPE i.
+    DATA: msg_struct_kind   TYPE REF TO cl_abap_structdescr,
+          components        TYPE abap_compdescr_tab,
+          component         LIKE LINE OF components,
+          syst_count        TYPE i,
+          bapi_count        TYPE i,
+          bdc_count         TYPE i,
+          sprot_count       TYPE i,
+          bapi_alm_count    TYPE i,
+          bapi_meth_count   TYPE i,
+          bapi_status_count TYPE i.
 
     IF msg_type->type_kind = cl_abap_typedescr=>typekind_struct1
         OR msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.
@@ -351,6 +402,12 @@ CLASS zcl_logger IMPLEMENTATION.
         IF 'TYPE,MESSAGE_ID,MESSAGE_NUMBER,MESSAGE_V1,MESSAGE_V2,MESSAGE_V3,MESSAGE_V4,' CS |{ component-name },|.
           bapi_alm_count = bapi_alm_count + 1.
         ENDIF.
+        IF 'METHOD,OBJECT_TYPE,INTERNAL_OBJECT_ID,EXTERNAL_OBJECT_ID,MESSAGE_ID,MESSAGE_NUMBER,MESSAGE_TYPE,MESSAGE_TEXT,' CS |{ component-name },|.
+          bapi_meth_count = bapi_meth_count + 1.
+        ENDIF.
+        IF 'OBJECTKEY,STATUS_ACTION,STATUS_TYPE,MESSAGE_ID,MESSAGE_NUMBER,MESSAGE_TYPE,MESSAGE_TEXT,' CS |{ component-name },|.
+          bapi_status_count = bapi_status_count + 1.
+        ENDIF.
       ENDLOOP.
 
       " Set message type if all expected fields are present
@@ -364,6 +421,10 @@ CLASS zcl_logger IMPLEMENTATION.
         result = c_struct_kind-sprot.
       ELSEIF bapi_alm_count = 7.
         result = c_struct_kind-bapi_alm.
+      ELSEIF bapi_meth_count = 8.
+        result = c_struct_kind-bapi_meth.
+      ELSEIF bapi_status_count = 7.
+        result = c_struct_kind-bapi_status_result.
       ENDIF.
     ENDIF.
   ENDMETHOD.
@@ -552,6 +613,10 @@ CLASS zcl_logger IMPLEMENTATION.
       detailed_msg = add_sprot_msg( obj_to_log ).
     ELSEIF struct_kind = c_struct_kind-bapi_alm.
       detailed_msg = add_bapi_alm_msg( obj_to_log ).
+    ELSEIF struct_kind = c_struct_kind-bapi_meth.
+      detailed_msg = add_bapi_meth_msg( obj_to_log ).
+    ELSEIF struct_kind = c_struct_kind-bapi_status_result.
+      detailed_msg = add_bapi_status_result( obj_to_log ).
     ELSEIF msg_type->type_kind = cl_abap_typedescr=>typekind_oref.
       TRY.
           "BEGIN this could/should be moved into its own method
