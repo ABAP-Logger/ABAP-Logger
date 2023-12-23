@@ -177,7 +177,6 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     detailed_msg-msgv4 = bapi_alm_message-message_v4.
   ENDMETHOD.
 
-
   METHOD add_bapi_meth_msg.
     DATA: "Avoid using concrete type as certain systems may not have BAPI_METH_MESSAGE
       BEGIN OF bapi_meth_message,
@@ -195,29 +194,6 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     detailed_msg-msgid = bapi_meth_message-message_id.
     detailed_msg-msgno = bapi_meth_message-message_number.
   ENDMETHOD.
-
-
-  METHOD add_bapi_alm_msg.
-    DATA: "Avoid using concrete type as certain systems may not have BAPI_ALM_RETURN
-      BEGIN OF bapi_alm_message,
-        type           TYPE bapi_mtype,
-        message_id     TYPE symsgid,
-        message_number TYPE symsgno,
-        message_v1     TYPE symsgv,
-        message_v2     TYPE symsgv,
-        message_v3     TYPE symsgv,
-        message_v4     TYPE symsgv,
-      END OF bapi_alm_message.
-    MOVE-CORRESPONDING obj_to_log TO bapi_alm_message.
-    detailed_msg-msgty = bapi_alm_message-type.
-    detailed_msg-msgid = bapi_alm_message-message_id.
-    detailed_msg-msgno = bapi_alm_message-message_number.
-    detailed_msg-msgv1 = bapi_alm_message-message_v1.
-    detailed_msg-msgv2 = bapi_alm_message-message_v2.
-    detailed_msg-msgv3 = bapi_alm_message-message_v3.
-    detailed_msg-msgv4 = bapi_alm_message-message_v4.
-  ENDMETHOD.
-
 
   METHOD add_bapi_msg.
     DATA bapi_message TYPE bapiret1.
