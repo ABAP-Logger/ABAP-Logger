@@ -665,12 +665,14 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
               obj_to_log    = <message_line>
               context       = context
               importance    = importance
-              type          = type ).
+              type          = type
+              detlevel      = detlevel ).
         ELSE.
           zif_logger~add(
               obj_to_log    = <message_line>
               importance    = importance
-              type          = type ).
+              type          = type
+              detlevel      = detlevel ).
         ENDIF.
       ENDLOOP.
     ELSEIF msg_type->type_kind = cl_abap_typedescr=>typekind_struct1     "flat structure
@@ -700,7 +702,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
           i_probclass  = importance
           i_text       = free_text_msg
           i_s_context  = formatted_context
-          i_s_params   = formatted_params.
+          i_s_params   = formatted_params
+          i_detlevel   = detlevel.
     ELSEIF exception_data_table IS NOT INITIAL.
       FIELD-SYMBOLS <exception_data> LIKE LINE OF exception_data_table.
       LOOP AT exception_data_table ASSIGNING <exception_data>.
@@ -713,6 +716,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       detailed_msg-context   = formatted_context.
       detailed_msg-params    = formatted_params.
       detailed_msg-probclass = importance.
+      detailed_msg-detlevel  = detlevel.
       IF type IS NOT INITIAL.
         detailed_msg-msgty   = type.
       ENDIF.
