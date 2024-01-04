@@ -177,6 +177,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     detailed_msg-msgv4 = bapi_alm_message-message_v4.
   ENDMETHOD.
 
+
   METHOD add_bapi_meth_msg.
     DATA: "Avoid using concrete type as certain systems may not have BAPI_METH_MESSAGE
       BEGIN OF bapi_meth_message,
@@ -194,6 +195,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     detailed_msg-msgid = bapi_meth_message-message_id.
     detailed_msg-msgno = bapi_meth_message-message_number.
   ENDMETHOD.
+
 
   METHOD add_bapi_msg.
     DATA bapi_message TYPE bapiret1.
