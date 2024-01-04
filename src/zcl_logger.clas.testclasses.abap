@@ -1671,6 +1671,8 @@ CLASS lcl_test IMPLEMENTATION.
       act = anon_log->has_errors( )
       msg = 'Did not log or fetch system message properly' ).
   ENDMETHOD.
+
+
   METHOD can_log_bapi_meth_message.
     DATA: msg_handle       TYPE balmsghndl,
           expected_details TYPE bal_s_msg,
