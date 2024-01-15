@@ -86,6 +86,7 @@ CLASS zcl_logger DEFINITION
           exception                      TYPE REF TO cx_root
           type                           TYPE symsgty OPTIONAL
           importance                     TYPE balprobcl OPTIONAL
+          detlevel                       TYPE ballevel OPTIONAL
         RETURNING
           VALUE(rt_exception_data_table) TYPE tty_exception_data,
 
@@ -104,6 +105,7 @@ CLASS zcl_logger DEFINITION
           callback_fm   TYPE csequence OPTIONAL
           type          TYPE symsgty OPTIONAL
           importance    TYPE balprobcl OPTIONAL
+          detlevel      TYPE ballevel OPTIONAL
             PREFERRED PARAMETER obj_to_log
         RETURNING
           VALUE(self)   TYPE REF TO zif_logger.
@@ -288,7 +290,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
               callback_prog = callback_prog
               callback_fm   = callback_fm
               type          = type
-              importance    = importance ).
+              importance    = importance
+              detlevel      = detlevel ).
         ENDIF.
       ENDIF.
     ENDLOOP.
@@ -337,6 +340,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       <ret>-exception = <ex>-exception.
       <ret>-msgty     = type.
       <ret>-probclass = importance.
+      <ret>-detlevel  = detlevel.
     ENDLOOP.
   ENDMETHOD.
 

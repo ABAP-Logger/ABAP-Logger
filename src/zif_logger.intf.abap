@@ -15,7 +15,7 @@ INTERFACE zif_logger
       callback_parameters TYPE bal_t_par OPTIONAL
       type                TYPE symsgty OPTIONAL
       importance          TYPE balprobcl OPTIONAL
-      detlevel            TYPE ballevel DEFAULT '1'
+      detlevel            TYPE ballevel OPTIONAL
         PREFERRED PARAMETER obj_to_log
     RETURNING
       VALUE(self)         TYPE REF TO zif_logger.
@@ -29,7 +29,7 @@ INTERFACE zif_logger
       callback_fm         TYPE csequence OPTIONAL
       callback_parameters TYPE bal_t_par OPTIONAL
       importance          TYPE balprobcl OPTIONAL
-      detlevel            TYPE ballevel DEFAULT '1'
+      detlevel            TYPE ballevel OPTIONAL
         PREFERRED PARAMETER obj_to_log
     RETURNING
       VALUE(self)         TYPE REF TO zif_logger.
@@ -43,7 +43,7 @@ INTERFACE zif_logger
       callback_fm         TYPE csequence OPTIONAL
       callback_parameters TYPE bal_t_par OPTIONAL
       importance          TYPE balprobcl OPTIONAL
-      detlevel            TYPE ballevel DEFAULT '1'
+      detlevel            TYPE ballevel OPTIONAL
         PREFERRED PARAMETER obj_to_log
     RETURNING
       VALUE(self)         TYPE REF TO zif_logger.
@@ -57,7 +57,7 @@ INTERFACE zif_logger
       callback_fm         TYPE csequence OPTIONAL
       callback_parameters TYPE bal_t_par OPTIONAL
       importance          TYPE balprobcl OPTIONAL
-      detlevel            TYPE ballevel DEFAULT '1'
+      detlevel            TYPE ballevel OPTIONAL
         PREFERRED PARAMETER obj_to_log
     RETURNING
       VALUE(self)         TYPE REF TO zif_logger.
@@ -71,7 +71,7 @@ INTERFACE zif_logger
       callback_fm         TYPE csequence OPTIONAL
       callback_parameters TYPE bal_t_par OPTIONAL
       importance          TYPE balprobcl OPTIONAL
-      detlevel            TYPE ballevel DEFAULT '1'
+      detlevel            TYPE ballevel OPTIONAL
         PREFERRED PARAMETER obj_to_log
     RETURNING
       VALUE(self)         TYPE REF TO zif_logger.
@@ -85,7 +85,7 @@ INTERFACE zif_logger
       callback_fm         TYPE csequence OPTIONAL
       callback_parameters TYPE bal_t_par OPTIONAL
       importance          TYPE balprobcl OPTIONAL
-      detlevel            TYPE ballevel DEFAULT '1'
+      detlevel            TYPE ballevel OPTIONAL
         PREFERRED PARAMETER obj_to_log
     RETURNING
       VALUE(self)         TYPE REF TO zif_logger.
