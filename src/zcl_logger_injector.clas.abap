@@ -32,21 +32,21 @@ CLASS zcl_logger_injector IMPLEMENTATION.
 
 
   METHOD set_collection.
-    zcl_logger_factory=>collection = collection.
+    zcl_logger_factory=>log_collection = collection.
   ENDMETHOD.
 
 
   METHOD set_display_profile.
-    zcl_logger_factory=>display_profile = display_profile.
+    zcl_logger_factory=>log_display_profile = display_profile.
   ENDMETHOD.
 
 
   METHOD set_logger.
-    zcl_logger_factory=>logger = logger.
+    zcl_logger_factory=>log_logger = logger.
   ENDMETHOD.
 
 
   METHOD set_settings.
-    zcl_logger_factory=>settings = settings.
+    zcl_logger_factory=>log_settings = settings.
   ENDMETHOD.
 ENDCLASS.

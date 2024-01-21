@@ -52,10 +52,10 @@ CLASS zcl_logger_factory DEFINITION
   PRIVATE SECTION.
 
     CLASS-DATA:
-      logger          TYPE REF TO zif_logger,
-      settings        TYPE REF TO zif_logger_settings,
-      collection      TYPE REF TO zif_logger_collection,
-      display_profile TYPE REF TO zif_logger_display_profile.
+      log_logger          TYPE REF TO zif_logger,
+      log_settings        TYPE REF TO zif_logger_settings,
+      log_collection      TYPE REF TO zif_logger_collection,
+      log_display_profile TYPE REF TO zif_logger_display_profile.
 
 ENDCLASS.
 
@@ -65,19 +65,19 @@ CLASS zcl_logger_factory IMPLEMENTATION.
 
 
   METHOD create_collection.
-    IF collection IS INITIAL.
+    IF log_collection IS INITIAL.
       CREATE OBJECT r_collection TYPE zcl_logger_collection.
     ELSE.
-      r_collection = collection.
+      r_collection = log_collection.
     ENDIF.
   ENDMETHOD.
 
 
   METHOD create_display_profile.
-    IF display_profile IS INITIAL.
+    IF log_display_profile IS INITIAL.
       CREATE OBJECT r_display_profile TYPE zcl_logger_display_profile.
     ELSE.
-      r_display_profile = display_profile.
+      r_display_profile = log_display_profile.
     ENDIF.
 
     r_display_profile->set(
@@ -94,10 +94,10 @@ CLASS zcl_logger_factory IMPLEMENTATION.
 
     DATA lo_log TYPE REF TO zcl_logger.
 
-    IF logger IS INITIAL.
+    IF log_logger IS INITIAL.
       CREATE OBJECT lo_log TYPE zcl_logger.
     ELSE.
-      lo_log ?= logger.
+      lo_log ?= log_logger.
     ENDIF.
 
     lo_log->header-object    = object.
@@ -152,10 +152,10 @@ CLASS zcl_logger_factory IMPLEMENTATION.
 
 
   METHOD create_settings.
-    IF settings IS INITIAL.
+    IF log_settings IS INITIAL.
       CREATE OBJECT r_settings TYPE zcl_logger_settings.
     ELSE.
-      r_settings = settings.
+      r_settings = log_settings.
     ENDIF.
   ENDMETHOD.
 
@@ -206,10 +206,10 @@ CLASS zcl_logger_factory IMPLEMENTATION.
 
     DATA lo_log TYPE REF TO zcl_logger.
 
-    IF logger IS INITIAL.
+    IF log_logger IS INITIAL.
       CREATE OBJECT lo_log TYPE zcl_logger.
     ELSE.
-      lo_log ?= logger.
+      lo_log ?= log_logger.
     ENDIF.
 
     lo_log->db_number = most_recent_header-lognumber.
