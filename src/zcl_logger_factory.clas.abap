@@ -1,7 +1,8 @@
 CLASS zcl_logger_factory DEFINITION
   PUBLIC
   FINAL
-  CREATE PRIVATE.
+  CREATE PRIVATE
+  GLOBAL FRIENDS zcl_logger_injector.
 
   PUBLIC SECTION.
 
@@ -46,18 +47,59 @@ CLASS zcl_logger_factory DEFINITION
         i_standard               TYPE clike DEFAULT abap_true
       RETURNING
         VALUE(r_display_profile) TYPE REF TO zif_logger_display_profile.
+
   PROTECTED SECTION.
   PRIVATE SECTION.
+
+    CLASS-DATA:
+      logger          TYPE REF TO zif_logger,
+      settings        TYPE REF TO zif_logger_settings,
+      collection      TYPE REF TO zif_logger_collection,
+      display_profile TYPE REF TO zif_logger_display_profile.
+
 ENDCLASS.
 
 
+
 CLASS zcl_logger_factory IMPLEMENTATION.
+
+
+  METHOD create_collection.
+    IF collection IS INITIAL.
+      CREATE OBJECT r_collection TYPE zcl_logger_collection.
+    ELSE.
+      r_collection = collection.
+    ENDIF.
+  ENDMETHOD.
+
+
+  METHOD create_display_profile.
+    IF display_profile IS INITIAL.
+      CREATE OBJECT r_display_profile TYPE zcl_logger_display_profile.
+    ELSE.
+      r_display_profile = display_profile.
+    ENDIF.
+
+    r_display_profile->set(
+      i_detlevel    = i_detlevel
+      i_no_tree     = i_no_tree
+      i_popup       = i_popup
+      i_single_log  = i_single_log
+      i_standard    = i_standard ).
+  ENDMETHOD.
+
 
   METHOD create_log.
     FIELD-SYMBOLS <context_val> TYPE c.
 
     DATA lo_log TYPE REF TO zcl_logger.
-    CREATE OBJECT lo_log.
+
+    IF logger IS INITIAL.
+      CREATE OBJECT lo_log TYPE zcl_logger.
+    ELSE.
+      lo_log ?= logger.
+    ENDIF.
+
     lo_log->header-object    = object.
     lo_log->header-subobject = subobject.
     lo_log->header-extnumber = desc.
@@ -65,7 +107,7 @@ CLASS zcl_logger_factory IMPLEMENTATION.
     IF settings IS BOUND.
       lo_log->settings = settings.
     ELSE.
-      CREATE OBJECT lo_log->settings TYPE zcl_logger_settings.
+      lo_log->settings = create_settings( ).
     ENDIF.
 
     " Special case: Logger can work without object - but then the data cannot be written to the database.
@@ -108,9 +150,15 @@ CLASS zcl_logger_factory IMPLEMENTATION.
     r_log = lo_log.
   ENDMETHOD.
 
+
   METHOD create_settings.
-    CREATE OBJECT r_settings TYPE zcl_logger_settings.
+    IF settings IS INITIAL.
+      CREATE OBJECT r_settings TYPE zcl_logger_settings.
+    ELSE.
+      r_settings = settings.
+    ENDIF.
   ENDMETHOD.
+
 
   METHOD open_log.
     DATA: filter             TYPE bal_s_lfil,
@@ -142,9 +190,10 @@ CLASS zcl_logger_factory IMPLEMENTATION.
 
     IF sy-subrc = 1.
       IF create_if_does_not_exist = abap_true.
-        r_log = zcl_logger=>new( object    = object
-                                 subobject = subobject
-                                 desc      = desc ).
+        r_log = create_log( object    = object
+                            subobject = subobject
+                            desc      = desc
+                            settings  = settings ).
       ENDIF.
       RETURN.
     ENDIF.
@@ -156,14 +205,20 @@ CLASS zcl_logger_factory IMPLEMENTATION.
     READ TABLE found_headers INDEX 1 INTO most_recent_header.
 
     DATA lo_log TYPE REF TO zcl_logger.
-    CREATE OBJECT lo_log.
+
+    IF logger IS INITIAL.
+      CREATE OBJECT lo_log TYPE zcl_logger.
+    ELSE.
+      lo_log ?= logger.
+    ENDIF.
+
     lo_log->db_number = most_recent_header-lognumber.
     lo_log->handle    = most_recent_header-log_handle.
 
     IF settings IS BOUND.
       lo_log->settings = settings.
     ELSE.
-      CREATE OBJECT lo_log->settings TYPE zcl_logger_settings.
+      lo_log->settings = create_settings( ).
     ENDIF.
 
     CALL FUNCTION 'BAL_DB_LOAD'
@@ -178,19 +233,4 @@ CLASS zcl_logger_factory IMPLEMENTATION.
 
     r_log = lo_log.
   ENDMETHOD.
-
-  METHOD create_collection.
-    CREATE OBJECT r_collection TYPE zcl_logger_collection.
-  ENDMETHOD.
-
-  METHOD create_display_profile.
-    CREATE OBJECT r_display_profile TYPE zcl_logger_display_profile.
-    r_display_profile->set(
-      i_detlevel    = i_detlevel
-      i_no_tree     = i_no_tree
-      i_popup       = i_popup
-      i_single_log  = i_single_log
-      i_standard    = i_standard ).
-  ENDMETHOD.
-
 ENDCLASS.
