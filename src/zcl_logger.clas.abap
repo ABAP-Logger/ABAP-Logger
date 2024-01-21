@@ -155,7 +155,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_LOGGER IMPLEMENTATION.
+CLASS zcl_logger IMPLEMENTATION.
 
 
   METHOD add_bapi_alm_msg.
@@ -633,19 +633,25 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
               symsg-msgty = <loggable_object_message>-type.
               zif_logger~add(
                   obj_to_log    = symsg
-                  context       = context ).
+                  context       = context
+                  importance    = importance
+                  detlevel      = detlevel ).
             ENDIF.
             IF <loggable_object_message>-exception IS BOUND.
               zif_logger~add(
                   type          = <loggable_object_message>-type
                   obj_to_log    = <loggable_object_message>-exception
-                  context       = context ).
+                  context       = context
+                  importance    = importance
+                  detlevel      = detlevel ).
             ENDIF.
             IF <loggable_object_message>-string IS NOT INITIAL.
               zif_logger~add(
                   type          = <loggable_object_message>-type
                   obj_to_log    = <loggable_object_message>-string
-                  context       = context ).
+                  context       = context
+                  importance    = importance
+                  detlevel      = detlevel ).
             ENDIF.
           ENDLOOP.
           "END this could/should be moved into its own method
@@ -660,8 +666,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
               exception   = obj_to_log
               type        = message_type
               importance  = importance
-              ).
-
+              detlevel    = detlevel ).
       ENDTRY.
     ELSEIF msg_type->type_kind = cl_abap_typedescr=>typekind_table.
       ASSIGN obj_to_log TO <table_of_messages>.
@@ -690,7 +695,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
           callback_prog = callback_prog
           callback_fm   = callback_fm
           type          = type
-          importance    = importance ).
+          importance    = importance
+          detlevel      = detlevel ).
     ELSE.
       free_text_msg = obj_to_log.
     ENDIF.

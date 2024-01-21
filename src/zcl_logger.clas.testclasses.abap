@@ -97,7 +97,8 @@ CLASS lcl_test DEFINITION FOR TESTING
       can_log_log FOR TESTING,
       can_log_bapi_alm_return FOR TESTING,
       can_log_bapi_meth_message FOR TESTING RAISING cx_static_check,
-      can_log_bapi_status_result FOR TESTING RAISING cx_static_check.
+      can_log_bapi_status_result FOR TESTING RAISING cx_static_check,
+      can_log_detlevel FOR TESTING RAISING cx_static_check.
 
 ENDCLASS.
 
@@ -1307,6 +1308,7 @@ CLASS lcl_test IMPLEMENTATION.
           message_handles TYPE bal_t_msgh,
           msg_handle      TYPE balmsghndl,
           msg_detail      TYPE bal_s_msg,
+          exc_detail      TYPE bal_s_excr,
           msg_text        TYPE char255.
 
     INSERT log_handle INTO TABLE handle_as_table.
@@ -1322,7 +1324,27 @@ CLASS lcl_test IMPLEMENTATION.
           i_s_msg_handle = msg_handle
         IMPORTING
           e_s_msg        = msg_detail
-          e_txt_msg      = msg_text.
+          e_txt_msg      = msg_text
+        EXCEPTIONS
+          log_not_found  = 1
+          msg_not_found  = 2
+          OTHERS         = 3.
+      IF sy-subrc <> 0.
+        CALL FUNCTION 'BAL_LOG_EXCEPTION_READ'
+          EXPORTING
+            i_s_msg_handle = msg_handle
+          IMPORTING
+            e_s_exc        = exc_detail
+            e_txt_msg      = msg_text
+          EXCEPTIONS
+            log_not_found  = 1
+            msg_not_found  = 2
+            OTHERS         = 3.
+        IF sy-subrc <> 0.
+          CONTINUE.
+        ENDIF.
+        MOVE-CORRESPONDING exc_detail TO msg_detail.
+      ENDIF.
       APPEND msg_detail TO msg_details.
       APPEND msg_text TO texts.
     ENDLOOP.
@@ -1790,4 +1812,78 @@ CLASS lcl_test IMPLEMENTATION.
       act = anon_log->has_errors( )
       msg = 'Did not log or fetch system message properly' ).
   ENDMETHOD.
+
+  METHOD can_log_detlevel.
+
+    DATA:
+      dummy         TYPE string,
+      bapi_messages TYPE bapirettab,
+      bapi_msg      TYPE bapiret2,
+      error         TYPE REF TO cx_sy_zerodivide,
+      act_details   TYPE ty_bal_tt_msg.
+
+    FIELD-SYMBOLS <detail> TYPE bal_s_msg.
+
+    anon_log->s(
+      obj_to_log = 'success'
+      detlevel   = '1' ).
+    anon_log->i(
+      obj_to_log = 'info'
+      detlevel   = '2' ).
+    anon_log->e(
+      obj_to_log = 'error'
+      detlevel   = '3' ).
+    anon_log->w(
+      obj_to_log = 'warning'
+      detlevel   = '4' ).
+    anon_log->a(
+      obj_to_log = 'abort'
+      detlevel   = '5' ).
+
+    MESSAGE w001(bl) WITH 'This' 'is' 'a' 'test' INTO dummy.
+
+    anon_log->i( detlevel = '6' ).
+
+    bapi_msg-type       = 'E'.
+    bapi_msg-id         = 'BL'.
+    bapi_msg-number     = '001'.
+    bapi_msg-message_v1 = 'This'.
+    bapi_msg-message_v2 = 'is'.
+    bapi_msg-message_v3 = 'a'.
+    bapi_msg-message_v4 = 'test'.
+
+    anon_log->add(
+      obj_to_log = bapi_msg
+      detlevel   = '7' ).
+
+    INSERT bapi_msg INTO TABLE bapi_messages.
+
+    anon_log->add(
+      obj_to_log = bapi_messages
+      detlevel   = '8' ).
+
+    TRY.
+        RAISE EXCEPTION TYPE cx_sy_zerodivide.
+      CATCH cx_sy_zerodivide INTO error.
+        anon_log->i(
+          obj_to_log = error
+          detlevel   = '9' ).
+    ENDTRY.
+
+    get_messages(
+      EXPORTING
+        log_handle  = anon_log->handle
+      IMPORTING
+        msg_details = act_details ).
+
+    LOOP AT act_details ASSIGNING <detail>.
+
+      cl_abap_unit_assert=>assert_equals(
+        exp = sy-tabix
+        act = <detail>-detlevel ).
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
 ENDCLASS.
