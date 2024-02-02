@@ -86,6 +86,7 @@ CLASS zcl_logger DEFINITION
           exception                      TYPE REF TO cx_root
           type                           TYPE symsgty OPTIONAL
           importance                     TYPE balprobcl OPTIONAL
+          detlevel                       TYPE ballevel OPTIONAL
         RETURNING
           VALUE(rt_exception_data_table) TYPE tty_exception_data,
 
@@ -104,6 +105,7 @@ CLASS zcl_logger DEFINITION
           callback_fm   TYPE csequence OPTIONAL
           type          TYPE symsgty OPTIONAL
           importance    TYPE balprobcl OPTIONAL
+          detlevel      TYPE ballevel OPTIONAL
             PREFERRED PARAMETER obj_to_log
         RETURNING
           VALUE(self)   TYPE REF TO zif_logger.
@@ -153,7 +155,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_LOGGER IMPLEMENTATION.
+CLASS zcl_logger IMPLEMENTATION.
 
 
   METHOD add_bapi_alm_msg.
@@ -288,7 +290,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
               callback_prog = callback_prog
               callback_fm   = callback_fm
               type          = type
-              importance    = importance ).
+              importance    = importance
+              detlevel      = detlevel ).
         ENDIF.
       ENDIF.
     ENDLOOP.
@@ -337,6 +340,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       <ret>-exception = <ex>-exception.
       <ret>-msgty     = type.
       <ret>-probclass = importance.
+      <ret>-detlevel  = detlevel.
     ENDLOOP.
   ENDMETHOD.
 
@@ -540,7 +544,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       callback_fm         = callback_fm
       callback_parameters = callback_parameters
       type                = 'A'
-      importance          = importance ).
+      importance          = importance
+      detlevel            = detlevel ).
   ENDMETHOD.
 
 
@@ -628,19 +633,25 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
               symsg-msgty = <loggable_object_message>-type.
               zif_logger~add(
                   obj_to_log    = symsg
-                  context       = context ).
+                  context       = context
+                  importance    = importance
+                  detlevel      = detlevel ).
             ENDIF.
             IF <loggable_object_message>-exception IS BOUND.
               zif_logger~add(
                   type          = <loggable_object_message>-type
                   obj_to_log    = <loggable_object_message>-exception
-                  context       = context ).
+                  context       = context
+                  importance    = importance
+                  detlevel      = detlevel ).
             ENDIF.
             IF <loggable_object_message>-string IS NOT INITIAL.
               zif_logger~add(
                   type          = <loggable_object_message>-type
                   obj_to_log    = <loggable_object_message>-string
-                  context       = context ).
+                  context       = context
+                  importance    = importance
+                  detlevel      = detlevel ).
             ENDIF.
           ENDLOOP.
           "END this could/should be moved into its own method
@@ -655,8 +666,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
               exception   = obj_to_log
               type        = message_type
               importance  = importance
-              ).
-
+              detlevel    = detlevel ).
       ENDTRY.
     ELSEIF msg_type->type_kind = cl_abap_typedescr=>typekind_table.
       ASSIGN obj_to_log TO <table_of_messages>.
@@ -666,12 +676,14 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
               obj_to_log    = <message_line>
               context       = context
               importance    = importance
-              type          = type ).
+              type          = type
+              detlevel      = detlevel ).
         ELSE.
           zif_logger~add(
               obj_to_log    = <message_line>
               importance    = importance
-              type          = type ).
+              type          = type
+              detlevel      = detlevel ).
         ENDIF.
       ENDLOOP.
     ELSEIF msg_type->type_kind = cl_abap_typedescr=>typekind_struct1     "flat structure
@@ -683,7 +695,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
           callback_prog = callback_prog
           callback_fm   = callback_fm
           type          = type
-          importance    = importance ).
+          importance    = importance
+          detlevel      = detlevel ).
     ELSE.
       free_text_msg = obj_to_log.
     ENDIF.
@@ -701,7 +714,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
           i_probclass  = importance
           i_text       = free_text_msg
           i_s_context  = formatted_context
-          i_s_params   = formatted_params.
+          i_s_params   = formatted_params
+          i_detlevel   = detlevel.
     ELSEIF exception_data_table IS NOT INITIAL.
       FIELD-SYMBOLS <exception_data> LIKE LINE OF exception_data_table.
       LOOP AT exception_data_table ASSIGNING <exception_data>.
@@ -714,6 +728,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       detailed_msg-context   = formatted_context.
       detailed_msg-params    = formatted_params.
       detailed_msg-probclass = importance.
+      detailed_msg-detlevel  = detlevel.
       IF type IS NOT INITIAL.
         detailed_msg-msgty   = type.
       ENDIF.
@@ -832,7 +847,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       callback_fm         = callback_fm
       callback_parameters = callback_parameters
       type                = 'E'
-      importance          = importance ).
+      importance          = importance
+      detlevel            = detlevel ).
   ENDMETHOD.
 
 
@@ -939,7 +955,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       callback_fm         = callback_fm
       callback_parameters = callback_parameters
       type                = 'I'
-      importance          = importance ).
+      importance          = importance
+      detlevel            = detlevel ).
   ENDMETHOD.
 
 
@@ -968,7 +985,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       callback_fm         = callback_fm
       callback_parameters = callback_parameters
       type                = 'S'
-      importance          = importance ).
+      importance          = importance
+      detlevel            = detlevel ).
   ENDMETHOD.
 
 
@@ -1004,6 +1022,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       callback_fm         = callback_fm
       callback_parameters = callback_parameters
       type                = 'W'
-      importance          = importance ).
+      importance          = importance
+      detlevel            = detlevel ).
   ENDMETHOD.
 ENDCLASS.
