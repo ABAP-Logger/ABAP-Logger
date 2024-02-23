@@ -1098,9 +1098,9 @@ CLASS zcl_logger IMPLEMENTATION.
 * get text for textid
       CONCATENATE '''' i_s_exc-exception->textid '''' INTO l_class_id.
       SELECT cmpname INTO l_cmpname
-        FROM seocompodf UP TO 1 ROWS
-        WHERE clsname = l_exception_description->class_name
-        AND attvalue  = l_class_id.
+          FROM seocompodf UP TO 1 ROWS
+          WHERE clsname = l_exception_description->class_name
+          AND attvalue  = l_class_id.
       ENDSELECT.
 *   fill basic data of message
 *   message variables are used to store:
