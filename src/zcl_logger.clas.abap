@@ -1098,7 +1098,7 @@ CLASS zcl_logger IMPLEMENTATION.
 * get text for textid
       CONCATENATE '''' i_s_exc-exception->textid '''' INTO l_class_id.
       SELECT cmpname
-      FROM seocompodf UP TO 1 rows
+          FROM seocompodf UP TO 1 rows
       INTO l_cmpname
         WHERE clsname = l_exception_description->class_name
         AND attvalue  = l_class_id.
