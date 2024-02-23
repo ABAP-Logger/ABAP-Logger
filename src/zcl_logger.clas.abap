@@ -393,8 +393,6 @@ CLASS zcl_logger IMPLEMENTATION.
     IF msg_type->type_kind = cl_abap_typedescr=>typekind_struct1
         OR msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.
 
-      msg_struct_kind ?= msg_type.
-
       if msg_type->is_ddic_type( ).
         ddic_header = msg_type->get_ddic_header( ).
         if ddic_header-tabname = 'BAL_S_MSG'.
@@ -403,6 +401,7 @@ CLASS zcl_logger IMPLEMENTATION.
         endif.
       endif.
 
+      msg_struct_kind ?= msg_type.
       components = msg_struct_kind->components.
 
       " Count number of fields expected for each supported type of message structure
