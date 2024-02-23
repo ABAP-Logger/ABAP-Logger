@@ -73,6 +73,7 @@ CLASS zcl_logger DEFINITION
         bapi_alm           TYPE i VALUE 5,
         bapi_meth          TYPE i VALUE 6,
         bapi_status_result TYPE i VALUE 7,
+        application_log    type i VALUE 8,
       END OF c_struct_kind.
 
     DATA sec_connection     TYPE abap_bool.
@@ -148,9 +149,13 @@ CLASS zcl_logger DEFINITION
         VALUE(detailed_msg) TYPE bal_s_msg.
     METHODS add_bapi_status_result
       IMPORTING
-        !obj_to_log         TYPE any
+         obj_to_log         TYPE any
       RETURNING
         VALUE(detailed_msg) TYPE bal_s_msg.
+    METHODS add_exception
+      IMPORTING
+        i_s_exc TYPE bal_s_exc
+      RETURNING VALUE(c_s_msg) TYPE bal_s_msg.
 ENDCLASS.
 
 
@@ -372,7 +377,9 @@ CLASS zcl_logger IMPLEMENTATION.
 
 
   METHOD get_struct_kind.
-    DATA: msg_struct_kind   TYPE REF TO cl_abap_structdescr,
+    DATA: ddic_header type x030l,
+          structure_name type tabname,
+          msg_struct_kind   TYPE REF TO cl_abap_structdescr,
           components        TYPE abap_compdescr_tab,
           component         LIKE LINE OF components,
           syst_count        TYPE i,
@@ -387,6 +394,15 @@ CLASS zcl_logger IMPLEMENTATION.
         OR msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.
 
       msg_struct_kind ?= msg_type.
+
+      if msg_type->is_ddic_type( ).
+        ddic_header = msg_type->get_ddic_header( ).
+        if ddic_header-tabname = 'BAL_S_MSG'.
+          result = c_struct_kind-application_log.
+          return.
+        endif.
+      endif.
+
       components = msg_struct_kind->components.
 
       " Count number of fields expected for each supported type of message structure
@@ -622,6 +638,8 @@ CLASS zcl_logger IMPLEMENTATION.
       detailed_msg = add_bapi_meth_msg( obj_to_log ).
     ELSEIF struct_kind = c_struct_kind-bapi_status_result.
       detailed_msg = add_bapi_status_result( obj_to_log ).
+    elseif struct_kind = c_struct_kind-application_log.
+      detailed_msg = obj_to_log.
     ELSEIF msg_type->type_kind = cl_abap_typedescr=>typekind_oref.
       TRY.
           "BEGIN this could/should be moved into its own method
@@ -719,14 +737,19 @@ CLASS zcl_logger IMPLEMENTATION.
     ELSEIF exception_data_table IS NOT INITIAL.
       FIELD-SYMBOLS <exception_data> LIKE LINE OF exception_data_table.
       LOOP AT exception_data_table ASSIGNING <exception_data>.
-        CALL FUNCTION 'BAL_LOG_EXCEPTION_ADD'
-          EXPORTING
-            i_log_handle = me->handle
-            i_s_exc      = <exception_data>.
+        detailed_msg = add_exception( <exception_data> ).
+        zif_logger~add(
+              obj_to_log    = detailed_msg
+              context       = context
+              importance    = importance
+              type          = type
+              detlevel      = detlevel ).
       ENDLOOP.
     ELSEIF detailed_msg IS NOT INITIAL.
       detailed_msg-context   = formatted_context.
-      detailed_msg-params    = formatted_params.
+      if detailed_msg-params is INITIAL.
+        detailed_msg-params = formatted_params.
+      endif.
       detailed_msg-probclass = importance.
       detailed_msg-detlevel  = detlevel.
       IF type IS NOT INITIAL.
@@ -1025,4 +1048,97 @@ CLASS zcl_logger IMPLEMENTATION.
       importance          = importance
       detlevel            = detlevel ).
   ENDMETHOD.
+
+  METHOD add_exception.
+
+    "More or less the same code as in form exception_into_msg include LSBALF26
+
+    CONSTANTS: const_freetext_msgid   TYPE symsgid           VALUE 'BL',
+               const_exception_msgno  TYPE symsgno           VALUE '003',
+               const_exc_indicator(3) TYPE c                 VALUE '%_E'.
+
+    DATA: l_exception_description TYPE REF TO cl_instance_description,
+          l_class_id              TYPE seovalue,
+          l_cmpname               TYPE seocmpname,
+          l_t100key               TYPE scx_t100key,
+          l_textid                TYPE sotr_conc,
+          l_substitution_table    TYPE sotr_params,
+          l_param    TYPE sotr_param-param.
+
+    FIELD-SYMBOLS:
+           <l_substitution>       TYPE sotr_param.
+
+    DEFINE lmacro_get_message_variables.
+      IF NOT  l_t100key-attr&1 IS INITIAL.
+        l_param = l_t100key-attr&1.
+        READ TABLE l_substitution_table ASSIGNING <l_substitution>
+                                        WITH KEY param =  l_param.
+        IF sy-subrc IS INITIAL.
+          IF NOT <l_substitution>-value IS INITIAL.
+            c_s_msg-msgv&1 =  <l_substitution>-value.       "#EC *
+          ENDIF.
+        ENDIF.
+      ENDIF.
+    END-OF-DEFINITION.
+
+* get the parameter for text switching
+    CALL METHOD cl_message_helper=>get_text_params
+      EXPORTING
+        obj    = i_s_exc-exception
+      IMPORTING
+        params = l_substitution_table.
+
+* exception -> type OTR-message or T100-message?
+    CALL METHOD cl_message_helper=>check_msg_kind
+      EXPORTING
+        msg     = i_s_exc-exception
+      IMPORTING
+        t100key = l_t100key
+        textid  = l_textid.
+
+    IF l_textid IS NOT INITIAL.
+
+* get name of exception class
+      CREATE OBJECT l_exception_description
+        EXPORTING
+          the_subject = i_s_exc-exception.
+
+* get text for textid
+      CONCATENATE '''' i_s_exc-exception->textid '''' INTO l_class_id.
+      SELECT cmpname
+      FROM seocompodf UP TO 1 rows
+      INTO l_cmpname
+        WHERE clsname = l_exception_description->class_name
+        AND attvalue  = l_class_id.
+      ENDSELECT.
+*   fill basic data of message
+*   message variables are used to store:
+*    - exception class (msgv1)
+*    - OTR guid        (msgv2)
+*    - text for guid   (msgv3)
+*    - flag to indicate exception (msgv4)
+      c_s_msg-msgid     = const_freetext_msgid.
+      c_s_msg-msgno     = const_exception_msgno.
+      c_s_msg-msgv1     = l_exception_description->class_name.
+      c_s_msg-msgv2     = i_s_exc-exception->textid.
+      c_s_msg-msgv3     = l_cmpname.
+      c_s_msg-msgv4     = const_exc_indicator.
+    ELSEIF NOT l_t100key IS INITIAL.
+*   exception with T100 message
+      c_s_msg-msgid     = l_t100key-msgid.
+      c_s_msg-msgno     = l_t100key-msgno.
+      lmacro_get_message_variables 1.
+      lmacro_get_message_variables 2.
+      lmacro_get_message_variables 3.
+      lmacro_get_message_variables 4.
+    ENDIF.
+
+    c_s_msg-msgty     = i_s_exc-msgty.
+    c_s_msg-probclass = i_s_exc-probclass.
+    c_s_msg-detlevel  = i_s_exc-detlevel.
+    c_s_msg-time_stmp = i_s_exc-time_stmp.
+    c_s_msg-alsort    = i_s_exc-alsort.
+
+  ENDMETHOD.
+
 ENDCLASS.
