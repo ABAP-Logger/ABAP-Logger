@@ -73,7 +73,7 @@ CLASS zcl_logger DEFINITION
         bapi_alm           TYPE i VALUE 5,
         bapi_meth          TYPE i VALUE 6,
         bapi_status_result TYPE i VALUE 7,
-        application_log    type i VALUE 8,
+        application_log    TYPE i VALUE 8,
       END OF c_struct_kind.
 
     DATA sec_connection     TYPE abap_bool.
@@ -149,12 +149,12 @@ CLASS zcl_logger DEFINITION
         VALUE(detailed_msg) TYPE bal_s_msg.
     METHODS add_bapi_status_result
       IMPORTING
-         obj_to_log         TYPE any
+        obj_to_log          TYPE any
       RETURNING
         VALUE(detailed_msg) TYPE bal_s_msg.
     METHODS add_exception
       IMPORTING
-        i_s_exc TYPE bal_s_exc
+                i_s_exc        TYPE bal_s_exc
       RETURNING VALUE(c_s_msg) TYPE bal_s_msg.
 ENDCLASS.
 
@@ -377,7 +377,7 @@ CLASS zcl_logger IMPLEMENTATION.
 
 
   METHOD get_struct_kind.
-    DATA: ddic_header       type x030l,
+    DATA: ddic_header       TYPE x030l,
           msg_struct_kind   TYPE REF TO cl_abap_structdescr,
           components        TYPE abap_compdescr_tab,
           component         LIKE LINE OF components,
@@ -392,13 +392,13 @@ CLASS zcl_logger IMPLEMENTATION.
     IF msg_type->type_kind = cl_abap_typedescr=>typekind_struct1
         OR msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.
 
-      if msg_type->is_ddic_type( ) = abap_true.
+      IF msg_type->is_ddic_type( ) = abap_true.
         ddic_header = msg_type->get_ddic_header( ).
-        if ddic_header-tabname = 'BAL_S_MSG'.
+        IF ddic_header-tabname = 'BAL_S_MSG'.
           result = c_struct_kind-application_log.
-          return.
-        endif.
-      endif.
+          RETURN.
+        ENDIF.
+      ENDIF.
 
       msg_struct_kind ?= msg_type.
       components = msg_struct_kind->components.
@@ -636,7 +636,7 @@ CLASS zcl_logger IMPLEMENTATION.
       detailed_msg = add_bapi_meth_msg( obj_to_log ).
     ELSEIF struct_kind = c_struct_kind-bapi_status_result.
       detailed_msg = add_bapi_status_result( obj_to_log ).
-    elseif struct_kind = c_struct_kind-application_log.
+    ELSEIF struct_kind = c_struct_kind-application_log.
       detailed_msg = obj_to_log.
     ELSEIF msg_type->type_kind = cl_abap_typedescr=>typekind_oref.
       TRY.
@@ -745,9 +745,9 @@ CLASS zcl_logger IMPLEMENTATION.
       ENDLOOP.
     ELSEIF detailed_msg IS NOT INITIAL.
       detailed_msg-context   = formatted_context.
-      if detailed_msg-params is INITIAL.
+      IF detailed_msg-params IS INITIAL.
         detailed_msg-params = formatted_params.
-      endif.
+      ENDIF.
       detailed_msg-probclass = importance.
       detailed_msg-detlevel  = detlevel.
       IF type IS NOT INITIAL.
@@ -1061,7 +1061,7 @@ CLASS zcl_logger IMPLEMENTATION.
           l_t100key               TYPE scx_t100key,
           l_textid                TYPE sotr_conc,
           l_substitution_table    TYPE sotr_params,
-          l_param    TYPE sotr_param-param.
+          l_param                 TYPE sotr_param-param.
 
     FIELD-SYMBOLS:
            <l_substitution>       TYPE sotr_param.
@@ -1097,9 +1097,8 @@ CLASS zcl_logger IMPLEMENTATION.
 
 * get text for textid
       CONCATENATE '''' i_s_exc-exception->textid '''' INTO l_class_id.
-      SELECT cmpname
-      FROM seocompodf UP TO 1 rows
-      INTO l_cmpname
+      SELECT cmpname INTO l_cmpname
+        FROM seocompodf UP TO 1 ROWS
         WHERE clsname = l_exception_description->class_name
         AND attvalue  = l_class_id.
       ENDSELECT.
