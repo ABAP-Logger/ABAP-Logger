@@ -1080,26 +1080,18 @@ CLASS zcl_logger IMPLEMENTATION.
     END-OF-DEFINITION.
 
 * get the parameter for text switching
-    CALL METHOD cl_message_helper=>get_text_params
-      EXPORTING
-        obj    = i_s_exc-exception
-      IMPORTING
-        params = l_substitution_table.
+    cl_message_helper=>get_text_params( EXPORTING obj    = i_s_exc-exception
+                                        IMPORTING params = l_substitution_table ).
 
 * exception -> type OTR-message or T100-message?
-    CALL METHOD cl_message_helper=>check_msg_kind
-      EXPORTING
-        msg     = i_s_exc-exception
-      IMPORTING
-        t100key = l_t100key
-        textid  = l_textid.
+    cl_message_helper=>check_msg_kind( EXPORTING msg     = i_s_exc-exception
+                                       IMPORTING t100key = l_t100key
+                                                 textid  = l_textid ).
 
     IF l_textid IS NOT INITIAL.
 
 * get name of exception class
-      CREATE OBJECT l_exception_description
-        EXPORTING
-          the_subject = i_s_exc-exception.
+      l_exception_description = new #( the_subject = i_s_exc-exception ).
 
 * get text for textid
       CONCATENATE '''' i_s_exc-exception->textid '''' INTO l_class_id.
