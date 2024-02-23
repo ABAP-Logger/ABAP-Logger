@@ -377,7 +377,7 @@ CLASS zcl_logger IMPLEMENTATION.
 
 
   METHOD get_struct_kind.
-    DATA: ddic_header type x030l,
+    DATA: ddic_header       type x030l,
           msg_struct_kind   TYPE REF TO cl_abap_structdescr,
           components        TYPE abap_compdescr_tab,
           component         LIKE LINE OF components,
@@ -392,7 +392,7 @@ CLASS zcl_logger IMPLEMENTATION.
     IF msg_type->type_kind = cl_abap_typedescr=>typekind_struct1
         OR msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.
 
-      if msg_type->is_ddic_type( ).
+      if msg_type->is_ddic_type( ) = abap_true.
         ddic_header = msg_type->get_ddic_header( ).
         if ddic_header-tabname = 'BAL_S_MSG'.
           result = c_struct_kind-application_log.
@@ -1091,7 +1091,9 @@ CLASS zcl_logger IMPLEMENTATION.
     IF l_textid IS NOT INITIAL.
 
 * get name of exception class
-      l_exception_description = new #( the_subject = i_s_exc-exception ).
+      CREATE OBJECT l_exception_description
+        EXPORTING
+          the_subject = i_s_exc-exception.
 
 * get text for textid
       CONCATENATE '''' i_s_exc-exception->textid '''' INTO l_class_id.
