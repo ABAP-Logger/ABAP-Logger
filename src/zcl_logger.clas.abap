@@ -378,7 +378,6 @@ CLASS zcl_logger IMPLEMENTATION.
 
   METHOD get_struct_kind.
     DATA: ddic_header type x030l,
-          structure_name type tabname,
           msg_struct_kind   TYPE REF TO cl_abap_structdescr,
           components        TYPE abap_compdescr_tab,
           component         LIKE LINE OF components,
