@@ -1940,12 +1940,12 @@ CLASS lcl_test IMPLEMENTATION.
 
   METHOD can_log_exception_with_context.
 
-    DATA: exception    TYPE REF TO lcx_t100,
-          msg_handle   TYPE balmsghndl,
+    DATA: exception        TYPE REF TO lcx_t100,
+          msg_handle       TYPE balmsghndl,
           actual_details   TYPE bal_s_msg,
           expected_details TYPE bal_s_msg,
-          exp_callback TYPE bal_s_clbk,
-          addl_context TYPE bezei20 VALUE 'Berlin'.
+          exp_callback     TYPE bal_s_clbk,
+          addl_context     TYPE bezei20 VALUE 'Berlin'.
 
     "Given
     exp_callback-userexitf = 'FORM'.
@@ -1984,8 +1984,6 @@ CLASS lcl_test IMPLEMENTATION.
       IMPORTING
         e_s_msg        = actual_details.
 
-    clear: actual_details-msg_count, actual_details-time_stmp.
-
     cl_abap_unit_assert=>assert_equals(
       exp = exp_callback
       act = actual_details-params-callback
@@ -2001,7 +1999,7 @@ CLASS lcl_test IMPLEMENTATION.
       act = actual_details-context-tabname
       msg = 'Did not add context correctly' ).
 
-    clear: actual_details-msg_count, actual_details-time_stmp,
+    CLEAR: actual_details-msg_count, actual_details-time_stmp,
            actual_details-context, actual_details-params.
 
     cl_abap_unit_assert=>assert_equals(

@@ -154,10 +154,10 @@ CLASS zcl_logger DEFINITION
     METHODS add_exception
       IMPORTING
         exception_data    TYPE bal_s_exc
-        formatted_context type bal_s_cont
-        formatted_params  type bal_s_parm.
+        formatted_context TYPE bal_s_cont
+        formatted_params  TYPE bal_s_parm.
 
-        .
+    .
 ENDCLASS.
 
 
@@ -379,16 +379,16 @@ CLASS zcl_logger IMPLEMENTATION.
 
 
   METHOD get_struct_kind.
-    DATA: msg_struct_kind       TYPE REF TO cl_abap_structdescr,
-          components            TYPE abap_compdescr_tab,
-          component             LIKE LINE OF components,
-          syst_count            TYPE i,
-          bapi_count            TYPE i,
-          bdc_count             TYPE i,
-          sprot_count           TYPE i,
-          bapi_alm_count        TYPE i,
-          bapi_meth_count       TYPE i,
-          bapi_status_count     TYPE i.
+    DATA: msg_struct_kind   TYPE REF TO cl_abap_structdescr,
+          components        TYPE abap_compdescr_tab,
+          component         LIKE LINE OF components,
+          syst_count        TYPE i,
+          bapi_count        TYPE i,
+          bdc_count         TYPE i,
+          sprot_count       TYPE i,
+          bapi_alm_count    TYPE i,
+          bapi_meth_count   TYPE i,
+          bapi_status_count TYPE i.
 
     IF msg_type->type_kind = cl_abap_typedescr=>typekind_struct1
         OR msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.
@@ -1038,11 +1038,11 @@ CLASS zcl_logger IMPLEMENTATION.
 
   METHOD add_exception.
 
-    DATA: detailed_msg                  TYPE bal_s_msg,
-          l_t100key               TYPE scx_t100key,
-          l_textid                TYPE sotr_conc,
-          l_substitution_table    TYPE sotr_params,
-          l_param                 TYPE sotr_param-param.
+    DATA: detailed_msg         TYPE bal_s_msg,
+          l_t100key            TYPE scx_t100key,
+          l_textid             TYPE sotr_conc,
+          l_substitution_table TYPE sotr_params,
+          l_param              TYPE sotr_param-param.
 
     FIELD-SYMBOLS:
            <l_substitution>       TYPE sotr_param.
@@ -1054,7 +1054,7 @@ CLASS zcl_logger IMPLEMENTATION.
                                         WITH KEY param =  l_param.
         IF sy-subrc IS INITIAL.
           IF NOT <l_substitution>-value IS INITIAL.
-            detailed_msg-msgv&1 =  <l_substitution>-value.        "#EC *
+            detailed_msg-msgv&1 =  <l_substitution>-value.  "#EC *
           ENDIF.
         ENDIF.
       ENDIF.
@@ -1093,10 +1093,10 @@ CLASS zcl_logger IMPLEMENTATION.
     detailed_msg-context   = formatted_context.
     detailed_msg-params    = formatted_params.
 
-      CALL FUNCTION 'BAL_LOG_MSG_ADD'
-        EXPORTING
-          i_log_handle = me->handle
-          i_s_msg      = detailed_msg.
+    CALL FUNCTION 'BAL_LOG_MSG_ADD'
+      EXPORTING
+        i_log_handle = me->handle
+        i_s_msg      = detailed_msg.
 
   ENDMETHOD.
 
