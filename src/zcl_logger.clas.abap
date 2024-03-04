@@ -731,12 +731,8 @@ CLASS zcl_logger IMPLEMENTATION.
                        formatted_params = formatted_params ).
       ENDLOOP.
     ELSEIF detailed_msg IS NOT INITIAL.
-      IF formatted_context IS NOT INITIAL.
-        detailed_msg-context   = formatted_context.
-      ENDIF.
-      IF formatted_params IS NOT INITIAL.
-        detailed_msg-params = formatted_params.
-      ENDIF.
+      detailed_msg-context   = formatted_context.
+      detailed_msg-params    = formatted_params.
       detailed_msg-probclass = importance.
       detailed_msg-detlevel  = detlevel.
       IF type IS NOT INITIAL.
@@ -1066,6 +1062,7 @@ CLASS zcl_logger IMPLEMENTATION.
                                                  textid  = l_textid ).
 
     IF l_textid IS NOT INITIAL.
+      "If it is a OTR-message
       CALL FUNCTION 'BAL_LOG_EXCEPTION_ADD'
         EXPORTING
           i_log_handle = me->handle
