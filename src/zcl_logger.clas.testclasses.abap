@@ -75,6 +75,7 @@ CLASS lcl_test DEFINITION FOR TESTING
       can_log_rcomp     FOR TESTING,
       can_log_prott FOR TESTING,
       can_log_sprot FOR TESTING,
+      can_log_bal_s_msg FOR TESTING,
       can_log_bapirettab FOR TESTING,
       can_log_err FOR TESTING,
       can_log_chained_exceptions FOR TESTING,
@@ -98,7 +99,8 @@ CLASS lcl_test DEFINITION FOR TESTING
       can_log_bapi_alm_return FOR TESTING,
       can_log_bapi_meth_message FOR TESTING RAISING cx_static_check,
       can_log_bapi_status_result FOR TESTING RAISING cx_static_check,
-      can_log_detlevel FOR TESTING RAISING cx_static_check.
+      can_log_detlevel FOR TESTING RAISING cx_static_check,
+      can_log_exception_with_context FOR TESTING RAISING cx_static_check.
 
 ENDCLASS.
 
@@ -741,6 +743,56 @@ CLASS lcl_test IMPLEMENTATION.
     expected_details-msgv4 = sprot_msg-var4 = 'test'.
 
     anon_log->add( sprot_msg ).
+
+    msg_handle-log_handle = anon_log->handle.
+    msg_handle-msgnumber  = '000001'.
+
+    CALL FUNCTION 'BAL_LOG_MSG_READ'
+      EXPORTING
+        i_s_msg_handle = msg_handle
+      IMPORTING
+        e_s_msg        = actual_details
+        e_txt_msg      = actual_text.
+
+    cl_abap_unit_assert=>assert_not_initial(
+      act = actual_details-time_stmp
+      msg = 'Did not log system message properly' ).
+
+    expected_details-msg_count = 1.
+    CLEAR actual_details-time_stmp.
+
+    cl_abap_unit_assert=>assert_equals(
+      exp = expected_details
+      act = actual_details
+      msg = 'Did not log system message properly' ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = 'This is a test'
+      act = condense( actual_text )
+      msg = 'Did not log system message properly' ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = abap_true
+      act = anon_log->has_warnings( )
+      msg = 'Did not log or fetch system message properly' ).
+  ENDMETHOD.
+
+  METHOD can_log_bal_s_msg.
+    DATA: bal_s_msg        TYPE bal_s_msg,
+          msg_handle       TYPE balmsghndl,
+          expected_details TYPE bal_s_msg,
+          actual_details   TYPE bal_s_msg,
+          actual_text      TYPE char200.
+
+    bal_s_msg-msgty = 'W'.
+    bal_s_msg-msgid = 'BL'.
+    bal_s_msg-msgno = '001'.
+    bal_s_msg-msgv1 = 'This'.
+    bal_s_msg-msgv2 = 'is'.
+    bal_s_msg-msgv3 = 'a'.
+    bal_s_msg-msgv4 = 'test'.
+
+    expected_details = bal_s_msg.
+
+    anon_log->add( bal_s_msg ).
 
     msg_handle-log_handle = anon_log->handle.
     msg_handle-msgnumber  = '000001'.
@@ -1883,6 +1935,77 @@ CLASS lcl_test IMPLEMENTATION.
         act = <detail>-detlevel ).
 
     ENDLOOP.
+
+  ENDMETHOD.
+
+  METHOD can_log_exception_with_context.
+
+    DATA: exception        TYPE REF TO lcx_t100,
+          msg_handle       TYPE balmsghndl,
+          actual_details   TYPE bal_s_msg,
+          expected_details TYPE bal_s_msg,
+          exp_callback     TYPE bal_s_clbk,
+          addl_context     TYPE bezei20 VALUE 'Berlin'.
+
+    "Given
+    exp_callback-userexitf = 'FORM'.
+    exp_callback-userexitp = 'PROGRAM'.
+    exp_callback-userexitt = ' '.
+
+    expected_details-msgty = 'E'.
+    expected_details-msgid = 'SABP_UNIT'.
+    expected_details-msgno = '000'.
+    expected_details-msgv1 = 'This'.
+    expected_details-msgv2 = 'is'.
+    expected_details-msgv3 = 'a'.
+    expected_details-msgv4 = 'test'.
+
+    CREATE OBJECT exception
+      EXPORTING
+        id    = 'SABP_UNIT'
+        no    = '000'
+        msgv1 = 'This'
+        msgv2 = 'is'
+        msgv3 = 'a'
+        msgv4 = 'test'.
+
+    "When
+    anon_log->add( obj_to_log = exception
+                   callback_form = 'FORM'
+                   callback_prog = 'PROGRAM'
+                   context =  addl_context ).
+
+    msg_handle-log_handle = anon_log->handle.
+    msg_handle-msgnumber  = '000001'.
+
+    CALL FUNCTION 'BAL_LOG_MSG_READ'
+      EXPORTING
+        i_s_msg_handle = msg_handle
+      IMPORTING
+        e_s_msg        = actual_details.
+
+    cl_abap_unit_assert=>assert_equals(
+      exp = exp_callback
+      act = actual_details-params-callback
+      msg = 'Did not add callback correctly' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      exp = addl_context
+      act = actual_details-context-value
+      msg = 'Did not add context correctly' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      exp = 'BEZEI20'
+      act = actual_details-context-tabname
+      msg = 'Did not add context correctly' ).
+
+    CLEAR: actual_details-msg_count, actual_details-time_stmp,
+           actual_details-context, actual_details-params.
+
+    cl_abap_unit_assert=>assert_equals(
+      exp = expected_details
+      act = actual_details
+      msg = 'Did not log system message properly' ).
 
   ENDMETHOD.
 

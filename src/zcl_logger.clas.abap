@@ -148,9 +148,16 @@ CLASS zcl_logger DEFINITION
         VALUE(detailed_msg) TYPE bal_s_msg.
     METHODS add_bapi_status_result
       IMPORTING
-        !obj_to_log         TYPE any
+        obj_to_log          TYPE any
       RETURNING
         VALUE(detailed_msg) TYPE bal_s_msg.
+    METHODS add_exception
+      IMPORTING
+        exception_data    TYPE bal_s_exc
+        formatted_context TYPE bal_s_cont
+        formatted_params  TYPE bal_s_parm.
+
+    .
 ENDCLASS.
 
 
@@ -719,10 +726,9 @@ CLASS zcl_logger IMPLEMENTATION.
     ELSEIF exception_data_table IS NOT INITIAL.
       FIELD-SYMBOLS <exception_data> LIKE LINE OF exception_data_table.
       LOOP AT exception_data_table ASSIGNING <exception_data>.
-        CALL FUNCTION 'BAL_LOG_EXCEPTION_ADD'
-          EXPORTING
-            i_log_handle = me->handle
-            i_s_exc      = <exception_data>.
+        add_exception( exception_data = <exception_data>
+                       formatted_context = formatted_context
+                       formatted_params = formatted_params ).
       ENDLOOP.
     ELSEIF detailed_msg IS NOT INITIAL.
       detailed_msg-context   = formatted_context.
@@ -1025,4 +1031,70 @@ CLASS zcl_logger IMPLEMENTATION.
       importance          = importance
       detlevel            = detlevel ).
   ENDMETHOD.
+
+  METHOD add_exception.
+
+    DATA: detailed_msg         TYPE bal_s_msg,
+          l_t100key            TYPE scx_t100key,
+          l_textid             TYPE sotr_conc,
+          l_substitution_table TYPE sotr_params,
+          l_param              TYPE sotr_param-param.
+
+    FIELD-SYMBOLS:
+           <l_substitution>       TYPE sotr_param.
+
+    DEFINE lmacro_get_message_variables.
+      IF NOT  l_t100key-attr&1 IS INITIAL.
+        l_param = l_t100key-attr&1.
+        READ TABLE l_substitution_table ASSIGNING <l_substitution>
+                                        WITH KEY param =  l_param.
+        IF sy-subrc IS INITIAL.
+          IF NOT <l_substitution>-value IS INITIAL.
+            detailed_msg-msgv&1 =  <l_substitution>-value.  "#EC *
+          ENDIF.
+        ENDIF.
+      ENDIF.
+    END-OF-DEFINITION.
+
+    "exception -> type OTR-message or T100-message?
+    cl_message_helper=>check_msg_kind( EXPORTING msg     = exception_data-exception
+                                       IMPORTING t100key = l_t100key
+                                                 textid  = l_textid ).
+
+    IF l_textid IS NOT INITIAL.
+      "If it is a OTR-message
+      CALL FUNCTION 'BAL_LOG_EXCEPTION_ADD'
+        EXPORTING
+          i_log_handle = me->handle
+          i_s_exc      = exception_data.
+      RETURN.
+    ENDIF.
+
+    "get the parameter for text switching
+    cl_message_helper=>get_text_params( EXPORTING obj    = exception_data-exception
+                                        IMPORTING params = l_substitution_table ).
+
+    "exception with T100 message
+    detailed_msg-msgid     = l_t100key-msgid.
+    detailed_msg-msgno     = l_t100key-msgno.
+    lmacro_get_message_variables 1.
+    lmacro_get_message_variables 2.
+    lmacro_get_message_variables 3.
+    lmacro_get_message_variables 4.
+
+    detailed_msg-msgty     = exception_data-msgty.
+    detailed_msg-probclass = exception_data-probclass.
+    detailed_msg-detlevel  = exception_data-detlevel.
+    detailed_msg-time_stmp = exception_data-time_stmp.
+    detailed_msg-alsort    = exception_data-alsort.
+    detailed_msg-context   = formatted_context.
+    detailed_msg-params    = formatted_params.
+
+    CALL FUNCTION 'BAL_LOG_MSG_ADD'
+      EXPORTING
+        i_log_handle = me->handle
+        i_s_msg      = detailed_msg.
+
+  ENDMETHOD.
+
 ENDCLASS.
