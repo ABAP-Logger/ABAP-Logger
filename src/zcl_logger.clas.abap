@@ -254,25 +254,14 @@ CLASS zcl_logger IMPLEMENTATION.
 
     DATA: detailed_msg         TYPE bal_s_msg,
           l_t100key            TYPE scx_t100key,
+          l_inc                TYPE i,
           l_textid             TYPE sotr_conc,
-          l_substitution_table TYPE sotr_params,
-          l_param              TYPE sotr_param-param.
+          l_substitution_table TYPE sotr_params.
 
     FIELD-SYMBOLS:
-           <l_substitution>       TYPE sotr_param.
-
-    DEFINE lmacro_get_message_variables.
-      IF NOT  l_t100key-attr&1 IS INITIAL.
-        l_param = l_t100key-attr&1.
-        READ TABLE l_substitution_table ASSIGNING <l_substitution>
-                                        WITH KEY param =  l_param.
-        IF sy-subrc IS INITIAL.
-          IF NOT <l_substitution>-value IS INITIAL.
-            detailed_msg-msgv&1 =  <l_substitution>-value.  "#EC *
-          ENDIF.
-        ENDIF.
-      ENDIF.
-    END-OF-DEFINITION.
+      <l_attr>         TYPE scx_t100key-attr1,
+      <l_msgv>         TYPE bal_s_msg-msgv1,
+      <l_substitution> TYPE sotr_param.
 
     "exception -> type OTR-message or T100-message?
     cl_message_helper=>check_msg_kind( EXPORTING msg     = exception_data-exception
@@ -293,12 +282,22 @@ CLASS zcl_logger IMPLEMENTATION.
                                         IMPORTING params = l_substitution_table ).
 
     "exception with T100 message
-    detailed_msg-msgid     = l_t100key-msgid.
-    detailed_msg-msgno     = l_t100key-msgno.
-    lmacro_get_message_variables 1.
-    lmacro_get_message_variables 2.
-    lmacro_get_message_variables 3.
-    lmacro_get_message_variables 4.
+    detailed_msg-msgid = l_t100key-msgid.
+    detailed_msg-msgno = l_t100key-msgno.
+
+    DO 4 TIMES.
+      l_inc = sy-index - 1.
+      ASSIGN l_t100key-attr1 INCREMENT l_inc TO <l_attr> RANGE l_t100key.
+      IF sy-subrc = 0 AND <l_attr> IS NOT INITIAL.
+        READ TABLE l_substitution_table ASSIGNING <l_substitution> WITH KEY param = <l_attr>.
+        IF sy-subrc = 0 AND <l_substitution>-value IS NOT INITIAL.
+          ASSIGN detailed_msg-msgv1 INCREMENT l_inc TO <l_msgv> RANGE detailed_msg.
+          IF sy-subrc = 0.
+            <l_msgv> = <l_substitution>-value.
+          ENDIF.
+        ENDIF.
+      ENDIF.
+    ENDDO.
 
     detailed_msg-msgty     = exception_data-msgty.
     detailed_msg-probclass = exception_data-probclass.
