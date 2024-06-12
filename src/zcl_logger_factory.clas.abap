@@ -48,6 +48,16 @@ CLASS zcl_logger_factory DEFINITION
       RETURNING
         VALUE(r_display_profile) TYPE REF TO zif_logger_display_profile.
 
+
+    "! Reopens specific log instance.
+    CLASS-METHODS open_log_by_db_number
+      IMPORTING
+        db_number        TYPE balognr
+        settings         TYPE REF TO zif_logger_settings OPTIONAL
+      RETURNING
+        VALUE(logger_if) TYPE REF TO zif_logger.
+
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -233,4 +243,55 @@ CLASS zcl_logger_factory IMPLEMENTATION.
 
     r_log = lo_log.
   ENDMETHOD.
+
+  METHOD open_log_by_db_number.
+    "Load log into SAP and get it's handle
+    DATA: log_numbers TYPE bal_t_logn,
+          log_handles TYPE bal_t_logh.
+    INSERT db_number INTO TABLE log_numbers.
+
+    CALL FUNCTION 'BAL_DB_LOAD'
+      EXPORTING
+        i_t_lognumber      = log_numbers
+      IMPORTING
+        e_t_log_handle     = log_handles
+      EXCEPTIONS
+        no_logs_specified  = 1                " No logs specified
+        log_not_found      = 2                " Log not found
+        log_already_loaded = 3                " Log is already loaded
+        OTHERS             = 4.
+    IF sy-subrc <> 0 OR lines( log_handles ) <> 1.
+      "^Should find exactly one log, otherwise it's either wrong number or some internal SAP problem
+      RAISE EXCEPTION TYPE zcx_logger.
+    ENDIF.
+
+    "Create log object
+    DATA logger TYPE REF TO zcl_logger.
+    IF log_logger IS INITIAL.
+      CREATE OBJECT logger TYPE zcl_logger.
+    ELSE.
+      logger ?= log_logger.
+    ENDIF.
+
+    DATA handle TYPE balloghndl.
+    READ TABLE log_handles INDEX 1 INTO handle.
+    logger->handle = handle.
+    logger->db_number = db_number.
+
+    IF settings IS BOUND.
+      logger->settings = settings.
+    ELSE.
+      logger->settings = create_settings( ).
+    ENDIF.
+
+    "Get log header
+    CALL FUNCTION 'BAL_LOG_HDR_READ'
+      EXPORTING
+        i_log_handle = logger->handle
+      IMPORTING
+        e_s_log      = logger->header.
+
+    logger_if = logger.
+  ENDMETHOD.
+
 ENDCLASS.
