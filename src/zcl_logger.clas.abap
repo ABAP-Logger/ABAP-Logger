@@ -75,8 +75,6 @@ CLASS zcl_logger DEFINITION
         bapi_status_result TYPE i VALUE 7,
       END OF c_struct_kind.
 
-    DATA sec_connection     TYPE abap_bool.
-    DATA sec_connect_commit TYPE abap_bool.
     DATA settings           TYPE REF TO zif_logger_settings.
 
     METHODS:
@@ -556,8 +554,8 @@ CLASS zcl_logger IMPLEMENTATION.
     CALL FUNCTION 'BAL_DB_SAVE'
       EXPORTING
         i_t_log_handle       = log_handles
-        i_2th_connection     = me->sec_connection
-        i_2th_connect_commit = me->sec_connect_commit
+        i_2th_connection     = me->settings->get_usage_of_secondary_db_conn( )
+        i_2th_connect_commit = me->settings->get_usage_of_secondary_db_conn( )
       IMPORTING
         e_new_lognumbers     = log_numbers.
     IF me->db_number IS INITIAL.
