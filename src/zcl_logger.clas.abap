@@ -549,13 +549,16 @@ CLASS zcl_logger IMPLEMENTATION.
     DATA log_handles TYPE bal_t_logh.
     DATA log_numbers TYPE bal_t_lgnm.
     DATA log_number  TYPE bal_s_lgnm.
+    DATA secondary_db_conn TYPE flag.
+    secondary_db_conn = me->settings->get_usage_of_secondary_db_conn( ).
 
     INSERT me->handle INTO TABLE log_handles.
+
     CALL FUNCTION 'BAL_DB_SAVE'
       EXPORTING
         i_t_log_handle       = log_handles
-        i_2th_connection     = me->settings->get_usage_of_secondary_db_conn( )
-        i_2th_connect_commit = me->settings->get_usage_of_secondary_db_conn( )
+        i_2th_connection     = secondary_db_conn
+        i_2th_connect_commit = secondary_db_conn
       IMPORTING
         e_new_lognumbers     = log_numbers.
     IF me->db_number IS INITIAL.
