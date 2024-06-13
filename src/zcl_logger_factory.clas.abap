@@ -125,13 +125,6 @@ CLASS zcl_logger_factory IMPLEMENTATION.
       lo_log->settings->set_autosave( abap_false ).
     ENDIF.
 
-    " Use secondary database connection to write data to database even if
-    " main program does a rollback (e. g. during a dump).
-    IF lo_log->settings->get_usage_of_secondary_db_conn( ) = abap_true.
-      lo_log->sec_connection     = abap_true.
-      lo_log->sec_connect_commit = abap_true.
-    ENDIF.
-
     " Set deletion date and set if log can be deleted before deletion date is reached.
     lo_log->header-aldate_del = lo_log->settings->get_expiry_date( ).
     lo_log->header-del_before = lo_log->settings->get_must_be_kept_until_expiry( ).
