@@ -998,7 +998,7 @@ CLASS zcl_logger IMPLEMENTATION.
 
   METHOD zif_logger~free.
 
-    " Save any messages (safety) only if an object has been defined 
+    " Save any messages (safety) only if an object has been defined
     IF me->header-object IS NOT INITIAL.
       zif_logger~save( ).
     ENDIF.
