@@ -55,7 +55,7 @@ CLASS zcl_logger_factory DEFINITION
         db_number        TYPE balognr
         settings         TYPE REF TO zif_logger_settings OPTIONAL
       RETURNING
-        VALUE(logger_if) TYPE REF TO zif_logger.
+        VALUE(r_log) TYPE REF TO zif_logger.
 
 
   PROTECTED SECTION.
@@ -284,7 +284,7 @@ CLASS zcl_logger_factory IMPLEMENTATION.
       IMPORTING
         e_s_log      = logger->header.
 
-    logger_if = logger.
+    r_log = logger.
   ENDMETHOD.
 
 ENDCLASS.
