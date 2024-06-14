@@ -4,7 +4,7 @@
   <DATA>
    <GROUP_ID>github.com/ABAP-Logger</GROUP_ID>
    <ARTIFACT_ID>ABAP-Logger</ARTIFACT_ID>
-   <VERSION>1.0.0</VERSION>
+   <VERSION>1.0.1</VERSION>
    <REPOSITORY_TYPE>abapGit</REPOSITORY_TYPE>
    <GIT_URL>https://github.com/ABAP-Logger/ABAP-Logger</GIT_URL>
   </DATA>

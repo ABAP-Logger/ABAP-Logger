@@ -52,8 +52,8 @@ CLASS zcl_logger_factory DEFINITION
     "! Reopens specific log instance.
     CLASS-METHODS open_log_by_db_number
       IMPORTING
-        db_number        TYPE balognr
-        settings         TYPE REF TO zif_logger_settings OPTIONAL
+        db_number    TYPE balognr
+        settings     TYPE REF TO zif_logger_settings OPTIONAL
       RETURNING
         VALUE(r_log) TYPE REF TO zif_logger.
 
@@ -67,6 +67,21 @@ CLASS zcl_logger_factory DEFINITION
       log_collection      TYPE REF TO zif_logger_collection,
       log_display_profile TYPE REF TO zif_logger_display_profile.
 
+    CLASS-METHODS get_log_headers
+      IMPORTING
+        object                 TYPE csequence OPTIONAL
+        subobject              TYPE csequence OPTIONAL
+        desc                   TYPE csequence OPTIONAL
+        db_number              TYPE balognr OPTIONAL
+      RETURNING
+        VALUE(r_found_headers) TYPE balhdr_t.
+
+    CLASS-METHODS open_log_by_header
+      IMPORTING
+        header       TYPE balhdr
+        settings     TYPE REF TO zif_logger_settings OPTIONAL
+      RETURNING
+        VALUE(r_log) TYPE REF TO zif_logger.
 ENDCLASS.
 
 
@@ -164,22 +179,66 @@ CLASS zcl_logger_factory IMPLEMENTATION.
 
 
   METHOD open_log.
-    DATA: filter             TYPE bal_s_lfil,
-          l_object           TYPE balobj_d,
-          l_subobject        TYPE balsubobj,
-          extnumber          TYPE balnrext,
-          found_headers      TYPE balhdr_t,
+    DATA: found_headers      TYPE balhdr_t,
           most_recent_header TYPE balhdr.
+
+    found_headers = get_log_headers( object = object subobject = subobject desc = desc ).
+
+    IF lines( found_headers ) = 0 .
+      IF create_if_does_not_exist = abap_false.
+        RAISE EXCEPTION TYPE zcx_logger.
+      ENDIF.
+      r_log = create_log( object    = object
+                          subobject = subobject
+                          desc      = desc
+                          settings  = settings ).
+      RETURN.
+    ENDIF.
+
+    " Delete all but the last row.
+    IF lines( found_headers ) > 1.
+      DELETE found_headers TO ( lines( found_headers ) - 1 ).
+    ENDIF.
+    READ TABLE found_headers INDEX 1 INTO most_recent_header.
+
+    r_log = open_log_by_header( header = most_recent_header settings = settings ).
+  ENDMETHOD.
+
+  METHOD open_log_by_db_number.
+    DATA: header      TYPE balhdr,
+          log_headers TYPE balhdr_t.
+
+    log_headers = get_log_headers( db_number = db_number ).
+    IF lines( log_headers ) <> 1.
+      "^Should find exactly one log since db_number is unique identifier
+      RAISE EXCEPTION TYPE zcx_logger.
+    ENDIF.
+
+    READ TABLE log_headers INDEX 1 INTO header.
+    r_log = open_log_by_header( header = header settings = settings ).
+  ENDMETHOD.
+
+
+  METHOD get_log_headers.
+    DATA: filter      TYPE bal_s_lfil,
+          l_object    TYPE balobj_d,
+          l_subobject TYPE balsubobj,
+          extnumber   TYPE balnrext,
+          log_numbers TYPE bal_t_logn.
 
     l_object    = object.
     l_subobject = subobject.
     extnumber   = desc.
+    IF db_number IS SUPPLIED.
+      INSERT db_number INTO TABLE log_numbers.
+    ENDIF.
 
     CALL FUNCTION 'BAL_FILTER_CREATE'
       EXPORTING
         i_object       = l_object
         i_subobject    = l_subobject
         i_extnumber    = extnumber
+        i_t_lognumber  = log_numbers
       IMPORTING
         e_s_log_filter = filter.
 
@@ -187,78 +246,28 @@ CLASS zcl_logger_factory IMPLEMENTATION.
       EXPORTING
         i_s_log_filter = filter
       IMPORTING
-        e_t_log_header = found_headers
+        e_t_log_header = r_found_headers
       EXCEPTIONS
         log_not_found  = 1.
-
-    IF sy-subrc = 1.
-      IF create_if_does_not_exist = abap_true.
-        r_log = create_log( object    = object
-                            subobject = subobject
-                            desc      = desc
-                            settings  = settings ).
-      ENDIF.
-      RETURN.
-    ENDIF.
-
-    " Delete all but the last row.  Keep the found_headers table this way so we can pass it to BAL_DB_LOAD.
-    IF lines( found_headers ) > 1.
-      DELETE found_headers TO ( lines( found_headers ) - 1 ).
-    ENDIF.
-    READ TABLE found_headers INDEX 1 INTO most_recent_header.
-
-    DATA lo_log TYPE REF TO zcl_logger.
-
-    IF log_logger IS INITIAL.
-      CREATE OBJECT lo_log TYPE zcl_logger.
-    ELSE.
-      lo_log ?= log_logger.
-    ENDIF.
-
-    lo_log->db_number = most_recent_header-lognumber.
-    lo_log->handle    = most_recent_header-log_handle.
-
-    IF settings IS BOUND.
-      lo_log->settings = settings.
-    ELSE.
-      lo_log->settings = create_settings( ).
-    ENDIF.
-
-    CALL FUNCTION 'BAL_DB_LOAD'
-      EXPORTING
-        i_t_log_header = found_headers.
-
-    CALL FUNCTION 'BAL_LOG_HDR_READ'
-      EXPORTING
-        i_log_handle = lo_log->handle
-      IMPORTING
-        e_s_log      = lo_log->header.
-
-    r_log = lo_log.
   ENDMETHOD.
 
-  METHOD open_log_by_db_number.
-    "Load log into SAP and get it's handle
-    DATA: log_numbers TYPE bal_t_logn,
-          log_handles TYPE bal_t_logh.
-    INSERT db_number INTO TABLE log_numbers.
+  METHOD open_log_by_header.
+    DATA:   log_headers  TYPE balhdr_t .
+    INSERT header INTO TABLE log_headers.
 
     CALL FUNCTION 'BAL_DB_LOAD'
       EXPORTING
-        i_t_lognumber      = log_numbers
-      IMPORTING
-        e_t_log_handle     = log_handles
+        i_t_log_header     = log_headers
       EXCEPTIONS
         no_logs_specified  = 1                " No logs specified
         log_not_found      = 2                " Log not found
         log_already_loaded = 3                " Log is already loaded
         OTHERS             = 4.
-    IF sy-subrc <> 0 OR lines( log_handles ) <> 1.
-      "^Should find exactly one log, otherwise it's either wrong number or some internal SAP problem
+    IF sy-subrc <> 0.
       RAISE EXCEPTION TYPE zcx_logger.
     ENDIF.
 
-    "Create log object
+
     DATA logger TYPE REF TO zcl_logger.
     IF log_logger IS INITIAL.
       CREATE OBJECT logger TYPE zcl_logger.
@@ -266,10 +275,8 @@ CLASS zcl_logger_factory IMPLEMENTATION.
       logger ?= log_logger.
     ENDIF.
 
-    DATA handle TYPE balloghndl.
-    READ TABLE log_handles INDEX 1 INTO handle.
-    logger->handle = handle.
-    logger->db_number = db_number.
+    logger->handle = header-log_handle.
+    logger->db_number = header-lognumber.
 
     IF settings IS BOUND.
       logger->settings = settings.
@@ -277,7 +284,6 @@ CLASS zcl_logger_factory IMPLEMENTATION.
       logger->settings = create_settings( ).
     ENDIF.
 
-    "Get log header
     CALL FUNCTION 'BAL_LOG_HDR_READ'
       EXPORTING
         i_log_handle = logger->handle
