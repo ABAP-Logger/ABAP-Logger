@@ -2011,7 +2011,7 @@ CLASS lcl_test IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD symsg_not_logged_for_empty_obj.
-    DATA where_used_list TYPE bapiret2-message ##needed.
+    DATA where_used_list TYPE bapiret2-message ##NEEDED.
     DATA bapi_msgs TYPE TABLE OF bapiret2.
     DATA bapi_msg TYPE bapiret2.
 
