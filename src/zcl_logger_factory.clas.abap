@@ -185,13 +185,12 @@ CLASS zcl_logger_factory IMPLEMENTATION.
     found_headers = get_log_headers( object = object subobject = subobject desc = desc ).
 
     IF lines( found_headers ) = 0 .
-      IF create_if_does_not_exist = abap_false.
-        RAISE EXCEPTION TYPE zcx_logger.
+      IF create_if_does_not_exist = abap_true.
+        r_log = create_log( object    = object
+                            subobject = subobject
+                            desc      = desc
+                            settings  = settings ).
       ENDIF.
-      r_log = create_log( object    = object
-                          subobject = subobject
-                          desc      = desc
-                          settings  = settings ).
       RETURN.
     ENDIF.
 
