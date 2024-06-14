@@ -679,9 +679,7 @@ CLASS zcl_logger IMPLEMENTATION.
     msg_type    = cl_abap_typedescr=>describe_by_data( obj_to_log ).
     struct_kind = get_struct_kind( msg_type ).
 
-    IF obj_to_log IS INITIAL.
-      detailed_msg = add_syst_msg( syst_buffer ).
-    ELSEIF struct_kind = c_struct_kind-syst.
+    IF struct_kind = c_struct_kind-syst.
       detailed_msg = add_syst_msg( obj_to_log ).
     ELSEIF struct_kind = c_struct_kind-bapi.
       detailed_msg = add_bapi_msg( obj_to_log ).
@@ -770,6 +768,8 @@ CLASS zcl_logger IMPLEMENTATION.
           type          = type
           importance    = importance
           detlevel      = detlevel ).
+    ELSEIF obj_to_log IS INITIAL.
+      detailed_msg = add_syst_msg( syst_buffer ).
     ELSE.
       free_text_msg = obj_to_log.
     ENDIF.

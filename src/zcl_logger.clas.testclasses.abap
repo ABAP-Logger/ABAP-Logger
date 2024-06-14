@@ -100,7 +100,9 @@ CLASS lcl_test DEFINITION FOR TESTING
       can_log_bapi_meth_message FOR TESTING RAISING cx_static_check,
       can_log_bapi_status_result FOR TESTING RAISING cx_static_check,
       can_log_detlevel FOR TESTING RAISING cx_static_check,
-      can_log_exception_with_context FOR TESTING RAISING cx_static_check.
+      can_log_exception_with_context FOR TESTING RAISING cx_static_check,
+      no_log_entry_for_empty_table FOR TESTING RAISING cx_static_check,
+      no_log_entry_for_empty_struct FOR TESTING RAISING cx_static_check.
 
 ENDCLASS.
 
@@ -2007,6 +2009,28 @@ CLASS lcl_test IMPLEMENTATION.
       act = actual_details
       msg = 'Did not log system message properly' ).
 
+  ENDMETHOD.
+
+  METHOD no_log_entry_for_empty_table.
+    DATA bapi_msg TYPE TABLE OF bapiret2.
+
+    MESSAGE i001(bl) INTO DATA(where_used_list)
+            WITH 'This should' '*not*' 'be logged'.
+
+    anon_log->add( bapi_msg ).
+    cl_abap_unit_assert=>assert_equals( act = anon_log->length( )
+                                        exp = 0 ).
+  ENDMETHOD.
+
+  METHOD no_log_entry_for_empty_struct.
+    DATA bapi_msg TYPE bapiret2.
+
+    MESSAGE i001(bl) INTO DATA(where_used_list)
+            WITH 'This should' '*not*' 'be logged'.
+
+    anon_log->add( bapi_msg ).
+    cl_abap_unit_assert=>assert_equals( act = anon_log->length( )
+                                        exp = 0 ).
   ENDMETHOD.
 
 ENDCLASS.
