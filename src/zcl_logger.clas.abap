@@ -768,8 +768,6 @@ CLASS zcl_logger IMPLEMENTATION.
           type          = type
           importance    = importance
           detlevel      = detlevel ).
-    ELSEIF obj_to_log IS INITIAL.
-      detailed_msg = add_syst_msg( syst_buffer ).
     ELSE.
       free_text_msg = obj_to_log.
     ENDIF.

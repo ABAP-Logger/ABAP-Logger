@@ -101,7 +101,7 @@ CLASS lcl_test DEFINITION FOR TESTING
       can_log_bapi_status_result FOR TESTING RAISING cx_static_check,
       can_log_detlevel FOR TESTING RAISING cx_static_check,
       can_log_exception_with_context FOR TESTING RAISING cx_static_check,
-      symsg_not_logged_for_empty_obj FOR TESTING RAISING cx_static_check.
+      nothing_logged_for_empty_obj FOR TESTING RAISING cx_static_check.
 
 ENDCLASS.
 
@@ -2010,16 +2010,22 @@ CLASS lcl_test IMPLEMENTATION.
 
   ENDMETHOD.
 
-  METHOD symsg_not_logged_for_empty_obj.
+  METHOD nothing_logged_for_empty_obj.
     DATA where_used_list TYPE bapiret2-message ##NEEDED.
     DATA bapi_msgs TYPE TABLE OF bapiret2.
     DATA bapi_msg TYPE bapiret2.
 
     MESSAGE i001(bl) INTO where_used_list
             WITH 'This should' '*not*' 'be logged'.
+    CLEAR where_used_list.
 
     anon_log->add( bapi_msgs ).
+    cl_abap_unit_assert=>assert_equals( act = anon_log->length( )
+                                        exp = 0 ).
     anon_log->add( bapi_msg ).
+    cl_abap_unit_assert=>assert_equals( act = anon_log->length( )
+                                        exp = 0 ).
+    anon_log->add( where_used_list ).
     cl_abap_unit_assert=>assert_equals( act = anon_log->length( )
                                         exp = 0 ).
   ENDMETHOD.
