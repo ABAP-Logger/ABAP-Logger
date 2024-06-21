@@ -67,7 +67,7 @@ CLASS zcl_logger_factory DEFINITION
       log_collection      TYPE REF TO zif_logger_collection,
       log_display_profile TYPE REF TO zif_logger_display_profile.
 
-    CLASS-METHODS get_log_headers
+    CLASS-METHODS find_log_headers
       IMPORTING
         object                 TYPE csequence OPTIONAL
         subobject              TYPE csequence OPTIONAL
@@ -182,7 +182,7 @@ CLASS zcl_logger_factory IMPLEMENTATION.
     DATA: found_headers      TYPE balhdr_t,
           most_recent_header TYPE balhdr.
 
-    found_headers = get_log_headers( object = object subobject = subobject desc = desc ).
+    found_headers = find_log_headers( object = object subobject = subobject desc = desc ).
 
     IF lines( found_headers ) = 0 .
       IF create_if_does_not_exist = abap_true.
@@ -207,7 +207,7 @@ CLASS zcl_logger_factory IMPLEMENTATION.
     DATA: header      TYPE balhdr,
           log_headers TYPE balhdr_t.
 
-    log_headers = get_log_headers( db_number = db_number ).
+    log_headers = find_log_headers( db_number = db_number ).
     IF lines( log_headers ) <> 1.
       "^Should find exactly one log since db_number is unique identifier
       RAISE EXCEPTION TYPE zcx_logger.
@@ -218,7 +218,7 @@ CLASS zcl_logger_factory IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_log_headers.
+  METHOD find_log_headers.
     DATA: filter      TYPE bal_s_lfil,
           l_object    TYPE balobj_d,
           l_subobject TYPE balsubobj,
@@ -251,9 +251,10 @@ CLASS zcl_logger_factory IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD open_log_by_header.
-    DATA:   log_headers  TYPE balhdr_t .
+    DATA:   log_headers  TYPE balhdr_t.
     INSERT header INTO TABLE log_headers.
 
+    "If you call BAL_DB_LOAD for a log that is already loaded, it doesn't return its handle, so don't rely on returned data
     CALL FUNCTION 'BAL_DB_LOAD'
       EXPORTING
         i_t_log_header     = log_headers
@@ -265,7 +266,6 @@ CLASS zcl_logger_factory IMPLEMENTATION.
     IF sy-subrc <> 0.
       RAISE EXCEPTION TYPE zcx_logger.
     ENDIF.
-
 
     DATA logger TYPE REF TO zcl_logger.
     IF log_logger IS INITIAL.
