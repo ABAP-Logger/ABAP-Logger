@@ -160,7 +160,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_logger IMPLEMENTATION.
+CLASS ZCL_LOGGER IMPLEMENTATION.
 
 
   METHOD add_bapi_alm_msg.
@@ -636,7 +636,6 @@ CLASS zcl_logger IMPLEMENTATION.
           "these objects could be moved into their own method
           "see adt://***/sap/bc/adt/oo/classes/zcl_logger/source/main#start=391,10;end=415,61
           symsg                    TYPE symsg,
-          syst_buffer              TYPE syst,
           loggable                 TYPE REF TO zif_loggable_object,
           loggable_object_messages TYPE zif_loggable_object=>tty_messages.
 
@@ -646,7 +645,6 @@ CLASS zcl_logger IMPLEMENTATION.
                    <loggable_object_message> TYPE zif_loggable_object=>ty_message.
 
     " Remember system message since it might get changed inadvertently
-    syst_buffer = syst.
     IF context IS NOT INITIAL.
       ASSIGN context TO <context_val>.
       formatted_context-value = <context_val>.
@@ -679,9 +677,7 @@ CLASS zcl_logger IMPLEMENTATION.
     msg_type    = cl_abap_typedescr=>describe_by_data( obj_to_log ).
     struct_kind = get_struct_kind( msg_type ).
 
-    IF obj_to_log IS INITIAL.
-      detailed_msg = add_syst_msg( syst_buffer ).
-    ELSEIF struct_kind = c_struct_kind-syst.
+    IF struct_kind = c_struct_kind-syst.
       detailed_msg = add_syst_msg( obj_to_log ).
     ELSEIF struct_kind = c_struct_kind-bapi.
       detailed_msg = add_bapi_msg( obj_to_log ).
