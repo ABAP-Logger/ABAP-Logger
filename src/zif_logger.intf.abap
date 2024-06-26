@@ -118,6 +118,10 @@ INTERFACE zif_logger
     RETURNING
       VALUE(rt_bapiret) TYPE bapirettab.
 
+  METHODS export_to_message_table
+    RETURNING
+      VALUE(rt_message) TYPE bal_t_msgr.
+
   METHODS fullscreen. " deprecated, use display_fullscreen
 
   METHODS display_fullscreen

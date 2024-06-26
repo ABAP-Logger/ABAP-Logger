@@ -995,6 +995,29 @@ CLASS zcl_logger IMPLEMENTATION.
     ENDLOOP.
   ENDMETHOD.
 
+  METHOD zif_logger~export_to_message_table.
+
+    DATA: ls_message TYPE bal_s_msgr,
+          lt_exc     TYPE bal_t_excr_mass.
+
+    FIELD-SYMBOLS: <exc> TYPE bal_s_excr_mass.
+
+    CALL FUNCTION 'BAL_LOG_READ'
+      EXPORTING
+        i_log_handle  = handle
+        i_read_texts  = abap_true
+      IMPORTING
+        et_msg        = rt_message
+        et_exc        = lt_exc
+      EXCEPTIONS
+        log_not_found = 0.
+
+    LOOP AT lt_exc ASSIGNING <exc>.
+      CLEAR ls_message.
+      MOVE-CORRESPONDING <exc> TO ls_message.
+      insert ls_message inTO TABLE rt_message.
+    ENDLOOP.
+  ENDMETHOD.
 
   METHOD zif_logger~free.
 

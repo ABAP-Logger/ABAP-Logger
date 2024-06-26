@@ -100,7 +100,9 @@ CLASS lcl_test DEFINITION FOR TESTING
       can_log_bapi_meth_message FOR TESTING RAISING cx_static_check,
       can_log_bapi_status_result FOR TESTING RAISING cx_static_check,
       can_log_detlevel FOR TESTING RAISING cx_static_check,
-      can_log_exception_with_context FOR TESTING RAISING cx_static_check.
+      can_log_exception_with_context FOR TESTING RAISING cx_static_check,
+      can_log_otr_excp_and_exp_msg FOR TESTING,
+      can_log_T100_excp_and_exp_msg FOR TESTING.
 
 ENDCLASS.
 
@@ -2001,6 +2003,101 @@ CLASS lcl_test IMPLEMENTATION.
 
     CLEAR: actual_details-msg_count, actual_details-time_stmp,
            actual_details-context, actual_details-params.
+
+    cl_abap_unit_assert=>assert_equals(
+      exp = expected_details
+      act = actual_details
+      msg = 'Did not log system message properly' ).
+
+  ENDMETHOD.
+
+  METHOD can_log_otr_excp_and_exp_msg.
+
+    DATA:
+      table         TYPE  bal_t_msgr,
+      error TYPE REF TO cx_sy_zerodivide.
+
+    TRY.
+        RAISE EXCEPTION TYPE cx_sy_zerodivide.
+      CATCH cx_sy_zerodivide INTO error.
+        anon_log->add( error ).
+    ENDTRY.
+
+    table = anon_log->export_to_message_table( ).
+
+    cl_abap_unit_assert=>assert_equals(
+      exp = 1
+      act = lines( table )
+      msg = 'Did not log system message properly' ).
+
+  ENDMETHOD.
+
+  METHOD can_log_T100_excp_and_exp_msg.
+
+    DATA: exception        TYPE REF TO lcx_t100,
+          msg_handle       TYPE balmsghndl,
+          expected_details TYPE bal_s_msgr,
+          exp_callback     TYPE bal_s_clbk,
+          table            TYPE  bal_t_msgr,
+          actual_details   TYPE bal_s_msgr,
+          addl_context     TYPE bezei20 VALUE 'Berlin'.
+
+    "Given
+    exp_callback-userexitf = 'FORM'.
+    exp_callback-userexitp = 'PROGRAM'.
+    exp_callback-userexitt = ' '.
+
+    expected_details-msgty = 'E'.
+    expected_details-msgid = 'SABP_UNIT'.
+    expected_details-msgno = '000'.
+    expected_details-msgv1 = 'This'.
+    expected_details-msgv2 = 'is'.
+    expected_details-msgv3 = 'a'.
+    expected_details-msgv4 = 'test'.
+
+    CREATE OBJECT exception
+      EXPORTING
+        id    = 'SABP_UNIT'
+        no    = '000'
+        msgv1 = 'This'
+        msgv2 = 'is'
+        msgv3 = 'a'
+        msgv4 = 'test'.
+
+    "When
+    anon_log->add( obj_to_log = exception
+                   callback_form = 'FORM'
+                   callback_prog = 'PROGRAM'
+                   context =  addl_context ).
+
+    table = anon_log->export_to_message_table( ).
+
+    cl_abap_unit_assert=>assert_equals(
+      exp = 1
+      act = lines( table )
+      msg = 'Did not log system message properly' ).
+
+    READ TABLE table INDEX 1 INTO actual_details.
+
+    cl_abap_unit_assert=>assert_equals(
+      exp = exp_callback
+      act = actual_details-params-callback
+      msg = 'Did not add callback correctly' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      exp = addl_context
+      act = actual_details-context-value
+      msg = 'Did not add context correctly' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      exp = 'BEZEI20'
+      act = actual_details-context-tabname
+      msg = 'Did not add context correctly' ).
+
+    CLEAR: actual_details-msgnumber,
+           actual_details-msg_count, actual_details-time_stmp,
+           actual_details-context, actual_details-params,
+           actual_details-msg_txt.
 
     cl_abap_unit_assert=>assert_equals(
       exp = expected_details
