@@ -2035,7 +2035,6 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD can_log_t100_excp_and_exp_msg.
 
     DATA: exception        TYPE REF TO lcx_t100,
-          msg_handle       TYPE balmsghndl,
           expected_details TYPE bal_s_msgr,
           exp_callback     TYPE bal_s_clbk,
           table            TYPE  bal_t_msgr,
