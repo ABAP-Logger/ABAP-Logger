@@ -1015,7 +1015,7 @@ CLASS zcl_logger IMPLEMENTATION.
     LOOP AT lt_exc ASSIGNING <exc>.
       CLEAR ls_message.
       MOVE-CORRESPONDING <exc> TO ls_message.
-      insert ls_message inTO TABLE rt_message.
+      INSERT ls_message INTO TABLE rt_message.
     ENDLOOP.
   ENDMETHOD.
 
