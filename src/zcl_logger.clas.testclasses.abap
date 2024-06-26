@@ -102,7 +102,7 @@ CLASS lcl_test DEFINITION FOR TESTING
       can_log_detlevel FOR TESTING RAISING cx_static_check,
       can_log_exception_with_context FOR TESTING RAISING cx_static_check,
       can_log_otr_excp_and_exp_msg FOR TESTING,
-      can_log_T100_excp_and_exp_msg FOR TESTING.
+      can_log_t100_excp_and_exp_msg FOR TESTING.
 
 ENDCLASS.
 
@@ -2014,7 +2014,7 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD can_log_otr_excp_and_exp_msg.
 
     DATA:
-      table         TYPE  bal_t_msgr,
+      table TYPE  bal_t_msgr,
       error TYPE REF TO cx_sy_zerodivide.
 
     TRY.
@@ -2032,7 +2032,7 @@ CLASS lcl_test IMPLEMENTATION.
 
   ENDMETHOD.
 
-  METHOD can_log_T100_excp_and_exp_msg.
+  METHOD can_log_t100_excp_and_exp_msg.
 
     DATA: exception        TYPE REF TO lcx_t100,
           msg_handle       TYPE balmsghndl,
