@@ -75,6 +75,8 @@ CLASS zcl_logger DEFINITION
         bapi_status_result TYPE i VALUE 7,
       END OF c_struct_kind.
 
+    DATA sec_connection     TYPE abap_bool.
+    DATA sec_connect_commit TYPE abap_bool.
     DATA settings           TYPE REF TO zif_logger_settings.
 
     METHODS:
@@ -160,7 +162,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_LOGGER IMPLEMENTATION.
+CLASS zcl_logger IMPLEMENTATION.
 
 
   METHOD add_bapi_alm_msg.
@@ -252,14 +254,25 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 
     DATA: detailed_msg         TYPE bal_s_msg,
           l_t100key            TYPE scx_t100key,
-          l_inc                TYPE i,
           l_textid             TYPE sotr_conc,
-          l_substitution_table TYPE sotr_params.
+          l_substitution_table TYPE sotr_params,
+          l_param              TYPE sotr_param-param.
 
     FIELD-SYMBOLS:
-      <l_attr>         TYPE scx_t100key-attr1,
-      <l_msgv>         TYPE bal_s_msg-msgv1,
-      <l_substitution> TYPE sotr_param.
+           <l_substitution>       TYPE sotr_param.
+
+    DEFINE lmacro_get_message_variables.
+      IF NOT  l_t100key-attr&1 IS INITIAL.
+        l_param = l_t100key-attr&1.
+        READ TABLE l_substitution_table ASSIGNING <l_substitution>
+                                        WITH KEY param =  l_param.
+        IF sy-subrc IS INITIAL.
+          IF NOT <l_substitution>-value IS INITIAL.
+            detailed_msg-msgv&1 =  <l_substitution>-value.  "#EC *
+          ENDIF.
+        ENDIF.
+      ENDIF.
+    END-OF-DEFINITION.
 
     "exception -> type OTR-message or T100-message?
     cl_message_helper=>check_msg_kind( EXPORTING msg     = exception_data-exception
@@ -280,22 +293,12 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
                                         IMPORTING params = l_substitution_table ).
 
     "exception with T100 message
-    detailed_msg-msgid = l_t100key-msgid.
-    detailed_msg-msgno = l_t100key-msgno.
-
-    DO 4 TIMES.
-      l_inc = sy-index - 1.
-      ASSIGN l_t100key-attr1 INCREMENT l_inc TO <l_attr> RANGE l_t100key.
-      IF sy-subrc = 0 AND <l_attr> IS NOT INITIAL.
-        READ TABLE l_substitution_table ASSIGNING <l_substitution> WITH KEY param = <l_attr>.
-        IF sy-subrc = 0 AND <l_substitution>-value IS NOT INITIAL.
-          ASSIGN detailed_msg-msgv1 INCREMENT l_inc TO <l_msgv> RANGE detailed_msg.
-          IF sy-subrc = 0.
-            <l_msgv> = <l_substitution>-value.
-          ENDIF.
-        ENDIF.
-      ENDIF.
-    ENDDO.
+    detailed_msg-msgid     = l_t100key-msgid.
+    detailed_msg-msgno     = l_t100key-msgno.
+    lmacro_get_message_variables 1.
+    lmacro_get_message_variables 2.
+    lmacro_get_message_variables 3.
+    lmacro_get_message_variables 4.
 
     detailed_msg-msgty     = exception_data-msgty.
     detailed_msg-probclass = exception_data-probclass.
@@ -549,16 +552,13 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     DATA log_handles TYPE bal_t_logh.
     DATA log_numbers TYPE bal_t_lgnm.
     DATA log_number  TYPE bal_s_lgnm.
-    DATA secondary_db_conn TYPE flag.
-    secondary_db_conn = me->settings->get_usage_of_secondary_db_conn( ).
 
     INSERT me->handle INTO TABLE log_handles.
-
     CALL FUNCTION 'BAL_DB_SAVE'
       EXPORTING
         i_t_log_handle       = log_handles
-        i_2th_connection     = secondary_db_conn
-        i_2th_connect_commit = secondary_db_conn
+        i_2th_connection     = me->sec_connection
+        i_2th_connect_commit = me->sec_connect_commit
       IMPORTING
         e_new_lognumbers     = log_numbers.
     IF me->db_number IS INITIAL.
@@ -636,6 +636,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
           "these objects could be moved into their own method
           "see adt://***/sap/bc/adt/oo/classes/zcl_logger/source/main#start=391,10;end=415,61
           symsg                    TYPE symsg,
+          syst_buffer              TYPE syst,
           loggable                 TYPE REF TO zif_loggable_object,
           loggable_object_messages TYPE zif_loggable_object=>tty_messages.
 
@@ -645,6 +646,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
                    <loggable_object_message> TYPE zif_loggable_object=>ty_message.
 
     " Remember system message since it might get changed inadvertently
+    syst_buffer = syst.
     IF context IS NOT INITIAL.
       ASSIGN context TO <context_val>.
       formatted_context-value = <context_val>.
@@ -677,7 +679,9 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     msg_type    = cl_abap_typedescr=>describe_by_data( obj_to_log ).
     struct_kind = get_struct_kind( msg_type ).
 
-    IF struct_kind = c_struct_kind-syst.
+    IF obj_to_log IS INITIAL.
+      detailed_msg = add_syst_msg( syst_buffer ).
+    ELSEIF struct_kind = c_struct_kind-syst.
       detailed_msg = add_syst_msg( obj_to_log ).
     ELSEIF struct_kind = c_struct_kind-bapi.
       detailed_msg = add_bapi_msg( obj_to_log ).
@@ -1017,10 +1021,8 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 
   METHOD zif_logger~free.
 
-    " Save any messages (safety) only if an object has been defined
-    IF me->header-object IS NOT INITIAL.
-      zif_logger~save( ).
-    ENDIF.
+    " Save any messages (safety)
+    zif_logger~save( ).
 
     " Clear log from memory
     CALL FUNCTION 'BAL_LOG_REFRESH'
