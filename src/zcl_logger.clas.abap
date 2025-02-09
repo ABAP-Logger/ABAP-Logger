@@ -4,66 +4,76 @@ CLASS zcl_logger DEFINITION
   GLOBAL FRIENDS zcl_logger_factory.
 
   PUBLIC SECTION.
-
     INTERFACES zif_logger.
     INTERFACES zif_loggable_object.
 
-    ALIASES: add FOR zif_logger~add,
-             a FOR zif_logger~a,
-             e FOR zif_logger~e,
-             w FOR zif_logger~w,
-             i FOR zif_logger~i,
-             s FOR zif_logger~s,
-             has_errors FOR zif_logger~has_errors,
-             has_warnings FOR zif_logger~has_warnings,
-             is_empty FOR zif_logger~is_empty,
-             length FOR zif_logger~length,
-             save FOR zif_logger~save,
-             export_to_table FOR zif_logger~export_to_table,
-             fullscreen FOR zif_logger~fullscreen,
-             display_fullscreen FOR zif_logger~display_fullscreen,
-             popup FOR zif_logger~popup,
-             display_as_popup FOR zif_logger~display_as_popup,
-             handle FOR zif_logger~handle,
-             control_handle FOR zif_logger~control_handle,
-             display_in_container FOR zif_logger~display_in_container,
-             db_number FOR zif_logger~db_number,
-             header FOR zif_logger~header,
-             set_header FOR zif_logger~set_header,
-             free FOR zif_logger~free,
-             ty_symsg FOR zif_loggable_object~ty_symsg,
-             ty_message FOR zif_loggable_object~ty_message,
-             tty_messages FOR zif_loggable_object~tty_messages,
-             get_message_table FOR zif_loggable_object~get_message_table.
+    ALIASES add                  FOR zif_logger~add.
+    ALIASES a                    FOR zif_logger~a.
+    ALIASES e                    FOR zif_logger~e.
+    ALIASES w                    FOR zif_logger~w.
+    ALIASES i                    FOR zif_logger~i.
+    ALIASES s                    FOR zif_logger~s.
+    ALIASES has_errors           FOR zif_logger~has_errors.
+    ALIASES has_warnings         FOR zif_logger~has_warnings.
+    ALIASES is_empty             FOR zif_logger~is_empty.
+    ALIASES length               FOR zif_logger~length.
+    ALIASES save                 FOR zif_logger~save.
+    ALIASES export_to_table      FOR zif_logger~export_to_table.
+    ALIASES fullscreen           FOR zif_logger~fullscreen.
+    ALIASES display_fullscreen   FOR zif_logger~display_fullscreen.
+    ALIASES popup                FOR zif_logger~popup.
+    ALIASES display_as_popup     FOR zif_logger~display_as_popup.
+    ALIASES handle               FOR zif_logger~handle.
+    ALIASES control_handle       FOR zif_logger~control_handle.
+    ALIASES display_in_container FOR zif_logger~display_in_container.
+    ALIASES db_number            FOR zif_logger~db_number.
+    ALIASES header               FOR zif_logger~header.
+    ALIASES set_header           FOR zif_logger~set_header.
+    ALIASES free                 FOR zif_logger~free.
+    ALIASES ty_symsg             FOR zif_loggable_object~ty_symsg.
+    ALIASES ty_message           FOR zif_loggable_object~ty_message.
+    ALIASES tty_messages         FOR zif_loggable_object~tty_messages.
+    ALIASES get_message_table    FOR zif_loggable_object~get_message_table.
 
     "! Starts a new log.
     "! For backwards compatibility only! Use ZCL_LOGGER_FACTORY instead.
+    "!
+    "! @parameter object |
+    "! @parameter subobject |
+    "! @parameter desc |
+    "! @parameter context |
+    "! @parameter auto_save |
+    "! @parameter second_db_conn |
+    "! @parameter r_log |
     CLASS-METHODS new
-      IMPORTING
-        !object         TYPE csequence OPTIONAL
-        !subobject      TYPE csequence OPTIONAL
-        !desc           TYPE csequence OPTIONAL
-        !context        TYPE any OPTIONAL
-        !auto_save      TYPE abap_bool OPTIONAL
-        !second_db_conn TYPE abap_bool DEFAULT abap_true
-      RETURNING
-        VALUE(r_log)    TYPE REF TO zcl_logger.
+      IMPORTING !object        TYPE csequence OPTIONAL
+                subobject      TYPE csequence OPTIONAL
+                desc           TYPE csequence OPTIONAL
+                !context       TYPE any       OPTIONAL
+                auto_save      TYPE abap_bool OPTIONAL
+                second_db_conn TYPE abap_bool DEFAULT abap_true
+      RETURNING VALUE(r_log)   TYPE REF TO zcl_logger.
 
     "! Reopens an already existing log.
     "! For backwards compatibility only! Use ZCL_LOGGER_FACTORY instead.
+    "!
+    "! @parameter object |
+    "! @parameter subobject |
+    "! @parameter desc |
+    "! @parameter create_if_does_not_exist |
+    "! @parameter auto_save |
+    "! @parameter r_log |
     CLASS-METHODS open
-      IMPORTING
-        !object                   TYPE csequence
-        !subobject                TYPE csequence
-        !desc                     TYPE csequence OPTIONAL
-        !create_if_does_not_exist TYPE abap_bool DEFAULT abap_false
-        !auto_save                TYPE abap_bool OPTIONAL
-      RETURNING
-        VALUE(r_log)              TYPE REF TO zcl_logger.
+      IMPORTING !object                  TYPE csequence
+                subobject                TYPE csequence
+                desc                     TYPE csequence OPTIONAL
+                create_if_does_not_exist TYPE abap_bool DEFAULT abap_false
+                auto_save                TYPE abap_bool OPTIONAL
+      RETURNING VALUE(r_log)             TYPE REF TO zcl_logger.
 
   PROTECTED SECTION.
-  PRIVATE SECTION.
 
+  PRIVATE SECTION.
     CONSTANTS:
       BEGIN OF c_struct_kind,
         syst               TYPE i VALUE 1,
@@ -75,96 +85,82 @@ CLASS zcl_logger DEFINITION
         bapi_status_result TYPE i VALUE 7,
       END OF c_struct_kind.
 
-    DATA settings           TYPE REF TO zif_logger_settings.
+    DATA settings TYPE REF TO zif_logger_settings.
 
-    METHODS:
-      "! Safety limit for previous exception drill down
-      drill_down_into_exception
-        IMPORTING
-          exception                      TYPE REF TO cx_root
-          type                           TYPE symsgty OPTIONAL
-          importance                     TYPE balprobcl OPTIONAL
-          detlevel                       TYPE ballevel OPTIONAL
-        RETURNING
-          VALUE(rt_exception_data_table) TYPE tty_exception_data,
+    "! Safety limit for previous exception drill down
+    "!
+    "! @parameter exception |
+    "! @parameter type |
+    "! @parameter importance |
+    "! @parameter detlevel |
+    "! @parameter rt_exception_data_table |
+    METHODS drill_down_into_exception
+      IMPORTING !exception                     TYPE REF TO cx_root
+                !type                          TYPE symsgty   OPTIONAL
+                importance                     TYPE balprobcl OPTIONAL
+                detlevel                       TYPE ballevel  OPTIONAL
+      RETURNING VALUE(rt_exception_data_table) TYPE tty_exception_data.
 
-      get_message_handles
-        IMPORTING
-          msgtype                   TYPE symsgty OPTIONAL
-        RETURNING
-          VALUE(rt_message_handles) TYPE bal_t_msgh,
+    METHODS get_message_handles
+      IMPORTING msgtype                   TYPE symsgty OPTIONAL
+      RETURNING VALUE(rt_message_handles) TYPE bal_t_msgh.
 
-      add_structure
-        IMPORTING
-          obj_to_log    TYPE any OPTIONAL
-          context       TYPE any OPTIONAL
-          callback_form TYPE csequence OPTIONAL
-          callback_prog TYPE csequence OPTIONAL
-          callback_fm   TYPE csequence OPTIONAL
-          type          TYPE symsgty OPTIONAL
-          importance    TYPE balprobcl OPTIONAL
-          detlevel      TYPE ballevel OPTIONAL
-            PREFERRED PARAMETER obj_to_log
-        RETURNING
-          VALUE(self)   TYPE REF TO zif_logger.
+    METHODS add_structure
+      IMPORTING obj_to_log    TYPE any       OPTIONAL
+                !context      TYPE any       OPTIONAL
+                callback_form TYPE csequence OPTIONAL
+                callback_prog TYPE csequence OPTIONAL
+                callback_fm   TYPE csequence OPTIONAL
+                !type         TYPE symsgty   OPTIONAL
+                importance    TYPE balprobcl OPTIONAL
+                detlevel      TYPE ballevel  OPTIONAL
+                  PREFERRED PARAMETER obj_to_log
+      RETURNING VALUE(self)   TYPE REF TO zif_logger.
 
     METHODS save_log.
-    METHODS get_struct_kind
-      IMPORTING
-        !msg_type     TYPE REF TO cl_abap_typedescr
-      RETURNING
-        VALUE(result) TYPE string.
-    METHODS add_syst_msg
-      IMPORTING
-        !obj_to_log         TYPE any
-      RETURNING
-        VALUE(detailed_msg) TYPE bal_s_msg.
-    METHODS add_bapi_msg
-      IMPORTING
-        !obj_to_log         TYPE any
-      RETURNING
-        VALUE(detailed_msg) TYPE bal_s_msg.
-    METHODS add_bdc_msg
-      IMPORTING
-        !obj_to_log         TYPE any
-      RETURNING
-        VALUE(detailed_msg) TYPE bal_s_msg.
-    METHODS add_sprot_msg
-      IMPORTING
-        !obj_to_log         TYPE any
-      RETURNING
-        VALUE(detailed_msg) TYPE bal_s_msg.
-    METHODS add_bapi_alm_msg
-      IMPORTING
-        !obj_to_log         TYPE any
-      RETURNING
-        VALUE(detailed_msg) TYPE bal_s_msg.
-    METHODS add_bapi_meth_msg
-      IMPORTING
-        !obj_to_log         TYPE any
-      RETURNING
-        VALUE(detailed_msg) TYPE bal_s_msg.
-    METHODS add_bapi_status_result
-      IMPORTING
-        obj_to_log          TYPE any
-      RETURNING
-        VALUE(detailed_msg) TYPE bal_s_msg.
-    METHODS add_exception
-      IMPORTING
-        exception_data    TYPE bal_s_exc
-        formatted_context TYPE bal_s_cont
-        formatted_params  TYPE bal_s_parm.
 
-    .
+    METHODS get_struct_kind
+      IMPORTING msg_type      TYPE REF TO cl_abap_typedescr
+      RETURNING VALUE(result) TYPE string.
+
+    METHODS add_syst_msg
+      IMPORTING obj_to_log          TYPE any
+      RETURNING VALUE(detailed_msg) TYPE bal_s_msg.
+
+    METHODS add_bapi_msg
+      IMPORTING obj_to_log          TYPE any
+      RETURNING VALUE(detailed_msg) TYPE bal_s_msg.
+
+    METHODS add_bdc_msg
+      IMPORTING obj_to_log          TYPE any
+      RETURNING VALUE(detailed_msg) TYPE bal_s_msg.
+
+    METHODS add_sprot_msg
+      IMPORTING obj_to_log          TYPE any
+      RETURNING VALUE(detailed_msg) TYPE bal_s_msg.
+
+    METHODS add_bapi_alm_msg
+      IMPORTING obj_to_log          TYPE any
+      RETURNING VALUE(detailed_msg) TYPE bal_s_msg.
+
+    METHODS add_bapi_meth_msg
+      IMPORTING obj_to_log          TYPE any
+      RETURNING VALUE(detailed_msg) TYPE bal_s_msg.
+
+    METHODS add_bapi_status_result
+      IMPORTING obj_to_log          TYPE any
+      RETURNING VALUE(detailed_msg) TYPE bal_s_msg.
+
+    METHODS add_exception
+      IMPORTING exception_data    TYPE bal_s_exc
+                formatted_context TYPE bal_s_cont
+                formatted_params  TYPE bal_s_parm.
 ENDCLASS.
 
 
-
-CLASS ZCL_LOGGER IMPLEMENTATION.
-
-
+CLASS zcl_logger IMPLEMENTATION.
   METHOD add_bapi_alm_msg.
-    DATA: "Avoid using concrete type as certain systems may not have BAPI_ALM_RETURN
+    DATA: " Avoid using concrete type as certain systems may not have BAPI_ALM_RETURN
       BEGIN OF bapi_alm_message,
         type           TYPE bapi_mtype,
         message_id     TYPE symsgid,
@@ -174,6 +170,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
         message_v3     TYPE symsgv,
         message_v4     TYPE symsgv,
       END OF bapi_alm_message.
+
     MOVE-CORRESPONDING obj_to_log TO bapi_alm_message.
     detailed_msg-msgty = bapi_alm_message-type.
     detailed_msg-msgid = bapi_alm_message-message_id.
@@ -184,28 +181,28 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     detailed_msg-msgv4 = bapi_alm_message-message_v4.
   ENDMETHOD.
 
-
   METHOD add_bapi_meth_msg.
-    DATA: "Avoid using concrete type as certain systems may not have BAPI_METH_MESSAGE
+    DATA: " Avoid using concrete type as certain systems may not have BAPI_METH_MESSAGE
       BEGIN OF bapi_meth_message,
-        method             TYPE c LENGTH 32, "bapi_method,
-        object_type        TYPE c LENGTH 32, "obj_typ,
-        internal_object_id TYPE c LENGTH 90, "objidint,
-        external_object_id TYPE c LENGTH 90, "objidext,
-        message_id         TYPE c LENGTH 20, "bapi_msgid,
+        method             TYPE c LENGTH 32, " bapi_method,
+        object_type        TYPE c LENGTH 32, " obj_typ,
+        internal_object_id TYPE c LENGTH 90, " objidint,
+        external_object_id TYPE c LENGTH 90, " objidext,
+        message_id         TYPE c LENGTH 20, " bapi_msgid,
         message_number     TYPE msgno,
         message_type       TYPE msgty,
-        message_text       TYPE c LENGTH 72, "bapi_text,
+        message_text       TYPE c LENGTH 72, " bapi_text,
       END OF bapi_meth_message.
+
     MOVE-CORRESPONDING obj_to_log TO bapi_meth_message.
     detailed_msg-msgty = bapi_meth_message-message_type.
     detailed_msg-msgid = bapi_meth_message-message_id.
     detailed_msg-msgno = bapi_meth_message-message_number.
   ENDMETHOD.
 
-
   METHOD add_bapi_msg.
     DATA bapi_message TYPE bapiret1.
+
     MOVE-CORRESPONDING obj_to_log TO bapi_message.
     detailed_msg-msgty = bapi_message-type.
     detailed_msg-msgid = bapi_message-id.
@@ -216,27 +213,27 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     detailed_msg-msgv4 = bapi_message-message_v4.
   ENDMETHOD.
 
-
   METHOD add_bapi_status_result.
-    DATA: "Avoid using concrete type as certain systems may not have BAPI_STATUS_RESULT
+    DATA: " Avoid using concrete type as certain systems may not have BAPI_STATUS_RESULT
       BEGIN OF bapi_status_result,
         objectkey      TYPE c LENGTH 90, "  OBJIDEXT,
-        status_action  TYPE c LENGTH 1, "  BAPI_STATUS_ACTION,
-        status_type    TYPE c LENGTH 6, "  BAPI_STATUS_TYPE,
+        status_action  TYPE c LENGTH 1,  "  BAPI_STATUS_ACTION,
+        status_type    TYPE c LENGTH 6,  "  BAPI_STATUS_TYPE,
         message_id     TYPE c LENGTH 20, "  BAPI_MSGID,
-        message_number TYPE c LENGTH 3, "  MSGNO,
-        message_type   TYPE c LENGTH 1, "  MSGTY,
+        message_number TYPE c LENGTH 3,  "  MSGNO,
+        message_type   TYPE c LENGTH 1,  "  MSGTY,
         message_text   TYPE c LENGTH 72, "  BAPI_TEXT,
       END OF bapi_status_result.
+
     MOVE-CORRESPONDING obj_to_log TO bapi_status_result.
     detailed_msg-msgty = bapi_status_result-message_type.
     detailed_msg-msgid = bapi_status_result-message_id.
     detailed_msg-msgno = bapi_status_result-message_number.
   ENDMETHOD.
 
-
   METHOD add_bdc_msg.
     DATA bdc_message TYPE bdcmsgcoll.
+
     MOVE-CORRESPONDING obj_to_log TO bdc_message.
     detailed_msg-msgty = bdc_message-msgtyp.
     detailed_msg-msgid = bdc_message-msgid.
@@ -247,39 +244,35 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     detailed_msg-msgv4 = bdc_message-msgv4.
   ENDMETHOD.
 
-
   METHOD add_exception.
+    DATA detailed_msg         TYPE bal_s_msg.
+    DATA l_t100key            TYPE scx_t100key.
+    DATA l_inc                TYPE i.
+    DATA l_textid             TYPE sotr_conc.
+    DATA l_substitution_table TYPE sotr_params.
 
-    DATA: detailed_msg         TYPE bal_s_msg,
-          l_t100key            TYPE scx_t100key,
-          l_inc                TYPE i,
-          l_textid             TYPE sotr_conc,
-          l_substitution_table TYPE sotr_params.
+    FIELD-SYMBOLS <l_attr>         TYPE scx_t100key-attr1.
+    FIELD-SYMBOLS <l_msgv>         TYPE bal_s_msg-msgv1.
+    FIELD-SYMBOLS <l_substitution> TYPE sotr_param.
 
-    FIELD-SYMBOLS:
-      <l_attr>         TYPE scx_t100key-attr1,
-      <l_msgv>         TYPE bal_s_msg-msgv1,
-      <l_substitution> TYPE sotr_param.
-
-    "exception -> type OTR-message or T100-message?
+    " exception -> type OTR-message or T100-message?
     cl_message_helper=>check_msg_kind( EXPORTING msg     = exception_data-exception
                                        IMPORTING t100key = l_t100key
                                                  textid  = l_textid ).
 
     IF l_textid IS NOT INITIAL.
-      "If it is a OTR-message
+      " If it is a OTR-message
       CALL FUNCTION 'BAL_LOG_EXCEPTION_ADD'
-        EXPORTING
-          i_log_handle = me->handle
-          i_s_exc      = exception_data.
+        EXPORTING i_log_handle = handle
+                  i_s_exc      = exception_data.
       RETURN.
     ENDIF.
 
-    "get the parameter for text switching
+    " get the parameter for text switching
     cl_message_helper=>get_text_params( EXPORTING obj    = exception_data-exception
                                         IMPORTING params = l_substitution_table ).
 
-    "exception with T100 message
+    " exception with T100 message
     detailed_msg-msgid = l_t100key-msgid.
     detailed_msg-msgno = l_t100key-msgno.
 
@@ -306,15 +299,13 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     detailed_msg-params    = formatted_params.
 
     CALL FUNCTION 'BAL_LOG_MSG_ADD'
-      EXPORTING
-        i_log_handle = me->handle
-        i_s_msg      = detailed_msg.
-
+      EXPORTING i_log_handle = handle
+                i_s_msg      = detailed_msg.
   ENDMETHOD.
-
 
   METHOD add_sprot_msg.
     DATA sprot_message TYPE sprot_u.
+
     MOVE-CORRESPONDING obj_to_log TO sprot_message.
     detailed_msg-msgty = sprot_message-severity.
     detailed_msg-msgid = sprot_message-ag.
@@ -325,14 +316,13 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     detailed_msg-msgv4 = sprot_message-var4.
   ENDMETHOD.
 
-
   METHOD add_structure.
-    DATA: msg_type        TYPE REF TO cl_abap_typedescr,
-          msg_struct_type TYPE REF TO cl_abap_structdescr,
-          components      TYPE abap_compdescr_tab,
-          component       LIKE LINE OF components,
-          component_name  LIKE component-name,
-          string_to_log   TYPE string.
+    DATA msg_type        TYPE REF TO cl_abap_typedescr.
+    DATA msg_struct_type TYPE REF TO cl_abap_structdescr.
+    DATA components      TYPE abap_compdescr_tab.
+    DATA component       LIKE LINE OF components.
+    DATA component_name  LIKE component-name.
+    DATA string_to_log   TYPE string.
 
     FIELD-SYMBOLS <component> TYPE any.
 
@@ -347,41 +337,41 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
         component_name = |Include { sy-tabix }|.
         ASSIGN COMPONENT sy-tabix OF STRUCTURE obj_to_log TO <component>.
       ENDIF.
-      IF sy-subrc = 0.
-        msg_type = cl_abap_typedescr=>describe_by_data( <component> ).
-        IF msg_type->kind = cl_abap_typedescr=>kind_elem.
-          string_to_log = |{ to_lower( component_name ) } = { <component> }|.
-          add( string_to_log ).
-        ELSEIF msg_type->kind = cl_abap_typedescr=>kind_struct.
-          self = add_structure(
-              obj_to_log    = <component>
-              context       = context
-              callback_form = callback_form
-              callback_prog = callback_prog
-              callback_fm   = callback_fm
-              type          = type
-              importance    = importance
-              detlevel      = detlevel ).
-        ENDIF.
+      IF sy-subrc <> 0.
+        CONTINUE.
+      ENDIF.
+
+      msg_type = cl_abap_typedescr=>describe_by_data( <component> ).
+      IF msg_type->kind = cl_abap_typedescr=>kind_elem.
+        string_to_log = |{ to_lower( component_name ) } = { <component> }|.
+        add( string_to_log ).
+      ELSEIF msg_type->kind = cl_abap_typedescr=>kind_struct.
+        self = add_structure( obj_to_log    = <component>
+                              context       = context
+                              callback_form = callback_form
+                              callback_prog = callback_prog
+                              callback_fm   = callback_fm
+                              type          = type
+                              importance    = importance
+                              detlevel      = detlevel ).
       ENDIF.
     ENDLOOP.
     add( '--- End of structure ---' ).
   ENDMETHOD.
 
-
   METHOD add_syst_msg.
     DATA syst_message TYPE symsg.
+
     MOVE-CORRESPONDING obj_to_log TO syst_message.
     MOVE-CORRESPONDING syst_message TO detailed_msg.
   ENDMETHOD.
 
-
   METHOD drill_down_into_exception.
-    DATA: i                  TYPE i VALUE 2,
-          previous_exception TYPE REF TO cx_root,
-          exceptions         TYPE tty_exception.
+    DATA i                  TYPE i VALUE 2.
+    DATA previous_exception TYPE REF TO cx_root.
+    DATA exceptions         TYPE tty_exception.
 
-    FIELD-SYMBOLS <ex> LIKE LINE OF exceptions.
+    FIELD-SYMBOLS <ex>  LIKE LINE OF exceptions.
     FIELD-SYMBOLS <ret> LIKE LINE OF rt_exception_data_table.
 
     APPEND INITIAL LINE TO exceptions ASSIGNING <ex>.
@@ -403,7 +393,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       i              = i + 1.
     ENDWHILE.
 
-    "Display the deepest exception first
+    " Display the deepest exception first
     SORT exceptions BY level DESCENDING.
     LOOP AT exceptions ASSIGNING <ex>.
       APPEND INITIAL LINE TO rt_exception_data_table ASSIGNING <ret>.
@@ -414,10 +404,9 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     ENDLOOP.
   ENDMETHOD.
 
-
   METHOD get_message_handles.
-    DATA: log_handle TYPE bal_t_logh,
-          filter     TYPE bal_s_mfil.
+    DATA log_handle TYPE bal_t_logh.
+    DATA filter     TYPE bal_s_mfil.
 
     FIELD-SYMBOLS <f> LIKE LINE OF filter-msgty.
 
@@ -431,155 +420,140 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     ENDIF.
 
     CALL FUNCTION 'BAL_GLB_SEARCH_MSG'
-      EXPORTING
-        i_t_log_handle = log_handle
-        i_s_msg_filter = filter
-      IMPORTING
-        e_t_msg_handle = rt_message_handles
-      EXCEPTIONS
-        msg_not_found  = 0.
+      EXPORTING  i_t_log_handle = log_handle
+                 i_s_msg_filter = filter
+      IMPORTING  e_t_msg_handle = rt_message_handles
+      EXCEPTIONS msg_not_found  = 0.
   ENDMETHOD.
-
 
   METHOD get_struct_kind.
-    DATA: msg_struct_kind   TYPE REF TO cl_abap_structdescr,
-          components        TYPE abap_compdescr_tab,
-          component         LIKE LINE OF components,
-          syst_count        TYPE i,
-          bapi_count        TYPE i,
-          bdc_count         TYPE i,
-          sprot_count       TYPE i,
-          bapi_alm_count    TYPE i,
-          bapi_meth_count   TYPE i,
-          bapi_status_count TYPE i.
+    DATA msg_struct_kind   TYPE REF TO cl_abap_structdescr.
+    DATA components        TYPE abap_compdescr_tab.
+    DATA component         LIKE LINE OF components.
+    DATA syst_count        TYPE i.
+    DATA bapi_count        TYPE i.
+    DATA bdc_count         TYPE i.
+    DATA sprot_count       TYPE i.
+    DATA bapi_alm_count    TYPE i.
+    DATA bapi_meth_count   TYPE i.
+    DATA bapi_status_count TYPE i.
 
-    IF msg_type->type_kind = cl_abap_typedescr=>typekind_struct1
-        OR msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.
+    IF NOT (    msg_type->type_kind = cl_abap_typedescr=>typekind_struct1
+             OR msg_type->type_kind = cl_abap_typedescr=>typekind_struct2 ).
+      RETURN.
+    ENDIF.
 
-      msg_struct_kind ?= msg_type.
-      components = msg_struct_kind->components.
+    msg_struct_kind ?= msg_type.
+    components = msg_struct_kind->components.
 
-      " Count number of fields expected for each supported type of message structure
-      LOOP AT components INTO component.
-        IF 'MSGTY,MSGID,MSGNO,MSGV1,MSGV2,MSGV3,MSGV4,' CS |{ component-name },|.
-          syst_count = syst_count + 1.
-        ENDIF.
-        IF 'TYPE,NUMBER,ID,MESSAGE_V1,MESSAGE_V2,MESSAGE_V3,MESSAGE_V4,' CS |{ component-name },|.
-          bapi_count = bapi_count + 1.
-        ENDIF.
-        IF 'MSGTYP,MSGID,MSGNR,MSGV1,MSGV2,MSGV3,MSGV4,' CS |{ component-name },|.
-          bdc_count = bdc_count + 1.
-        ENDIF.
-        IF 'SEVERITY,AG,MSGNR,VAR1,VAR2,VAR3,VAR4,' CS |{ component-name },|.
-          sprot_count = sprot_count + 1.
-        ENDIF.
-        IF 'TYPE,MESSAGE_ID,MESSAGE_NUMBER,MESSAGE_V1,MESSAGE_V2,MESSAGE_V3,MESSAGE_V4,' CS |{ component-name },|.
-          bapi_alm_count = bapi_alm_count + 1.
-        ENDIF.
-        IF 'METHOD,OBJECT_TYPE,INTERNAL_OBJECT_ID,EXTERNAL_OBJECT_ID,MESSAGE_ID,MESSAGE_NUMBER,MESSAGE_TYPE,MESSAGE_TEXT,' CS |{ component-name },|.
-          bapi_meth_count = bapi_meth_count + 1.
-        ENDIF.
-        IF 'OBJECTKEY,STATUS_ACTION,STATUS_TYPE,MESSAGE_ID,MESSAGE_NUMBER,MESSAGE_TYPE,MESSAGE_TEXT,' CS |{ component-name },|.
-          bapi_status_count = bapi_status_count + 1.
-        ENDIF.
-      ENDLOOP.
-
-      " Set message type if all expected fields are present
-      IF syst_count = 7.
-        result = c_struct_kind-syst.
-      ELSEIF bapi_count = 7.
-        result = c_struct_kind-bapi.
-      ELSEIF bdc_count = 7.
-        result = c_struct_kind-bdc.
-      ELSEIF sprot_count = 7.
-        result = c_struct_kind-sprot.
-      ELSEIF bapi_alm_count = 7.
-        result = c_struct_kind-bapi_alm.
-      ELSEIF bapi_meth_count = 8.
-        result = c_struct_kind-bapi_meth.
-      ELSEIF bapi_status_count = 7.
-        result = c_struct_kind-bapi_status_result.
+    " Count number of fields expected for each supported type of message structure
+    LOOP AT components INTO component.
+      IF 'MSGTY,MSGID,MSGNO,MSGV1,MSGV2,MSGV3,MSGV4,' CS |{ component-name },|.
+        syst_count = syst_count + 1.
       ENDIF.
+      IF 'TYPE,NUMBER,ID,MESSAGE_V1,MESSAGE_V2,MESSAGE_V3,MESSAGE_V4,' CS |{ component-name },|.
+        bapi_count = bapi_count + 1.
+      ENDIF.
+      IF 'MSGTYP,MSGID,MSGNR,MSGV1,MSGV2,MSGV3,MSGV4,' CS |{ component-name },|.
+        bdc_count = bdc_count + 1.
+      ENDIF.
+      IF 'SEVERITY,AG,MSGNR,VAR1,VAR2,VAR3,VAR4,' CS |{ component-name },|.
+        sprot_count = sprot_count + 1.
+      ENDIF.
+      IF 'TYPE,MESSAGE_ID,MESSAGE_NUMBER,MESSAGE_V1,MESSAGE_V2,MESSAGE_V3,MESSAGE_V4,' CS |{ component-name },|.
+        bapi_alm_count = bapi_alm_count + 1.
+      ENDIF.
+      IF 'METHOD,OBJECT_TYPE,INTERNAL_OBJECT_ID,EXTERNAL_OBJECT_ID,MESSAGE_ID,MESSAGE_NUMBER,MESSAGE_TYPE,MESSAGE_TEXT,' CS |{ component-name },|.
+        bapi_meth_count = bapi_meth_count + 1.
+      ENDIF.
+      IF 'OBJECTKEY,STATUS_ACTION,STATUS_TYPE,MESSAGE_ID,MESSAGE_NUMBER,MESSAGE_TYPE,MESSAGE_TEXT,' CS |{ component-name },|.
+        bapi_status_count = bapi_status_count + 1.
+      ENDIF.
+    ENDLOOP.
+
+    " Set message type if all expected fields are present
+    IF syst_count = 7.
+      result = c_struct_kind-syst.
+    ELSEIF bapi_count = 7.
+      result = c_struct_kind-bapi.
+    ELSEIF bdc_count = 7.
+      result = c_struct_kind-bdc.
+    ELSEIF sprot_count = 7.
+      result = c_struct_kind-sprot.
+    ELSEIF bapi_alm_count = 7.
+      result = c_struct_kind-bapi_alm.
+    ELSEIF bapi_meth_count = 8.
+      result = c_struct_kind-bapi_meth.
+    ELSEIF bapi_status_count = 7.
+      result = c_struct_kind-bapi_status_result.
     ENDIF.
   ENDMETHOD.
-
 
   METHOD new.
     IF auto_save IS SUPPLIED.
-      r_log ?= zcl_logger_factory=>create_log(
-        object = object
-        subobject = subobject
-        desc = desc
-        context = context
-        settings = zcl_logger_factory=>create_settings(
-          )->set_usage_of_secondary_db_conn( second_db_conn
-          )->set_autosave( auto_save ) ).
+      r_log ?= zcl_logger_factory=>create_log( object    = object
+                                               subobject = subobject
+                                               desc      = desc
+                                               context   = context
+                                               settings  = zcl_logger_factory=>create_settings(
+                                                  )->set_usage_of_secondary_db_conn( second_db_conn
+                                                  )->set_autosave( auto_save ) ).
     ELSE.
-      r_log ?= zcl_logger_factory=>create_log(
-        object = object
-        subobject = subobject
-        desc = desc
-        context = context
-        settings = zcl_logger_factory=>create_settings(
-          )->set_usage_of_secondary_db_conn( second_db_conn ) ).
+      r_log ?= zcl_logger_factory=>create_log( object    = object
+                                               subobject = subobject
+                                               desc      = desc
+                                               context   = context
+                                               settings  = zcl_logger_factory=>create_settings(
+                                                  )->set_usage_of_secondary_db_conn( second_db_conn ) ).
     ENDIF.
   ENDMETHOD.
-
 
   METHOD open.
     IF auto_save IS SUPPLIED.
-      r_log ?= zcl_logger_factory=>open_log(
-        object = object
-        subobject = subobject
-        desc = desc
-        create_if_does_not_exist = create_if_does_not_exist
-        settings = zcl_logger_factory=>create_settings(
-          )->set_autosave( auto_save ) ).
+      r_log ?= zcl_logger_factory=>open_log( object                   = object
+                                             subobject                = subobject
+                                             desc                     = desc
+                                             create_if_does_not_exist = create_if_does_not_exist
+                                             settings                 = zcl_logger_factory=>create_settings(
+                                                               )->set_autosave( auto_save ) ).
     ELSE.
-      r_log ?= zcl_logger_factory=>open_log(
-        object = object
-        subobject = subobject
-        desc = desc
-        create_if_does_not_exist = create_if_does_not_exist ).
+      r_log ?= zcl_logger_factory=>open_log( object                   = object
+                                             subobject                = subobject
+                                             desc                     = desc
+                                             create_if_does_not_exist = create_if_does_not_exist ).
     ENDIF.
   ENDMETHOD.
 
-
   METHOD save_log.
-    DATA log_handles TYPE bal_t_logh.
-    DATA log_numbers TYPE bal_t_lgnm.
-    DATA log_number  TYPE bal_s_lgnm.
+    DATA log_handles       TYPE bal_t_logh.
+    DATA log_numbers       TYPE bal_t_lgnm.
+    DATA log_number        TYPE bal_s_lgnm.
     DATA secondary_db_conn TYPE flag.
-    secondary_db_conn = me->settings->get_usage_of_secondary_db_conn( ).
+
+    secondary_db_conn = settings->get_usage_of_secondary_db_conn( ).
 
     INSERT me->handle INTO TABLE log_handles.
 
     CALL FUNCTION 'BAL_DB_SAVE'
-      EXPORTING
-        i_t_log_handle       = log_handles
-        i_2th_connection     = secondary_db_conn
-        i_2th_connect_commit = secondary_db_conn
-      IMPORTING
-        e_new_lognumbers     = log_numbers.
+      EXPORTING i_t_log_handle       = log_handles
+                i_2th_connection     = secondary_db_conn
+                i_2th_connect_commit = secondary_db_conn
+      IMPORTING e_new_lognumbers     = log_numbers.
     IF me->db_number IS INITIAL.
       READ TABLE log_numbers INDEX 1 INTO log_number.
-      me->db_number = log_number-lognumber.
+      db_number = log_number-lognumber.
     ENDIF.
     IF sy-batch = abap_true.
       CALL FUNCTION 'BP_ADD_APPL_LOG_HANDLE'
-        EXPORTING
-          loghandle = me->handle
-        EXCEPTIONS
-          OTHERS    = 0.
+        EXPORTING  loghandle = handle
+        EXCEPTIONS OTHERS    = 0.
     ENDIF.
   ENDMETHOD.
 
-
   METHOD zif_loggable_object~get_message_table.
-
-    DATA: message_handles TYPE bal_t_msgh,
-          message         TYPE bal_s_msg,
-          message_result  TYPE zif_loggable_object~ty_message.
+    DATA message_handles TYPE bal_t_msgh.
+    DATA message         TYPE bal_s_msg.
+    DATA message_result  TYPE zif_loggable_object~ty_message.
 
     FIELD-SYMBOLS <msg_handle> TYPE balmsghndl.
 
@@ -587,12 +561,9 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 
     LOOP AT message_handles ASSIGNING <msg_handle>.
       CALL FUNCTION 'BAL_LOG_MSG_READ'
-        EXPORTING
-          i_s_msg_handle = <msg_handle>
-        IMPORTING
-          e_s_msg        = message
-        EXCEPTIONS
-          OTHERS         = 3.
+        EXPORTING  i_s_msg_handle = <msg_handle>
+        IMPORTING  e_s_msg        = message
+        EXCEPTIONS OTHERS         = 3.
       IF sy-subrc IS INITIAL.
         message_result-type = message-msgty.
         message_result-symsg-msgid = message-msgid.
@@ -604,45 +575,52 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
         APPEND message_result TO r_result.
       ENDIF.
     ENDLOOP.
-
   ENDMETHOD.
 
-
-  METHOD zif_logger~a.
-    self = add(
-      obj_to_log          = obj_to_log
-      context             = context
-      callback_form       = callback_form
-      callback_prog       = callback_prog
-      callback_fm         = callback_fm
-      callback_parameters = callback_parameters
-      type                = 'A'
-      importance          = importance
-      detlevel            = detlevel ).
+  METHOD zif_logger_deprecated~a.
+    self = zif_logger~abend( obj_to_log          = obj_to_log
+                             context             = context
+                             callback_form       = callback_form
+                             callback_prog       = callback_prog
+                             callback_fm         = callback_fm
+                             callback_parameters = callback_parameters
+                             importance          = importance
+                             detlevel            = detlevel ).
   ENDMETHOD.
 
+  METHOD zif_logger~abend.
+    self = add( obj_to_log          = obj_to_log
+                context             = context
+                callback_form       = callback_form
+                callback_prog       = callback_prog
+                callback_fm         = callback_fm
+                callback_parameters = callback_parameters
+                type                = 'A'
+                importance          = importance
+                detlevel            = detlevel ).
+  ENDMETHOD.
 
   METHOD zif_logger~add.
-    DATA: detailed_msg             TYPE bal_s_msg,
-          exception_data_table     TYPE tty_exception_data,
-          free_text_msg            TYPE char200,
-          ctx_type                 TYPE REF TO cl_abap_typedescr,
-          ctx_ddic_header          TYPE x030l,
-          msg_type                 TYPE REF TO cl_abap_typedescr,
-          struct_kind              TYPE i,
-          formatted_context        TYPE bal_s_cont,
-          formatted_params         TYPE bal_s_parm,
-          message_type             TYPE symsgty,
-          "these objects could be moved into their own method
-          "see adt://***/sap/bc/adt/oo/classes/zcl_logger/source/main#start=391,10;end=415,61
-          symsg                    TYPE symsg,
-          loggable                 TYPE REF TO zif_loggable_object,
-          loggable_object_messages TYPE zif_loggable_object=>tty_messages.
+    DATA detailed_msg             TYPE bal_s_msg.
+    DATA exception_data_table     TYPE tty_exception_data.
+    DATA free_text_msg            TYPE char200.
+    DATA ctx_type                 TYPE REF TO cl_abap_typedescr.
+    DATA ctx_ddic_header          TYPE x030l.
+    DATA msg_type                 TYPE REF TO cl_abap_typedescr.
+    DATA struct_kind              TYPE i.
+    DATA formatted_context        TYPE bal_s_cont.
+    DATA formatted_params         TYPE bal_s_parm.
+    DATA message_type             TYPE symsgty.
+    " these objects could be moved into their own method
+    " see adt://***/sap/bc/adt/oo/classes/zcl_logger/source/main#start=391,10;end=415,61
+    DATA symsg                    TYPE symsg.
+    DATA loggable                 TYPE REF TO zif_loggable_object.
+    DATA loggable_object_messages TYPE zif_loggable_object=>tty_messages.
 
-    FIELD-SYMBOLS: <table_of_messages>       TYPE ANY TABLE,
-                   <message_line>            TYPE any,
-                   <context_val>             TYPE any,
-                   <loggable_object_message> TYPE zif_loggable_object=>ty_message.
+    FIELD-SYMBOLS <table_of_messages>       TYPE ANY TABLE.
+    FIELD-SYMBOLS <message_line>            TYPE any.
+    FIELD-SYMBOLS <context_val>             TYPE any.
+    FIELD-SYMBOLS <loggable_object_message> TYPE zif_loggable_object=>ty_message.
 
     " Remember system message since it might get changed inadvertently
     IF context IS NOT INITIAL.
@@ -650,13 +628,10 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       formatted_context-value = <context_val>.
       ctx_type                = cl_abap_typedescr=>describe_by_data( context ).
 
-      ctx_type->get_ddic_header(
-        RECEIVING
-          p_header     = ctx_ddic_header
-        EXCEPTIONS
-          not_found    = 1
-          no_ddic_type = 2
-          OTHERS       = 3 ).
+      ctx_type->get_ddic_header( RECEIVING  p_header     = ctx_ddic_header
+                                 EXCEPTIONS not_found    = 1
+                                            no_ddic_type = 2
+                                            OTHERS       = 3 ).
       IF sy-subrc = 0.
         formatted_context-tabname = ctx_ddic_header-tabname.
       ENDIF.
@@ -693,37 +668,34 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       detailed_msg = add_bapi_status_result( obj_to_log ).
     ELSEIF msg_type->type_kind = cl_abap_typedescr=>typekind_oref.
       TRY.
-          "BEGIN this could/should be moved into its own method
+          " BEGIN this could/should be moved into its own method
           loggable ?= obj_to_log.
           loggable_object_messages = loggable->get_message_table( ).
           LOOP AT loggable_object_messages ASSIGNING <loggable_object_message>.
             IF <loggable_object_message>-symsg IS NOT INITIAL.
               MOVE-CORRESPONDING <loggable_object_message>-symsg TO symsg.
               symsg-msgty = <loggable_object_message>-type.
-              zif_logger~add(
-                  obj_to_log    = symsg
-                  context       = context
-                  importance    = importance
-                  detlevel      = detlevel ).
+              zif_logger~add( obj_to_log = symsg
+                              context    = context
+                              importance = importance
+                              detlevel   = detlevel ).
             ENDIF.
             IF <loggable_object_message>-exception IS BOUND.
-              zif_logger~add(
-                  type          = <loggable_object_message>-type
-                  obj_to_log    = <loggable_object_message>-exception
-                  context       = context
-                  importance    = importance
-                  detlevel      = detlevel ).
+              zif_logger~add( type       = <loggable_object_message>-type
+                              obj_to_log = <loggable_object_message>-exception
+                              context    = context
+                              importance = importance
+                              detlevel   = detlevel ).
             ENDIF.
             IF <loggable_object_message>-string IS NOT INITIAL.
-              zif_logger~add(
-                  type          = <loggable_object_message>-type
-                  obj_to_log    = <loggable_object_message>-string
-                  context       = context
-                  importance    = importance
-                  detlevel      = detlevel ).
+              zif_logger~add( type       = <loggable_object_message>-type
+                              obj_to_log = <loggable_object_message>-string
+                              context    = context
+                              importance = importance
+                              detlevel   = detlevel ).
             ENDIF.
           ENDLOOP.
-          "END this could/should be moved into its own method
+          " END this could/should be moved into its own method
 
         CATCH cx_sy_move_cast_error.
           IF type IS INITIAL.
@@ -731,41 +703,37 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
           ELSE.
             message_type = type.
           ENDIF.
-          exception_data_table = drill_down_into_exception(
-              exception   = obj_to_log
-              type        = message_type
-              importance  = importance
-              detlevel    = detlevel ).
+          exception_data_table = drill_down_into_exception( exception  = obj_to_log
+                                                            type       = message_type
+                                                            importance = importance
+                                                            detlevel   = detlevel ).
       ENDTRY.
     ELSEIF msg_type->type_kind = cl_abap_typedescr=>typekind_table.
       ASSIGN obj_to_log TO <table_of_messages>.
       LOOP AT <table_of_messages> ASSIGNING <message_line>.
         IF sy-tabix = 1.
-          zif_logger~add(
-              obj_to_log    = <message_line>
-              context       = context
-              importance    = importance
-              type          = type
-              detlevel      = detlevel ).
+          zif_logger~add( obj_to_log = <message_line>
+                          context    = context
+                          importance = importance
+                          type       = type
+                          detlevel   = detlevel ).
         ELSE.
-          zif_logger~add(
-              obj_to_log    = <message_line>
-              importance    = importance
-              type          = type
-              detlevel      = detlevel ).
+          zif_logger~add( obj_to_log = <message_line>
+                          importance = importance
+                          type       = type
+                          detlevel   = detlevel ).
         ENDIF.
       ENDLOOP.
-    ELSEIF msg_type->type_kind = cl_abap_typedescr=>typekind_struct1     "flat structure
-        OR msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.    "deep structure (already when string is used)
-      self = add_structure(
-          obj_to_log    = obj_to_log
-          context       = context
-          callback_form = callback_form
-          callback_prog = callback_prog
-          callback_fm   = callback_fm
-          type          = type
-          importance    = importance
-          detlevel      = detlevel ).
+    ELSEIF    msg_type->type_kind = cl_abap_typedescr=>typekind_struct1     " flat structure
+           OR msg_type->type_kind = cl_abap_typedescr=>typekind_struct2.    " deep structure (already when string is used)
+      self = add_structure( obj_to_log    = obj_to_log
+                            context       = context
+                            callback_form = callback_form
+                            callback_prog = callback_prog
+                            callback_fm   = callback_fm
+                            type          = type
+                            importance    = importance
+                            detlevel      = detlevel ).
     ELSE.
       free_text_msg = obj_to_log.
     ENDIF.
@@ -778,30 +746,28 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 
       TRY.
           CALL FUNCTION 'BAL_LOG_MSG_ADD_FREE_TEXT'
-            EXPORTING
-              i_log_handle = me->handle
-              i_msgty      = message_type
-              i_probclass  = importance
-              i_text       = free_text_msg
-              i_s_context  = formatted_context
-              i_s_params   = formatted_params
-              i_detlevel   = detlevel.
+            EXPORTING i_log_handle = me->handle
+                      i_msgty      = message_type
+                      i_probclass  = importance
+                      i_text       = free_text_msg
+                      i_s_context  = formatted_context
+                      i_s_params   = formatted_params
+                      i_detlevel   = detlevel.
         CATCH cx_sy_dyn_call_param_not_found.
           CALL FUNCTION 'BAL_LOG_MSG_ADD_FREE_TEXT'
-            EXPORTING
-              i_log_handle = me->handle
-              i_msgty      = message_type
-              i_probclass  = importance
-              i_text       = free_text_msg
-              i_s_context  = formatted_context
-              i_s_params   = formatted_params.
+            EXPORTING i_log_handle = me->handle
+                      i_msgty      = message_type
+                      i_probclass  = importance
+                      i_text       = free_text_msg
+                      i_s_context  = formatted_context
+                      i_s_params   = formatted_params.
       ENDTRY.
     ELSEIF exception_data_table IS NOT INITIAL.
       FIELD-SYMBOLS <exception_data> LIKE LINE OF exception_data_table.
       LOOP AT exception_data_table ASSIGNING <exception_data>.
-        add_exception( exception_data = <exception_data>
+        add_exception( exception_data    = <exception_data>
                        formatted_context = formatted_context
-                       formatted_params = formatted_params ).
+                       formatted_params  = formatted_params ).
       ENDLOOP.
     ELSEIF detailed_msg IS NOT INITIAL.
       detailed_msg-context   = formatted_context.
@@ -809,13 +775,12 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       detailed_msg-probclass = importance.
       detailed_msg-detlevel  = detlevel.
       IF type IS NOT INITIAL.
-        detailed_msg-msgty   = type.
+        detailed_msg-msgty = type.
       ENDIF.
 
       CALL FUNCTION 'BAL_LOG_MSG_ADD'
-        EXPORTING
-          i_log_handle = me->handle
-          i_s_msg      = detailed_msg.
+        EXPORTING i_log_handle = me->handle
+                  i_s_msg      = detailed_msg.
     ENDIF.
 
     IF me->settings->get_autosave( ) = abap_true.
@@ -824,12 +789,10 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     self = me.
   ENDMETHOD.
 
-
   METHOD zif_logger~display_as_popup.
     " See SBAL_DEMO_04_POPUP for ideas
-    DATA:
-      relevant_profile TYPE bal_s_prof,
-      log_handles      TYPE bal_t_logh.
+    DATA relevant_profile TYPE bal_s_prof.
+    DATA log_handles      TYPE bal_t_logh.
 
     INSERT handle INTO TABLE log_handles.
 
@@ -837,21 +800,17 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       relevant_profile = profile.
     ELSE.
       CALL FUNCTION 'BAL_DSP_PROFILE_POPUP_GET'
-        IMPORTING
-          e_s_display_profile = relevant_profile.
+        IMPORTING e_s_display_profile = relevant_profile.
     ENDIF.
 
     CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
-      EXPORTING
-        i_s_display_profile = relevant_profile
-        i_t_log_handle      = log_handles.
+      EXPORTING i_s_display_profile = relevant_profile
+                i_t_log_handle      = log_handles.
   ENDMETHOD.
 
-
   METHOD zif_logger~display_fullscreen.
-    DATA:
-      relevant_profile TYPE bal_s_prof,
-      log_handles      TYPE bal_t_logh.
+    DATA relevant_profile TYPE bal_s_prof.
+    DATA log_handles      TYPE bal_t_logh.
 
     INSERT handle INTO TABLE log_handles.
 
@@ -859,21 +818,17 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
       relevant_profile = profile.
     ELSE.
       CALL FUNCTION 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
-        IMPORTING
-          e_s_display_profile = relevant_profile.
+        IMPORTING e_s_display_profile = relevant_profile.
     ENDIF.
 
     CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
-      EXPORTING
-        i_s_display_profile = relevant_profile
-        i_t_log_handle      = log_handles.
+      EXPORTING i_s_display_profile = relevant_profile
+                i_t_log_handle      = log_handles.
   ENDMETHOD.
 
-
   METHOD zif_logger~display_in_container.
-    DATA:
-      relevant_profile TYPE bal_s_prof,
-      log_handles      TYPE bal_t_logh.
+    DATA relevant_profile TYPE bal_s_prof.
+    DATA log_handles      TYPE bal_t_logh.
 
     INSERT handle INTO TABLE log_handles.
 
@@ -883,59 +838,84 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
         relevant_profile = profile.
       ELSE.
         CALL FUNCTION 'BAL_DSP_PROFILE_NO_TREE_GET'
-          IMPORTING
-            e_s_display_profile = relevant_profile.
+          IMPORTING e_s_display_profile = relevant_profile.
       ENDIF.
 
-      "create control to display log
+      " create control to display log
       CALL FUNCTION 'BAL_CNTL_CREATE'
-        EXPORTING
-          i_container          = container
-          i_s_display_profile  = relevant_profile
-          i_t_log_handle       = log_handles
-        IMPORTING
-          e_control_handle     = control_handle
-        EXCEPTIONS
-          profile_inconsistent = 1
-          internal_error       = 2.
+        EXPORTING  i_container          = container
+                   i_s_display_profile  = relevant_profile
+                   i_t_log_handle       = log_handles
+        IMPORTING  e_control_handle     = control_handle
+        EXCEPTIONS profile_inconsistent = 1
+                   internal_error       = 2.
       ASSERT sy-subrc = 0.
 
     ELSE.
 
-      "refresh control
+      " refresh control
       CALL FUNCTION 'BAL_CNTL_REFRESH'
-        EXPORTING
-          i_control_handle  = control_handle
-          i_t_log_handle    = log_handles
-        EXCEPTIONS
-          control_not_found = 1
-          internal_error    = 2.
+        EXPORTING  i_control_handle  = control_handle
+                   i_t_log_handle    = log_handles
+        EXCEPTIONS control_not_found = 1
+                   internal_error    = 2.
       ASSERT sy-subrc = 0.
 
     ENDIF.
-
   ENDMETHOD.
 
-
-  METHOD zif_logger~e.
-    self                  = add(
-      obj_to_log          = obj_to_log
-      context             = context
-      callback_form       = callback_form
-      callback_prog       = callback_prog
-      callback_fm         = callback_fm
-      callback_parameters = callback_parameters
-      type                = 'E'
-      importance          = importance
-      detlevel            = detlevel ).
+  METHOD zif_logger~debug.
+    self = add( obj_to_log          = obj_to_log
+                context             = context
+                callback_form       = callback_form
+                callback_prog       = callback_prog
+                callback_fm         = callback_fm
+                callback_parameters = callback_parameters
+                type                = ' '
+                importance          = importance
+                detlevel            = detlevel ).
   ENDMETHOD.
 
+  METHOD zif_logger_deprecated~e.
+    self = zif_logger~error( obj_to_log          = obj_to_log
+                             context             = context
+                             callback_form       = callback_form
+                             callback_prog       = callback_prog
+                             callback_fm         = callback_fm
+                             callback_parameters = callback_parameters
+                             importance          = importance
+                             detlevel            = detlevel ).
+  ENDMETHOD.
+
+  METHOD zif_logger~error.
+    self = add( obj_to_log          = obj_to_log
+                context             = context
+                callback_form       = callback_form
+                callback_prog       = callback_prog
+                callback_fm         = callback_fm
+                callback_parameters = callback_parameters
+                type                = 'E'
+                importance          = importance
+                detlevel            = detlevel ).
+  ENDMETHOD.
+
+  METHOD zif_logger~exit.
+    self = add( obj_to_log          = obj_to_log
+                context             = context
+                callback_form       = callback_form
+                callback_prog       = callback_prog
+                callback_fm         = callback_fm
+                callback_parameters = callback_parameters
+                type                = 'X'
+                importance          = importance
+                detlevel            = detlevel ).
+  ENDMETHOD.
 
   METHOD zif_logger~export_to_table.
-    DATA: message_handles TYPE bal_t_msgh,
-          message         TYPE bal_s_msg,
-          bapiret2        TYPE bapiret2,
-          exception_msg   TYPE c LENGTH 255.
+    DATA message_handles TYPE bal_t_msgh.
+    DATA message         TYPE bal_s_msg.
+    DATA bapiret2        TYPE bapiret2.
+    DATA exception_msg   TYPE c LENGTH 255.
 
     FIELD-SYMBOLS <msg_handle> TYPE balmsghndl.
 
@@ -944,12 +924,9 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     LOOP AT message_handles ASSIGNING <msg_handle>.
       CLEAR bapiret2.
       CALL FUNCTION 'BAL_LOG_MSG_READ'
-        EXPORTING
-          i_s_msg_handle = <msg_handle>
-        IMPORTING
-          e_s_msg        = message
-        EXCEPTIONS
-          OTHERS         = 3.
+        EXPORTING  i_s_msg_handle = <msg_handle>
+        IMPORTING  e_s_msg        = message
+        EXCEPTIONS OTHERS         = 3.
       IF sy-subrc IS INITIAL.
         MESSAGE ID message-msgid
                 TYPE message-msgty
@@ -960,7 +937,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
         bapiret2-type       = message-msgty.
         bapiret2-id         = message-msgid.
         bapiret2-number     = message-msgno.
-        bapiret2-log_no     = <msg_handle>-log_handle.     "last 2 chars missing!!
+        bapiret2-log_no     = <msg_handle>-log_handle.     " last 2 chars missing!!
         bapiret2-log_msg_no = <msg_handle>-msgnumber.
         bapiret2-message_v1 = message-msgv1.
         bapiret2-message_v2 = message-msgv2.
@@ -970,15 +947,12 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
         APPEND bapiret2 TO rt_bapiret.
       ELSE.
         CALL FUNCTION 'BAL_LOG_EXCEPTION_READ'
-          EXPORTING
-            i_s_msg_handle = <msg_handle>
-            i_langu        = sy-langu
-          IMPORTING
-            e_txt_msg      = exception_msg
-          EXCEPTIONS
-            log_not_found  = 1
-            msg_not_found  = 2
-            OTHERS         = 3.
+          EXPORTING  i_s_msg_handle = <msg_handle>
+                     i_langu        = sy-langu
+          IMPORTING  e_txt_msg      = exception_msg
+          EXCEPTIONS log_not_found  = 1
+                     msg_not_found  = 2
+                     OTHERS         = 3.
         IF sy-subrc = 0.
           bapiret2-type       = message-msgty.
           bapiret2-log_no     = <msg_handle>-log_handle.
@@ -991,9 +965,7 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
     ENDLOOP.
   ENDMETHOD.
 
-
   METHOD zif_logger~free.
-
     " Save any messages (safety) only if an object has been defined
     IF me->header-object IS NOT INITIAL.
       zif_logger~save( ).
@@ -1001,109 +973,123 @@ CLASS ZCL_LOGGER IMPLEMENTATION.
 
     " Clear log from memory
     CALL FUNCTION 'BAL_LOG_REFRESH'
-      EXPORTING
-        i_log_handle  = handle
-      EXCEPTIONS
-        log_not_found = 1
-        OTHERS        = 2.
+      EXPORTING  i_log_handle  = handle
+      EXCEPTIONS log_not_found = 1
+                 OTHERS        = 2.
     ASSERT sy-subrc = 0.
-
   ENDMETHOD.
-
 
   METHOD zif_logger~fullscreen.
     " deprecated, use display_fullscreen
     display_fullscreen( ).
   ENDMETHOD.
 
-
   METHOD zif_logger~has_errors.
     rv_yes = boolc( lines( get_message_handles( msgtype = 'E' ) ) > 0 ).
   ENDMETHOD.
-
 
   METHOD zif_logger~has_warnings.
     rv_yes = boolc( lines( get_message_handles( msgtype = 'W' ) ) > 0 ).
   ENDMETHOD.
 
-
-  METHOD zif_logger~i.
-    self = add(
-      obj_to_log          = obj_to_log
-      context             = context
-      callback_form       = callback_form
-      callback_prog       = callback_prog
-      callback_fm         = callback_fm
-      callback_parameters = callback_parameters
-      type                = 'I'
-      importance          = importance
-      detlevel            = detlevel ).
+  METHOD zif_logger_deprecated~i.
+    self = zif_logger~info( obj_to_log          = obj_to_log
+                            context             = context
+                            callback_form       = callback_form
+                            callback_prog       = callback_prog
+                            callback_fm         = callback_fm
+                            callback_parameters = callback_parameters
+                            importance          = importance
+                            detlevel            = detlevel ).
   ENDMETHOD.
 
+  METHOD zif_logger~info.
+    self = add( obj_to_log          = obj_to_log
+                context             = context
+                callback_form       = callback_form
+                callback_prog       = callback_prog
+                callback_fm         = callback_fm
+                callback_parameters = callback_parameters
+                type                = 'I'
+                importance          = importance
+                detlevel            = detlevel ).
+  ENDMETHOD.
 
   METHOD zif_logger~is_empty.
     rv_yes = boolc( length( ) = 0 ).
   ENDMETHOD.
 
-
   METHOD zif_logger~length.
     rv_length = lines( get_message_handles( ) ).
   ENDMETHOD.
-
 
   METHOD zif_logger~popup.
     " deprecated, use display_as_popup
     display_as_popup( profile ).
   ENDMETHOD.
 
-
-  METHOD zif_logger~s.
-    self = add(
-      obj_to_log          = obj_to_log
-      context             = context
-      callback_form       = callback_form
-      callback_prog       = callback_prog
-      callback_fm         = callback_fm
-      callback_parameters = callback_parameters
-      type                = 'S'
-      importance          = importance
-      detlevel            = detlevel ).
+  METHOD zif_logger_deprecated~s.
+    self = zif_logger~success( obj_to_log          = obj_to_log
+                               context             = context
+                               callback_form       = callback_form
+                               callback_prog       = callback_prog
+                               callback_fm         = callback_fm
+                               callback_parameters = callback_parameters
+                               importance          = importance
+                               detlevel            = detlevel ).
   ENDMETHOD.
 
+  METHOD zif_logger~success.
+    self = add( obj_to_log          = obj_to_log
+                context             = context
+                callback_form       = callback_form
+                callback_prog       = callback_prog
+                callback_fm         = callback_fm
+                callback_parameters = callback_parameters
+                type                = 'S'
+                importance          = importance
+                detlevel            = detlevel ).
+  ENDMETHOD.
 
   METHOD zif_logger~save.
     CHECK settings->get_autosave( ) = abap_false.
     save_log( ).
   ENDMETHOD.
 
-
   METHOD zif_logger~set_header.
     me->header-extnumber = description.
 
     CALL FUNCTION 'BAL_LOG_HDR_CHANGE'
-      EXPORTING
-        i_log_handle            = me->handle
-        i_s_log                 = header
-      EXCEPTIONS
-        log_not_found           = 1
-        log_header_inconsistent = 2
-        OTHERS                  = 3.
+      EXPORTING  i_log_handle            = me->handle
+                 i_s_log                 = header
+      EXCEPTIONS log_not_found           = 1
+                 log_header_inconsistent = 2
+                 OTHERS                  = 3.
     ASSERT sy-subrc = 0.
 
     self = me.
   ENDMETHOD.
 
-
-  METHOD zif_logger~w.
-    self = add(
-      obj_to_log          = obj_to_log
-      context             = context
-      callback_form       = callback_form
-      callback_prog       = callback_prog
-      callback_fm         = callback_fm
-      callback_parameters = callback_parameters
-      type                = 'W'
-      importance          = importance
-      detlevel            = detlevel ).
+  METHOD zif_logger_deprecated~w.
+    self = zif_logger~warning( obj_to_log          = obj_to_log
+                               context             = context
+                               callback_form       = callback_form
+                               callback_prog       = callback_prog
+                               callback_fm         = callback_fm
+                               callback_parameters = callback_parameters
+                               importance          = importance
+                               detlevel            = detlevel ).
   ENDMETHOD.
+  METHOD zif_logger~warning.
+    self = add( obj_to_log          = obj_to_log
+                context             = context
+                callback_form       = callback_form
+                callback_prog       = callback_prog
+                callback_fm         = callback_fm
+                callback_parameters = callback_parameters
+                type                = 'W'
+                importance          = importance
+                detlevel            = detlevel ).
+  ENDMETHOD.
+
 ENDCLASS.
