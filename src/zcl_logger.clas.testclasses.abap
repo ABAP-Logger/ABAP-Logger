@@ -22,7 +22,7 @@ CLASS lcl_test DEFINITION FOR TESTING
   PRIVATE SECTION.
 
     TYPES:
-      ty_bal_tt_msg TYPE STANDARD TABLE OF bal_s_msg.
+      ty_bal_tt_msg TYPE STANDARD TABLE OF bal_s_msg WITH DEFAULT KEY.
 
     DATA:
       anon_log     TYPE REF TO zif_logger,
@@ -1602,7 +1602,7 @@ CLASS lcl_test IMPLEMENTATION.
           message_a TYPE string.
     DATA: texts TYPE table_of_strings,
           text  TYPE string.
-    DATA: msg_details TYPE bal_tt_msg,
+    DATA: msg_details TYPE ty_bal_tt_msg,
           msg_detail  TYPE bal_s_msg.
 
     message_i = 'Info message from appended log'.
