@@ -44,7 +44,23 @@ Method and type aliases on `zcl_logger` are removed. Use a `REF TO zif_logger` f
 
 ### Display API
 
-`fullscreen`, `popup`, `display_fullscreen`, `display_as_popup`, and `display_in_container` are removed from `zif_logger` and `zcl_logger`. Obtain a `REF TO zif_logger_ui` via `zcl_logger_factory=>create_ui( )`, then call `display_fullscreen`, `display_as_popup`, or `display_in_container` with the logger in the `logger` parameter.
+`fullscreen`, `popup`, `display_fullscreen`, `display_as_popup`, and `display_in_container` are removed from `zif_logger` and `zcl_logger`. Call `zcl_logger_ui=>display_fullscreen`, `zcl_logger_ui=>display_as_popup`, or `zcl_logger_ui=>display_in_container` with the logger in the `logger` parameter (and `container` for embedded display). `zcl_logger_factory=>create_ui( )` is removed, and `zcl_logger_ui` can no longer be instantiated directly. Each static display call creates and returns a `REF TO zif_logger_ui`; retain it to refresh an existing container through `ui->display_in_container( ... )`.
+
+Create display profiles with `zcl_logger_ui=>create_display_profile( ... )` instead of `zcl_logger_factory=>create_display_profile( ... )`. The optional `profile` parameter of all display methods now expects `REF TO zif_logger_display_profile` instead of `bal_s_prof`: pass the profile object directly, without calling `profile->get( )`. Omitting it uses the default profile for the selected display mode. `zcl_logger_injector=>set_display_profile` is removed; pass a custom profile explicitly to the display call.
+
+```abap
+DATA profile TYPE REF TO zif_logger_display_profile.
+DATA ui TYPE REF TO zif_logger_ui.
+
+profile = zcl_logger_ui=>create_display_profile( i_no_tree = abap_true ).
+ui = zcl_logger_ui=>display_in_container(
+  container = container
+  logger    = log
+  profile   = profile ).
+
+" Reuse the returned UI to refresh the same container after adding messages.
+ui->display_in_container( container = container logger = log ).
+```
 
 ### Other
 
