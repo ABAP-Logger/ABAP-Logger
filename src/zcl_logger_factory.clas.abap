@@ -38,20 +38,6 @@ CLASS zcl_logger_factory DEFINITION
       RETURNING
         VALUE(result) TYPE REF TO zif_logger_collection.
 
-    CLASS-METHODS create_ui
-      RETURNING
-        VALUE(result) TYPE REF TO zif_logger_ui.
-
-    CLASS-METHODS create_display_profile
-      IMPORTING
-        i_detlevel    TYPE clike OPTIONAL
-        i_no_tree     TYPE clike OPTIONAL
-        i_popup       TYPE clike OPTIONAL
-        i_single_log  TYPE clike OPTIONAL
-        i_standard    TYPE clike DEFAULT abap_true
-      RETURNING
-        VALUE(result) TYPE REF TO zif_logger_display_profile.
-
     "! Reopens specific log instance.
     CLASS-METHODS open_log_by_db_number
       IMPORTING
@@ -64,11 +50,9 @@ CLASS zcl_logger_factory DEFINITION
   PRIVATE SECTION.
 
     CLASS-DATA:
-      log_logger          TYPE REF TO zif_logger,
-      log_settings        TYPE REF TO zif_logger_settings,
-      log_collection      TYPE REF TO zif_logger_collection,
-      log_ui              TYPE REF TO zif_logger_ui,
-      log_display_profile TYPE REF TO zif_logger_display_profile.
+      log_logger     TYPE REF TO zif_logger,
+      log_settings   TYPE REF TO zif_logger_settings,
+      log_collection TYPE REF TO zif_logger_collection.
 
     CLASS-METHODS find_log_headers
       IMPORTING
@@ -99,22 +83,6 @@ CLASS zcl_logger_factory IMPLEMENTATION.
     ELSE.
       result = log_collection.
     ENDIF.
-  ENDMETHOD.
-
-
-  METHOD create_display_profile.
-    IF log_display_profile IS INITIAL.
-      CREATE OBJECT result TYPE zcl_logger_display_profile.
-    ELSE.
-      result = log_display_profile.
-    ENDIF.
-
-    result->set(
-      i_detlevel   = i_detlevel
-      i_no_tree    = i_no_tree
-      i_popup      = i_popup
-      i_single_log = i_single_log
-      i_standard   = i_standard ).
   ENDMETHOD.
 
 
@@ -188,15 +156,6 @@ CLASS zcl_logger_factory IMPLEMENTATION.
       CREATE OBJECT result TYPE zcl_logger_settings.
     ELSE.
       result = log_settings.
-    ENDIF.
-  ENDMETHOD.
-
-
-  METHOD create_ui.
-    IF log_ui IS INITIAL.
-      CREATE OBJECT result TYPE zcl_logger_ui.
-    ELSE.
-      result = log_ui.
     ENDIF.
   ENDMETHOD.
 

@@ -2,7 +2,7 @@ CLASS zcl_logger_display_profile DEFINITION
   PUBLIC
   FINAL
   CREATE PRIVATE
-  GLOBAL FRIENDS zcl_logger_factory.
+  GLOBAL FRIENDS zcl_logger_ui.
 
   PUBLIC SECTION.
 
@@ -19,6 +19,7 @@ CLASS zcl_logger_display_profile DEFINITION
         i_structure_name TYPE clike
       RETURNING
         VALUE(result)    TYPE cl_abap_structdescr=>component_table.
+
 ENDCLASS.
 
 

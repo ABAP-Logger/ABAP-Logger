@@ -18,10 +18,6 @@ CLASS zcl_logger_injector DEFINITION
       IMPORTING
         collection TYPE REF TO zif_logger_collection.
 
-    CLASS-METHODS set_display_profile
-      IMPORTING
-        display_profile TYPE REF TO zif_logger_display_profile.
-
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -33,11 +29,6 @@ CLASS zcl_logger_injector IMPLEMENTATION.
 
   METHOD set_collection.
     zcl_logger_factory=>log_collection = collection.
-  ENDMETHOD.
-
-
-  METHOD set_display_profile.
-    zcl_logger_factory=>log_display_profile = display_profile.
   ENDMETHOD.
 
 

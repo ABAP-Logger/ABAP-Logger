@@ -15,7 +15,7 @@ ENDCLASS.
 CLASS ltcl_display_profile_should IMPLEMENTATION.
 
   METHOD setup.
-    cut = zcl_logger_factory=>create_display_profile( ).
+    cut = zcl_logger_ui=>create_display_profile( ).
     cut->set( i_standard = abap_true ).
   ENDMETHOD.
 
