@@ -2,69 +2,93 @@ CLASS zcl_logger_display_profile DEFINITION
   PUBLIC
   FINAL
   CREATE PRIVATE
-   GLOBAL FRIENDS zcl_logger_factory.
+  GLOBAL FRIENDS zcl_logger_ui.
 
   PUBLIC SECTION.
+
     INTERFACES zif_logger_display_profile.
+
   PROTECTED SECTION.
+
     DATA display_profile TYPE bal_s_prof.
+
   PRIVATE SECTION.
 
     METHODS get_structure_components
       IMPORTING
-        i_structure_name    TYPE clike
+        i_structure_name TYPE clike
       RETURNING
-        VALUE(r_components) TYPE cl_abap_structdescr=>component_table.
+        VALUE(result)    TYPE cl_abap_structdescr=>component_table.
+
 ENDCLASS.
 
 
 
 CLASS zcl_logger_display_profile IMPLEMENTATION.
 
+
   METHOD get_structure_components.
     DATA strucdescr TYPE REF TO cl_abap_structdescr.
+
     strucdescr ?= cl_abap_structdescr=>describe_by_name( i_structure_name ).
-    r_components = strucdescr->get_components( ).
+    result = strucdescr->get_components( ).
   ENDMETHOD.
 
+
   METHOD zif_logger_display_profile~get.
-    r_display_profile = display_profile.
+    result = display_profile.
   ENDMETHOD.
+
 
   METHOD zif_logger_display_profile~set.
     CASE abap_true.
       WHEN i_detlevel.
         CALL FUNCTION 'BAL_DSP_PROFILE_DETLEVEL_GET'
           IMPORTING
-            e_s_display_profile = display_profile.
+            e_s_display_profile = display_profile
+          EXCEPTIONS
+            OTHERS              = 1.
       WHEN i_no_tree.
         CALL FUNCTION 'BAL_DSP_PROFILE_NO_TREE_GET'
           IMPORTING
-            e_s_display_profile = display_profile.
+            e_s_display_profile = display_profile
+          EXCEPTIONS
+            OTHERS              = 1.
       WHEN i_popup.
         CALL FUNCTION 'BAL_DSP_PROFILE_POPUP_GET'
           IMPORTING
-            e_s_display_profile = display_profile.
+            e_s_display_profile = display_profile
+          EXCEPTIONS
+            OTHERS              = 1.
       WHEN i_single_log.
         CALL FUNCTION 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
           IMPORTING
-            e_s_display_profile = display_profile.
+            e_s_display_profile = display_profile
+          EXCEPTIONS
+            OTHERS              = 1.
       WHEN OTHERS.
         CALL FUNCTION 'BAL_DSP_PROFILE_STANDARD_GET'
           IMPORTING
-            e_s_display_profile = display_profile.
+            e_s_display_profile = display_profile
+          EXCEPTIONS
+            OTHERS              = 1.
     ENDCASE.
 
-    r_self = me.
+    IF sy-subrc <> 0.
+      RAISE EXCEPTION TYPE zcx_logger.
+    ENDIF.
+
+    result = me.
   ENDMETHOD.
 
-  METHOD zif_logger_display_profile~set_context_message.
-    CHECK display_profile IS NOT INITIAL.
 
+  METHOD zif_logger_display_profile~set_context_message.
     DATA colpos     TYPE i VALUE 100.
     DATA mess_fcat  LIKE LINE OF display_profile-mess_fcat.
     DATA component  TYPE cl_abap_structdescr=>component.
     DATA components TYPE cl_abap_structdescr=>component_table.
+
+    CHECK display_profile IS NOT INITIAL.
 
     components = get_structure_components( i_context_structure ).
 
@@ -79,8 +103,9 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
 
     ENDLOOP.
 
-    r_self = me.
+    result = me.
   ENDMETHOD.
+
 
   METHOD zif_logger_display_profile~set_context_tree.
     FIELD-SYMBOLS <lev1_fcat> TYPE bal_t_fcat.
@@ -148,29 +173,31 @@ CLASS zcl_logger_display_profile IMPLEMENTATION.
     lev_sort-spos      = 1.
     APPEND lev_sort TO <lev2_sort>.
 
-    r_self = me.
+    result = me.
   ENDMETHOD.
+
 
   METHOD zif_logger_display_profile~set_grid.
     zif_logger_display_profile~set_value(
       i_fld = 'USE_GRID'
       i_val = i_grid_mode ).
 
-    r_self = me.
+    result = me.
   ENDMETHOD.
+
 
   METHOD zif_logger_display_profile~set_value.
     FIELD-SYMBOLS <value> TYPE any.
+
     ASSIGN COMPONENT i_fld OF STRUCTURE display_profile TO <value>.
     IF sy-subrc = 0.
       <value> = i_val.
-      r_self = me.
+      result = me.
     ELSE.
-      RAISE EXCEPTION TYPE zcx_logger_display_profile
+      RAISE EXCEPTION TYPE zcx_logger
         EXPORTING
           info = |field { i_fld } does not exist| ##NO_TEXT.
     ENDIF.
 
   ENDMETHOD.
-
 ENDCLASS.

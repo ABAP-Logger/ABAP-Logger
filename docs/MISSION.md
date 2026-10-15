@@ -72,9 +72,9 @@ DATA: log TYPE REF TO zif_logger.
 
 log = zcl_logger_factory=>create_log( object = 'ZINTERFACES'
                                       subobject = 'ACCOUNTING'
-                                      desc = 'Stuff imported from legacy systems' ).
+                                      extnumber = 'Stuff imported from legacy systems' ).
 
-log->e( 'You see, what had happened was...' ).
+log->error( 'You see, what had happened was...' ).
 ```
 
 Method calls can be chained, too. 
@@ -172,4 +172,3 @@ CALL FUNCTION 'BAL_LOG_MSG_CUMULATE'
     i_s_msg = l_msg
     i_compare_attributes = abap_true.
 ```
-

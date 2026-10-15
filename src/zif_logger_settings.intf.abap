@@ -4,7 +4,7 @@ INTERFACE zif_logger_settings PUBLIC.
   "! See setter for more details.
   METHODS get_autosave
     RETURNING
-      VALUE(r_auto_save) TYPE abap_bool.
+      VALUE(result) TYPE abap_bool.
 
   "! Set to true if the log is automatically saved when adding messages.
   "!
@@ -19,66 +19,66 @@ INTERFACE zif_logger_settings PUBLIC.
     IMPORTING
       i_auto_save   TYPE abap_bool
     RETURNING
-      VALUE(r_self) TYPE REF TO zif_logger_settings.
+      VALUE(result) TYPE REF TO zif_logger_settings.
 
   "! Get the earliest date on which the log can be deleted.
   "! See setter for more details.
   METHODS get_expiry_date
     RETURNING
-      VALUE(r_expiry_date) TYPE aldate_del.
+      VALUE(result) TYPE aldate_del.
 
   "! Set the earliest date on which the log can be deleted.
   "! By default the log does not expire.
   "!
-  "! Further information: https://launchpad.support.sap.com/#/notes/195157
+  "! Further information: https://me.sap.com/notes/195157
   METHODS set_expiry_date
     IMPORTING
       i_expiry_date TYPE aldate_del
     RETURNING
-      VALUE(r_self) TYPE REF TO zif_logger_settings.
+      VALUE(result) TYPE REF TO zif_logger_settings.
 
   "! Set the number of days after which the log can be deleted.
   "! By default the log does not expire.
   "!
-  "! Further information: https://launchpad.support.sap.com/#/notes/195157
+  "! Further information: https://me.sap.com/notes/195157
   METHODS set_expiry_in_days
     IMPORTING
       i_num_days    TYPE i
     RETURNING
-      VALUE(r_self) TYPE REF TO zif_logger_settings.
+      VALUE(result) TYPE REF TO zif_logger_settings.
 
   "! Does the log have to be kept until the expiry date is reached?
   "! See setter for more details.
   METHODS get_must_be_kept_until_expiry
     RETURNING
-      VALUE(r_must_be_kept_until_expiry) TYPE del_before.
+      VALUE(result) TYPE del_before.
 
   "! Set to true if log must be kept until the expiry date is reached. It
   "! cannot be deleted before (in transaction SLG2).
   "! The default is false.
   "!
-  "! Further information: https://launchpad.support.sap.com/#/notes/195157
+  "! Further information: https://me.sap.com/notes/195157
   METHODS set_must_be_kept_until_expiry
     IMPORTING
       i_must_be_kept_until_expiry TYPE del_before
     RETURNING
-      VALUE(r_self)               TYPE REF TO zif_logger_settings.
+      VALUE(result)               TYPE REF TO zif_logger_settings.
 
   METHODS get_max_exception_drill_down
     RETURNING
-      VALUE(r_levels) TYPE i.
+      VALUE(result) TYPE i.
 
   METHODS set_max_exception_drill_down
     IMPORTING
       i_levels      TYPE i
     RETURNING
-      VALUE(r_self) TYPE REF TO zif_logger_settings.
+      VALUE(result) TYPE REF TO zif_logger_settings.
 
   "! Is a secondary database connection used to write the log entries to the database?
   "! See setter for more details.
   METHODS get_usage_of_secondary_db_conn
     RETURNING
-      VALUE(r_2nd_db_connection_enabled) TYPE flag.
+      VALUE(result) TYPE flag.
 
   "! Set to true if secondary database connection should be used to write the log entries to the database.
   "! This is important if main program does a rollback (on purpose or after a dump).
@@ -87,6 +87,6 @@ INTERFACE zif_logger_settings PUBLIC.
     IMPORTING
       i_use_2nd_db_connection TYPE flag
     RETURNING
-      VALUE(r_self)           TYPE REF TO zif_logger_settings.
+      VALUE(result)           TYPE REF TO zif_logger_settings.
 
 ENDINTERFACE.

@@ -1,7 +1,7 @@
-CLASS lcl_logger_settings_should DEFINITION DEFERRED.
-CLASS zcl_logger_settings DEFINITION LOCAL FRIENDS lcl_logger_settings_should.
+CLASS ltcl_logger_settings_should DEFINITION DEFERRED.
+CLASS zcl_logger_settings DEFINITION LOCAL FRIENDS ltcl_logger_settings_should.
 
-CLASS lcl_logger_settings_should DEFINITION FOR TESTING
+CLASS ltcl_logger_settings_should DEFINITION FOR TESTING
   RISK LEVEL HARMLESS
   DURATION SHORT.
 
@@ -17,7 +17,7 @@ CLASS lcl_logger_settings_should DEFINITION FOR TESTING
     METHODS set_max_drilldown_level FOR TESTING.
 ENDCLASS.
 
-CLASS lcl_logger_settings_should IMPLEMENTATION.
+CLASS ltcl_logger_settings_should IMPLEMENTATION.
 
   METHOD setup.
     CREATE OBJECT cut.

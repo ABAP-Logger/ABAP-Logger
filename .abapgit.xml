@@ -2,17 +2,17 @@
 <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
  <asx:values>
   <DATA>
+   <NAME>ABAP Logger</NAME>
    <MASTER_LANGUAGE>E</MASTER_LANGUAGE>
    <STARTING_FOLDER>/src/</STARTING_FOLDER>
    <FOLDER_LOGIC>PREFIX</FOLDER_LOGIC>
-   <IGNORE>
-    <item>/.gitignore</item>
-    <item>/LICENSE</item>
-    <item>/README.md</item>
-    <item>/package.json</item>
-    <item>/.travis.yml</item>
-    <item>/abaplint.json</item>
-   </IGNORE>
+   <REQUIREMENTS>
+    <item>
+     <COMPONENT>SAP_BASIS</COMPONENT>
+     <MIN_RELEASE>702</MIN_RELEASE>
+    </item>
+   </REQUIREMENTS>
+   <VERSION_CONSTANT>ZIF_LOGGER=&gt;C_VERSION</VERSION_CONSTANT>
   </DATA>
  </asx:values>
 </asx:abap>

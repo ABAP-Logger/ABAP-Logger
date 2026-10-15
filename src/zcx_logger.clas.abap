@@ -9,10 +9,11 @@ CLASS zcx_logger DEFINITION
     DATA info TYPE string.
 
     METHODS constructor
-    IMPORTING
-      textid LIKE textid OPTIONAL
-      previous LIKE previous OPTIONAL
-      info TYPE string OPTIONAL.
+      IMPORTING
+        textid   LIKE textid OPTIONAL
+        previous LIKE previous OPTIONAL
+        info     TYPE string OPTIONAL.
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -21,15 +22,19 @@ ENDCLASS.
 
 CLASS zcx_logger IMPLEMENTATION.
 
-  METHOD constructor.
+
+  METHOD constructor ##ADT_SUPPRESS_GENERATION.
+
     CALL METHOD super->constructor
       EXPORTING
-        textid = textid
+        textid   = textid
         previous = previous.
+
     IF textid IS INITIAL.
       me->textid = zcx_logger.
     ENDIF.
-    me->info = info.
-  ENDMETHOD.
 
+    me->info = info.
+
+  ENDMETHOD.
 ENDCLASS.

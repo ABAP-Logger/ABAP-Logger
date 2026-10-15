@@ -3,9 +3,9 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <VSEOINTERF>
-    <CLSNAME>ZIF_LOGGER_DEPRECATED</CLSNAME>
+    <CLSNAME>ZIF_LOGGER_UI</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>ABAP Logger: deprecated methods</DESCRIPT>
+    <DESCRIPT>ABAP Logger: User Interface</DESCRIPT>
     <EXPOSURE>2</EXPOSURE>
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>

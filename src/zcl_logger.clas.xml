@@ -74,7 +74,7 @@
     </TLINE>
     <TLINE>
      <TDFORMAT>PE</TDFORMAT>
-     <TDLINE>DATA: log TYPE REF TO zcl_logger.</TDLINE>
+     <TDLINE>DATA: log TYPE REF TO zif_logger.</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
@@ -82,7 +82,7 @@
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
-     <TDLINE>log = zcl_logger=&gt;new( ).</TDLINE>
+     <TDLINE>log = zcl_logger_factory=&gt;create_log( ).</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
@@ -101,7 +101,7 @@
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
-     <TDLINE>log = zcl_logger=&gt;new( object = &apos;WF&apos;</TDLINE>
+     <TDLINE>log = zcl_logger_factory=&gt;create_log( object = &apos;WF&apos;</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
@@ -109,7 +109,7 @@
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
-     <TDLINE>desc = |Notifications on { sy-datum }| ).</TDLINE>
+     <TDLINE>extnumber = |Notifications on { sy-datum }| ).</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>U3</TDFORMAT>
@@ -224,11 +224,11 @@
     </TLINE>
     <TLINE>
      <TDFORMAT>PE</TDFORMAT>
-     <TDLINE>log-&gt;popup( ).</TDLINE>
+     <TDLINE>zcl_logger_factory=&gt;create_ui( )-&gt;display_as_popup( log ).</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>/</TDFORMAT>
-     <TDLINE>log-&gt;fullscreen( ).</TDLINE>
+     <TDLINE>zcl_logger_factory=&gt;create_ui( )-&gt;display_fullscreen( log ).</TDLINE>
     </TLINE>
     <TLINE>
      <TDFORMAT>AS</TDFORMAT>
